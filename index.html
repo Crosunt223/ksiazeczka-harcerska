@@ -902,7 +902,7 @@
 
     async function fetchProgress(userId) {
         try {
-            const res = await fetch(`${API_URL}/progress/${userId}`);
+            const res = await fetch('https://harcerze-backend.onrender.com/api/login');
             cachedProgress = await res.json();
             return cachedProgress;
         } catch (e) {
