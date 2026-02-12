@@ -822,6 +822,74 @@
 
     let db = [];
     let currentUser = null; 
+    // --- LOGIKA AUTORYZACJI (Logowanie i Rejestracja) ---
+
+let isRegisterMode = false; // Flag informująca o aktualnym trybie
+
+// Funkcja przełączająca UI między logowaniem a rejestracją
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const nameInp = document.getElementById('nameInp');
+    const authBtn = document.getElementById('authBtn');
+    const authToggle = document.getElementById('authToggle');
+    const head = document.querySelector('.login-box h2');
+    const error = document.getElementById('loginError');
+
+    error.style.display = 'none'; // Czyścimy błędy przy przełączaniu
+
+    if (isRegisterMode) {
+        nameInp.style.display = 'block';
+        nameInp.required = true;
+        authBtn.innerText = 'Zarejestruj się';
+        authToggle.innerText = 'Masz już konto? Zaloguj się';
+        head.innerText = 'Dołącz do nas!';
+    } else {
+        nameInp.style.display = 'none';
+        nameInp.required = false;
+        authBtn.innerText = 'Zaloguj się';
+        authToggle.innerText = 'Nie masz konta? Zarejestruj się';
+        head.innerText = 'Czuwaj!';
+    }
+}
+
+// Główna funkcja obsługująca wysyłkę formularza (Enter lub kliknięcie)
+async function handleAuth() {
+    const userInp = document.getElementById('userInp').value;
+    const passInp = document.getElementById('passInp').value;
+    const nameInp = document.getElementById('nameInp').value;
+    const error = document.getElementById('loginError');
+    
+    // Dynamiczny wybór endpointu na podstawie stanu aplikacji
+    const endpoint = isRegisterMode ? '/register' : '/login';
+    
+    // Przygotowanie payloadu (ciała zapytania)
+    const bodyData = { username: userInp, password: passInp };
+    if (isRegisterMode) bodyData.name = nameInp;
+
+    try {
+        const response = await fetch(`${API_URL}${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyData)
+        });
+        
+        const data = await response.json();
+
+        if (data.success) {
+            currentUser = data.user;
+            // Zapisujemy sesję, aby odświeżenie strony nie wylogowało usera
+            sessionStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+            error.style.display = 'none';
+            initAppAfterLogin(); // Uruchamia resztę aplikacji
+        } else {
+            error.innerText = data.message || "Błąd autoryzacji";
+            error.style.display = 'block';
+        }
+    } catch (err) {
+        error.innerText = "Błąd połączenia z serwerem";
+        error.style.display = 'block';
+    }
+}
     let currentViewUserId = null; // Czyj profil aktualnie oglądamy
 
     const STORAGE_KEY = 'nkih_session'; 
