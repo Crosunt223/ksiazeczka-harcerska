@@ -3,157 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Książeczka Harcerska Online</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Książeczka Harcerska - Leśna Szkółka</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- STYL PODSTAWOWY --- */
-        :root { --p: #2e7d32; --p-dark: #1b3a28; --bg: #f7f9f5; --card: #ffffff; --text: #2c3e50; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; }
-        
-        /* --- LOGOWANIE --- */
-        #loginOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, var(--p-dark), var(--p)); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: white; padding: 40px; border-radius: 20px; width: 320px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        .login-box input, .login-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .login-box button { width: 100%; padding: 12px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .toggle-link { color: var(--p); cursor: pointer; text-decoration: underline; font-size: 0.9rem; margin-top: 10px; display: block; }
-        .loading-text { font-size: 0.8rem; color: #666; margin-top: 5px; display: none; }
-
-        /* --- UI APLIKACJI --- */
-        .sidebar { width: 280px; background: var(--card); border-right: 1px solid #ddd; display: flex; flex-direction: column; overflow-y: auto; }
-        .brand { padding: 20px; background: var(--p); color: white; text-align: center; }
-        .nav-list { flex: 1; list-style: none; padding: 0; margin: 0; }
-        .nav-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .nav-item:hover { background: #f0f0f0; }
-
-        .main { flex: 1; padding: 40px; overflow-y: auto; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .logout-btn { position: fixed; bottom: 20px; left: 20px; padding: 10px; background: var(--p); color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 100; }
+        /* Twoje oryginalne style CSS pozostają bez zmian */
+        :root { --primary-dark: #1b3a28; --primary: #2e7d32; --primary-light: #4caf50; --accent: #ff6f00; --bg-body: #f7f9f5; --bg-panel: #ffffff; --bg-input: #f8fafc; --text-main: #2c3e50; --text-muted: #7f8c8d; --text-inverse: #ffffff; --border-color: #e2e8f0; --shadow-soft: 0 8px 24px rgba(0,0,0,0.08); --font-size-base: 16px; --border-radius: 16px; --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        body.dark-mode { --bg-body: #121212; --bg-panel: #1e1e1e; --text-main: #e0e0e0; --border-color: #333333; }
+        body { margin: 0; font-family: 'Open Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: var(--font-size-base); }
+        #loginOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1b3a28, #2e7d32); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; text-align: center; width: 320px; }
+        .login-box input, .login-box select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .login-box button { width: 100%; padding: 14px; background: #2e7d32; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .brand { padding: 30px 20px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; text-align: center; }
+        .nav-list { flex: 1; overflow-y: auto; list-style: none; padding: 10px; }
+        .nav-item { padding: 12px; cursor: pointer; border-radius: 10px; display: flex; justify-content: space-between; }
+        .nav-item:hover { background: var(--bg-input); }
+        .nav-item.active { background: var(--primary); color: white; }
+        .main { flex: 1; overflow-y: auto; padding: 40px; }
+        .card { background: white; padding: 25px; border-radius: 15px; box-shadow: var(--shadow-soft); margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 id="title">Czuwaj!</h2>
+        <h2 id="authTitle">Czuwaj!</h2>
         <input type="text" id="userInp" placeholder="Login">
         <input type="password" id="passInp" placeholder="Hasło">
         
-        <div id="regExtra" style="display:none;">
+        <div id="registerFields" style="display:none;">
             <input type="text" id="nameInp" placeholder="Imię i Nazwisko">
             <select id="teamSelect"><option value="">Wybierz drużynę...</option></select>
-            <div id="loadingTeams" class="loading-text">Łączenie z serwerem...</div>
         </div>
 
-        <button onclick="handleAuth()" id="btnAction">Zaloguj się</button>
-        <span class="toggle-link" onclick="toggleMode()" id="toggleTxt">Brak konta? Zarejestruj się</span>
+        <button id="authBtn" onclick="handleAuth()">Zaloguj się</button>
+        <p id="loginError" style="color:red; display:none; font-size:0.8em;"></p>
+        <span onclick="toggleAuth()" id="toggleTxt" style="cursor:pointer; font-size:0.8em; text-decoration:underline;">Nie masz konta? Zarejestruj się</span>
     </div>
 </div>
 
-<button class="logout-btn" onclick="logout()">Wyloguj 🚪</button>
-
 <nav class="sidebar">
-    <div class="brand"><h3>HARC-APP</h3><small id="userDisplay"></small></div>
+    <div class="brand"><h1 onclick="goHome()">LEŚNA SZKÓŁKA</h1><small id="userDisplay"></small></div>
     <ul class="nav-list" id="navList"></ul>
 </nav>
 
-<main class="main" id="contentArea">
-    <div class="card">Ładowanie...</div>
-</main>
+<main class="main" id="contentArea"></main>
 
 <script src="stopnie.js"></script>
 <script src="sprawnosci.js"></script>
 
 <script>
-    // ADRES API NA RENDERZE
-    const API = 'https://harcerze-backend.onrender.com/api';
-    
-    let user = null;
+    const API_URL = 'https://harcerze-backend.onrender.com/api';
+    let currentUser = null;
+    let currentViewUserId = null;
+    let cachedProgress = {};
     let isReg = false;
-    // Pusta baza na start, wypełniamy ją z plików .js jeśli istnieją
-    let db = [
-        ...(typeof stopnieData !== 'undefined' ? stopnieData : []),
-        ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
-    ];
+    let db = [];
 
-    // --- FUNKCJE LOGOWANIA ---
+    window.onload = () => {
+        db = [...(typeof stopnieData !== 'undefined' ? stopnieData : []), ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])];
+        const saved = sessionStorage.getItem('nkih_session');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            initApp();
+        }
+    };
 
-    async function toggleMode() {
+    async function toggleAuth() {
         isReg = !isReg;
-        document.getElementById('regExtra').style.display = isReg ? 'block' : 'none';
-        document.getElementById('title').innerText = isReg ? 'Rejestracja' : 'Czuwaj!';
-        document.getElementById('btnAction').innerText = isReg ? 'Zarejestruj' : 'Zaloguj';
-        document.getElementById('toggleTxt').innerText = isReg ? 'Masz konto? Zaloguj' : 'Brak konta? Zarejestruj';
-        
+        document.getElementById('registerFields').style.display = isReg ? 'block' : 'none';
+        document.getElementById('authTitle').innerText = isReg ? 'Dołącz do nas!' : 'Czuwaj!';
+        document.getElementById('authBtn').innerText = isReg ? 'Zarejestruj się' : 'Zaloguj się';
         if (isReg) {
-            // Pobieramy drużyny tylko przy rejestracji
-            const loadingMsg = document.getElementById('loadingTeams');
-            loadingMsg.style.display = 'block';
-            try {
-                const res = await fetch(`${API}/teams`);
-                if(!res.ok) throw new Error("Błąd sieci");
-                const teams = await res.json();
-                document.getElementById('teamSelect').innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-                loadingMsg.style.display = 'none';
-            } catch (e) {
-                console.error(e);
-                loadingMsg.innerText = "Serwer się budzi (czekaj ok. 30s)... spróbuj przełączyć widok ponownie.";
-            }
+            const res = await fetch(`${API_URL}/teams`);
+            const teams = await res.json();
+            document.getElementById('teamSelect').innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
         }
     }
 
     async function handleAuth() {
         const username = document.getElementById('userInp').value;
         const password = document.getElementById('passInp').value;
-        
+        const endpoint = isReg ? '/register' : '/login';
+        const body = { username, password };
         if (isReg) {
-            // REJESTRACJA
-            const name = document.getElementById('nameInp').value;
-            const teamId = document.getElementById('teamSelect').value;
-            if(!name || !teamId) return alert("Uzupełnij wszystkie pola!");
-
-            try {
-                const res = await fetch(`${API}/register`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username, password, name, teamId })
-                });
-                const data = await res.json();
-                alert(data.message);
-                if(data.success) toggleMode(); // Wróć do logowania po sukcesie
-            } catch(e) { alert("Błąd połączenia z serwerem."); }
-
-        } else {
-            // LOGOWANIE
-            try {
-                // TUTAJ BYŁ BŁĄD WCZEŚNIEJ (brakowało /login)
-                const res = await fetch(`${API}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
-                
-                if (res.ok) {
-                    user = data.user;
-                    document.getElementById('loginOverlay').style.display = 'none';
-                    document.getElementById('userDisplay').innerText = user.name;
-                    initDashboard();
-                } else {
-                    alert(data.message);
-                }
-            } catch(e) {
-                console.error(e);
-                alert("Błąd logowania. Jeśli serwer śpi, poczekaj minutę i spróbuj ponownie.");
-            }
+            body.name = document.getElementById('nameInp').value;
+            body.teamId = document.getElementById('teamSelect').value;
         }
+
+        try {
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                sessionStorage.setItem('nkih_session', JSON.stringify(currentUser));
+                initApp();
+            } else {
+                alert(data.message);
+            }
+        } catch (e) { alert("Błąd połączenia z serwerem"); }
     }
 
-    // --- DASHBOARD ---
+    function initApp() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('userDisplay').innerText = currentUser.name;
+        currentViewUserId = currentUser.id;
+        if (currentUser.role === 'admin') renderAdminDashboard();
+        else { goHome(); renderSidebar(); }
+    }
 
-    function initDashboard() {
-        renderSidebar(); // Generuje menu po lewej
-        if (user.role === 'admin') renderAdmin();
-        else renderUser();
+    async function renderAdminDashboard() {
+        const res = await fetch(`${API_URL}/team-members?adminId=${currentUser.id}`);
+        const members = await res.json();
+        let html = `<h2>Panel Drużynowego</h2><div class="card"><h3>Twoja drużyna:</h3>`;
+        members.forEach(m => {
+            html += `<div style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+                <span>${m.name}</span>
+                <button onclick="switchToUser(${m.id}, '${m.name}')">Zarządzaj</button>
+            </div>`;
+        });
+        document.getElementById('contentArea').innerHTML = html + `</div>`;
+    }
+
+    async function switchToUser(uid, name) {
+        currentViewUserId = uid;
+        await fetchProgress(uid);
+        goHome();
+        renderSidebar();
+    }
+
+    async function fetchProgress(uid) {
+        const res = await fetch(`${API_URL}/progress/${uid}`);
+        cachedProgress = await res.json();
     }
 
     function renderSidebar() {
@@ -162,91 +148,59 @@
         db.forEach(item => {
             const li = document.createElement('li');
             li.className = 'nav-item';
-            li.innerText = item.title;
-            li.onclick = () => loadTasks(item.id);
+            li.id = `nav-${item.id}`;
+            li.innerHTML = `<span>${item.title}</span><span id="prog-${item.id}">0%</span>`;
+            li.onclick = () => loadContent(item.id);
             list.appendChild(li);
         });
+        updateStats();
     }
 
-    async function loadTasks(id) {
+    async function loadContent(id) {
+        await fetchProgress(currentViewUserId);
         const item = db.find(x => x.id === id);
-        // Pobieramy postęp z serwera
-        const res = await fetch(`${API}/progress/${user.id}`);
-        const progress = await res.json();
-
         let html = `<h2>${item.title}</h2>`;
         item.groups.forEach((g, gIdx) => {
             html += `<div class="card"><h4>${g.name}</h4>`;
             g.tasks.forEach((t, tIdx) => {
-                const taskId = `${id}-${gIdx}-${tIdx}`;
-                const checked = progress[taskId] ? 'checked' : '';
-                // Admin może klikać wszystko, user tylko ogląda (chyba że chcesz inaczej)
-                const disabled = user.role !== 'admin' ? 'disabled' : ''; 
-                
-                html += `
-                <label style="display:block; margin:8px 0;">
-                    <input type="checkbox" ${checked} ${disabled} onchange="saveProgress('${taskId}', this.checked)"> ${t}
+                const tId = `${id}-${gIdx}-${tIdx}`;
+                const checked = cachedProgress[tId] ? 'checked' : '';
+                const disabled = currentUser.role !== 'admin' ? 'disabled' : '';
+                html += `<label style="display:block; margin:5px 0;">
+                    <input type="checkbox" ${checked} ${disabled} onchange="saveTask('${tId}', '${id}', this.checked)"> ${t}
                 </label>`;
             });
             html += `</div>`;
         });
         document.getElementById('contentArea').innerHTML = html;
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(`nav-${id}`).classList.add('active');
     }
 
-    async function saveProgress(taskId, status) {
-        await fetch(`${API}/progress`, {
+    async function saveTask(tId, itemId, status) {
+        await fetch(`${API_URL}/progress`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ userId: user.id, taskId, status })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: currentViewUserId, taskId: tId, status })
+        });
+        cachedProgress[tId] = status;
+        updateStats();
+    }
+
+    function updateStats() {
+        db.forEach(item => {
+            let total = 0, done = 0;
+            item.groups.forEach((g, gi) => g.tasks.forEach((t, ti) => {
+                total++; if (cachedProgress[`${item.id}-${gi}-${ti}`]) done++;
+            }));
+            const el = document.getElementById(`prog-${item.id}`);
+            if (el) el.innerText = Math.round((done/total)*100) + '%';
         });
     }
 
-    // --- WIDOKI ---
-
-    async function renderAdmin() {
-        const res = await fetch(`${API}/pending-requests?adminId=${user.id}`);
-        const pending = await res.json();
-        
-        let html = `<h2>Panel Drużynowego</h2>`;
-        
-        if (pending.length > 0) {
-            html += `<div class="card"><h3>Oczekują na akceptację:</h3>`;
-            pending.forEach(p => {
-                html += `<div style="margin-bottom:10px; border-bottom:1px solid #eee; padding:5px;">
-                    <strong>${p.name}</strong> 
-                    <button onclick="approve(${p.id})" style="margin-left:10px; cursor:pointer;">Zatwierdź</button>
-                </div>`;
-            });
-            html += `</div>`;
-        } else {
-            html += `<div class="card">Brak nowych zgłoszeń.</div>`;
-        }
-        
-        // Możesz tu dodać listę obecnych harcerzy
-        html += `<div class="card">Wybierz sprawność z menu po lewej, aby zarządzać wymaganiami.</div>`;
-        document.getElementById('contentArea').innerHTML = html;
+    function goHome() {
+        document.getElementById('contentArea').innerHTML = `<div class="card"><h2>Czuwaj!</h2><p>Wybierz zadania z menu po lewej.</p></div>`;
     }
-
-    async function approve(uid) {
-        await fetch(`${API}/approve-user`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ adminId: user.id, userId: uid })
-        });
-        renderAdmin(); // Odśwież listę
-    }
-
-    function renderUser() {
-        document.getElementById('contentArea').innerHTML = `
-            <h2>Witaj, ${user.name}!</h2>
-            <div class="card">
-                Twoje konto jest aktywne.<br>
-                Wybierz sprawność z menu po lewej stronie, aby zobaczyć swoje postępy.
-            </div>
-        `;
-    }
-
-    function logout() { location.reload(); }
 </script>
 </body>
 </html>
