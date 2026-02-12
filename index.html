@@ -682,7 +682,25 @@
 
 
 
-<div id="loginOverlay">
+<div id="loginOverlay" style="display: flex;">
+    <div class="login-box">
+        <h2>Czuwaj!</h2>
+        <form id="authForm" onsubmit="event.preventDefault(); handleAuth();">
+            <div id="authFields">
+                <input type="text" id="userInp" placeholder="Login" required>
+                <input type="password" id="passInp" placeholder="Hasło" required>
+                <input type="text" id="nameInp" placeholder="Imię i Nazwisko" style="display:none;">
+            </div>
+            
+            <button type="submit" id="authBtn">Zaloguj się</button>
+            
+            <p id="authToggle" style="margin-top:15px; font-size:0.8em; cursor:pointer; color:var(--primary); text-decoration: underline;" onclick="toggleAuthMode()">
+                Nie masz konta? Zarejestruj się
+            </p>
+            <p id="loginError" style="color:red; display:none; margin-top:10px; font-weight:bold;"></p>
+        </form>
+    </div>
+</div>
 
 <div class="login-box">
     <h2>Czuwaj!</h2>
