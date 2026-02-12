@@ -1,294 +1,67 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Książeczka Harcerska - Leśna Szkółka</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #2e7d32; --primary-dark: #1b3a28; --accent: #ff6f00;
-            --bg-body: #f7f9f5; --bg-panel: #ffffff; --text-main: #2c3e50;
-            --border: #e2e8f0; --shadow: 0 8px 24px rgba(0,0,0,0.08);
-        }
-        body.dark-mode { --bg-body: #0f172a; --bg-panel: #1e293b; --text-main: #f1f5f9; --border: #334155; }
-        body { margin: 0; font-family: 'Open Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
-        /* --- LOGOWANIE / REJESTRACJA --- */
-        #loginOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: var(--bg-panel); padding: 40px; border-radius: 20px; width: 340px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        .login-box input, .login-box select { width: 100%; padding: 12px; margin-bottom: 15px; border: 2px solid var(--border); border-radius: 10px; background: var(--bg-panel); color: var(--text-main); box-sizing: border-box; }
-        .login-box button { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .auth-toggle { margin-top: 15px; font-size: 0.85rem; color: var(--primary); cursor: pointer; text-decoration: underline; }
+const app = express();
 
-        /* --- SIDEBAR --- */
-        .sidebar { width: 280px; background: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .brand { padding: 25px; background: var(--primary); color: white; text-align: center; cursor: pointer; }
-        .nav-list { flex: 1; overflow-y: auto; list-style: none; padding: 10px; margin: 0; }
-        .nav-item { padding: 12px; margin: 4px 0; border-radius: 8px; cursor: pointer; display: flex; justify-content: space-between; transition: 0.2s; }
-        .nav-item:hover { background: var(--border); }
-        .nav-item.active { background: var(--primary); color: white; }
+// Konfiguracja CORS - akceptuje zapytania z dowolnego źródła
+app.use(cors());
+app.use(bodyParser.json());
 
-        /* --- MAIN --- */
-        .main { flex: 1; overflow-y: auto; padding: 40px; }
-        .card { background: var(--bg-panel); padding: 25px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); }
-        
-        .pending-section { background: #fffbeb; border: 2px solid #fef3c7; padding: 20px; border-radius: 15px; margin-bottom: 25px; }
-        .approve-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
+// --- TWOJE DANE (Teams i Users) ---
+const TEAMS = [
+    { id: 'team_las', name: 'Leśna Szkółka' },
+    { id: 'team_woda', name: 'Wodne Wilki' },
+    { id: 'team_ogien', name: 'Ogniste Ptaki' }
+];
 
-        .fab-logout { position: fixed; bottom: 20px; left: 20px; background: var(--primary); color: white; border: none; width: 50px; height: 50px; border-radius: 15px; cursor: pointer; font-size: 20px; }
-    </style>
-</head>
-<body>
+let USERS = [
+    { id: 1, username: 'admin1', password: '123', role: 'admin', teamId: 'team_las', name: 'Druh Boruch', status: 'approved' }
+];
 
-<div id="loginOverlay">
-    <div class="login-box">
-        <h2 id="authTitle">Czuwaj!</h2>
-        <input type="text" id="userInp" placeholder="Login">
-        <input type="password" id="passInp" placeholder="Hasło">
-        
-        <div id="registerFields" style="display:none;">
-            <input type="text" id="nameInp" placeholder="Nickname (Imię)">
-            <select id="teamSelect">
-                <option value="">Wczytywanie drużyn...</option>
-            </select>
-        </div>
+let USER_PROGRESS = {}; 
 
-        <button id="authBtn" onclick="handleAuth()">Zaloguj się</button>
-        <p class="auth-toggle" onclick="toggleAuthMode()" id="authToggle">Nie masz konta? Zarejestruj się</p>
-        <p id="authError" style="color:red; font-size:0.8rem; display:none; margin-top:10px;"></p>
-    </div>
-</div>
+// --- ENDPOINTY ---
 
-<button class="fab-logout" onclick="handleLogout()">🚪</button>
+app.get('/api/teams', (req, res) => {
+    res.json(TEAMS);
+});
 
-<nav class="sidebar">
-    <div class="brand" onclick="goHome()">
-        <h2 style="margin:0;">LEŚNA SZKÓŁKA</h2>
-        <small id="userLabel"></small>
-    </div>
-    <ul class="nav-list" id="navList"></ul>
-</nav>
-
-<main class="main">
-    <div id="contentArea"></div>
-</main>
-
-<script src="stopnie.js"></script>
-<script src="sprawnosci.js"></script>
-
-<script>
-    const API_URL = 'https://harcerze-backend.onrender/api.com';
-    let currentUser = null;
-    let isRegisterMode = false;
-    let db = [];
-
-    window.onload = () => {
-        // Połącz dane z plików JS
-        db = [
-            ...(typeof stopnieData !== 'undefined' ? stopnieData : []),
-            ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
-        ];
-
-        const saved = sessionStorage.getItem('h_session');
-        if (saved) {
-            currentUser = JSON.parse(saved);
-            initApp();
-        }
-    };
-
-    // --- FUNKCJE LOGOWANIA / REJESTRACJI ---
-
-    async function toggleAuthMode() {
-        isRegisterMode = !isRegisterMode;
-        const regFields = document.getElementById('registerFields');
-        const authTitle = document.getElementById('authTitle');
-        const authBtn = document.getElementById('authBtn');
-        const authToggle = document.getElementById('authToggle');
-
-        if (isRegisterMode) {
-            regFields.style.display = 'block';
-            authTitle.innerText = 'Nowy Profil';
-            authBtn.innerText = 'Wyślij prośbę';
-            authToggle.innerText = 'Masz konto? Zaloguj się';
-            await loadTeams(); // Wczytaj drużyny przy przełączaniu
-        } else {
-            regFields.style.display = 'none';
-            authTitle.innerText = 'Czuwaj!';
-            authBtn.innerText = 'Zaloguj się';
-            authToggle.innerText = 'Nie masz konta? Zarejestruj się';
-        }
+app.post('/api/register', (req, res) => {
+    const { username, password, name, teamId } = req.body;
+    if (USERS.find(u => u.username === username)) {
+        return res.json({ success: false, message: 'Ten login jest już zajęty!' });
     }
+    const newUser = { id: Date.now(), username, password, name, teamId, role: 'user', status: 'pending' };
+    USERS.push(newUser);
+    res.json({ success: true, message: 'Prośba o dołączenie została wysłana!' });
+});
 
-    async function loadTeams() {
-        try {
-            console.log("Łączenie z serwerem w celu pobrania drużyn...");
-            const res = await fetch(`${API_URL}/teams`);
-            const teams = await res.json();
-            const select = document.getElementById('teamSelect');
-            
-            if (teams.length > 0) {
-                select.innerHTML = teams.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-            } else {
-                select.innerHTML = '<option>Brak dostępnych drużyn</option>';
-            }
-        } catch (e) {
-            console.error("Błąd ładowania drużyn:", e);
-            document.getElementById('teamSelect').innerHTML = '<option>Błąd połączenia z serwerem</option>';
-        }
-    }
+app.post('/api/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = USERS.find(u => u.username === username && u.password === password);
+    if (!user) return res.status(401).json({ success: false, message: 'Błędny login lub hasło' });
+    if (user.status === 'pending') return res.status(403).json({ success: false, message: 'Konto czeka na akceptację admina' });
+    res.json({ success: true, user });
+});
 
-    async function handleAuth() {
-        const username = document.getElementById('userInp').value;
-        const password = document.getElementById('passInp').value;
-        const error = document.getElementById('authError');
-        error.style.display = 'none';
+app.get('/api/pending-requests', (req, res) => {
+    const adminId = parseInt(req.query.adminId);
+    const admin = USERS.find(u => u.id === adminId);
+    if (!admin || admin.role !== 'admin') return res.status(403).send('Brak uprawnień');
+    const pending = USERS.filter(u => u.teamId === admin.teamId && u.status === 'pending');
+    res.json(pending);
+});
 
-        if (isRegisterMode) {
-            const name = document.getElementById('nameInp').value;
-            const teamId = document.getElementById('teamSelect').value;
-            if(!name || !username || !password) return alert("Uzupełnij wszystkie pola!");
+app.post('/api/approve-user', (req, res) => {
+    const { adminId, userId } = req.body;
+    const user = USERS.find(u => u.id === userId);
+    if (user) user.status = 'approved';
+    res.json({ success: true });
+});
 
-            const res = await fetch(`${API_URL}/register`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ username, password, name, teamId })
-            });
-            const data = await res.json();
-            alert(data.message);
-            if(data.success) toggleAuthMode();
-        } else {
-            try {
-                const res = await fetch(`${API_URL}/login`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    currentUser = data.user;
-                    sessionStorage.setItem('h_session', JSON.stringify(currentUser));
-                    initApp();
-                } else {
-                    error.innerText = data.message;
-                    error.style.display = 'block';
-                }
-            } catch (e) {
-                error.innerText = "Błąd: Upewnij się, że serwer działa!";
-                error.style.display = 'block';
-            }
-        }
-    }
-
-    // --- FUNKCJE APLIKACJI ---
-
-    function initApp() {
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('userLabel').innerText = `Czuwaj, ${currentUser.name}!`;
-        renderSidebar();
-        
-        if (currentUser.role === 'admin') renderAdminDashboard();
-        else goHome();
-    }
-
-    function renderSidebar() {
-        const list = document.getElementById('navList');
-        list.innerHTML = '';
-        db.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'nav-item';
-            li.innerHTML = `<span>${item.title}</span>`;
-            li.onclick = () => loadItemTasks(item.id);
-            list.appendChild(li);
-        });
-    }
-
-    async function renderAdminDashboard() {
-        const pendingRes = await fetch(`${API_URL}/pending-requests?adminId=${currentUser.id}`);
-        const pending = await pendingRes.json();
-        
-        const membersRes = await fetch(`${API_URL}/team-members?adminId=${currentUser.id}`);
-        const members = await membersRes.json();
-
-        let html = `<h2>Panel Drużynowego</h2>`;
-
-        if (pending.length > 0) {
-            html += `
-            <div class="pending-section">
-                <h3 style="color:var(--accent); margin-top:0;">🔔 Nowe prośby o dołączenie</h3>
-                ${pending.map(p => `
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; padding:10px; background:white; border-radius:10px;">
-                        <span><strong>${p.name}</strong> (@${p.username})</span>
-                        <button class="approve-btn" onclick="approveUser(${p.id})">Akceptuj</button>
-                    </div>
-                `).join('')}
-            </div>`;
-        }
-
-        html += `
-            <div class="card">
-                <h3>Członkowie Drużyny</h3>
-                ${members.map(m => `
-                    <div class="nav-item" style="background:var(--bg-body); margin-bottom:10px;">
-                        <span>👤 ${m.name}</span>
-                    </div>
-                `).join('')}
-            </div>`;
-        
-        document.getElementById('contentArea').innerHTML = html;
-    }
-
-    async function approveUser(userId) {
-        await fetch(`${API_URL}/approve-user`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ adminId: currentUser.id, userId })
-        });
-        renderAdminDashboard();
-    }
-
-    function goHome() {
-        document.getElementById('contentArea').innerHTML = `
-            <div class="card">
-                <h2>Witaj w Leśnej Szkółce!</h2>
-                <p>Twoje postępy są zapisywane automatycznie na serwerze.</p>
-            </div>`;
-    }
-
-    function handleLogout() {
-        sessionStorage.clear();
-        location.reload();
-    }
-
-    // Prosta obsługa zadań (do postępów)
-    async function loadItemTasks(id) {
-        const item = db.find(x => x.id === id);
-        const res = await fetch(`${API_URL}/progress/${currentUser.id}`);
-        const progress = await res.json();
-
-        let html = `<h2>${item.title}</h2>`;
-        item.groups.forEach((g, gIdx) => {
-            html += `<div class="card"><h4>${g.name}</h4>`;
-            g.tasks.forEach((t, tIdx) => {
-                const taskId = `${id}-${gIdx}-${tIdx}`;
-                const isChecked = progress[taskId] ? 'checked' : '';
-                html += `
-                    <label style="display:block; margin:10px 0; cursor:pointer;">
-                        <input type="checkbox" ${isChecked} onchange="saveProgress('${taskId}', this.checked)"> ${t}
-                    </label>`;
-            });
-            html += `</div>`;
-        });
-        document.getElementById('contentArea').innerHTML = html;
-    }
-
-    async function saveProgress(taskId, status) {
-        await fetch(`${API_URL}/progress`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ userId: currentUser.id, taskId, status })
-        });
-    }
-</script>
-</body>
-</html>
+// WAŻNE DLA RENDER: Używamy portu z systemu
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Serwer pracuje na porcie ${PORT}`);
+});
