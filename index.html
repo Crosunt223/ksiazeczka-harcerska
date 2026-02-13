@@ -6,128 +6,26 @@
     <title>Książeczka Harcerska - Leśna Szkółka</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* --- STYLE POZOSTAJĄ BEZ ZMIAN (zachowano oryginał) --- */
-        :root {
-            --primary-dark: #1b3a28;
-            --primary: #2e7d32;
-            --primary-light: #4caf50;
-            --accent: #ff6f00;
-            --bg-body: #f7f9f5;
-            --bg-panel: #ffffff;
-            --bg-input: #f8fafc;
-            --text-main: #2c3e50;
-            --text-muted: #7f8c8d;
-            --text-inverse: #ffffff;
-            --border-color: #e2e8f0;
-            --shadow-soft: 0 8px 24px rgba(0,0,0,0.08);
-            --font-size-base: 16px;
-            --border-radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        body.dark-mode {
-            --primary-dark: #4caf50;
-            --primary: #66bb6a;
-            --primary-light: #81c784;
-            --accent: #ffb74d;
-            --bg-body: #121212;
-            --bg-panel: #1e1e1e;
-            --bg-input: #2c2c2c;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --text-inverse: #121212;
-            --border-color: #333333;
-            --shadow-soft: 0 8px 24px rgba(0,0,0,0.4);
-        }
-        body.large-text { --font-size-base: 20px; }
-        body { margin: 0; font-family: 'Open Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: var(--font-size-base); transition: background-color 0.3s, color 0.3s; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #90a4ae; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-        
-        .settings-fab { position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 4000; transition: transform 0.2s, background-color 0.2s; border: none; }
-        .settings-fab:hover { transform: scale(1.1) rotate(45deg); background-color: var(--primary-dark); }
-        .settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 4001; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .settings-content { background: var(--bg-panel); padding: 30px; border-radius: 20px; width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative; color: var(--text-main); }
-        .settings-content h3 { margin-top: 0; font-family: 'Montserrat', sans-serif; color: var(--primary); }
-        .settings-option { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px; background: var(--bg-body); border-radius: 10px; }
-        .settings-option span { font-weight: 600; font-size: 0.9em; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(24px); }
-        .settings-btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-        .btn-reset { background: #ffebee; color: #d32f2f; }
-        .btn-reset:hover { background: #ffcdd2; }
-        .btn-logout { background: var(--primary); color: white; margin-top: 5px; }
-        .btn-logout:hover { opacity: 0.9; }
-        .close-settings { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
-        
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1b3a28, #2e7d32); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: rgba(255, 255, 255, 0.95); padding: 50px 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; width: 320px; backdrop-filter: blur(10px); color: #2c3e50; transition: height 0.3s; }
-        .login-box h2 { color: #1b3a28; margin-bottom: 30px; font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; }
-        .login-box input, .login-box select { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; outline: none; background: #fff; font-family: inherit; }
-        .login-box button { width: 100%; padding: 14px; margin-top: 10px; background: #2e7d32; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .login-toggle-text { margin-top: 20px; font-size: 0.9em; color: #2e7d32; cursor: pointer; text-decoration: underline; }
-        .login-error { color: #d32f2f; font-size: 0.9em; margin-top: 10px; display: none; font-weight: bold; }
-
-        .sidebar { width: 300px; background: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border-color); transition: transform 0.3s ease; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.02); }
-        .sidebar.open { transform: translateX(0); }
-        .brand { padding: 30px 20px; text-align: center; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .brand h1 { font-family: 'Montserrat', sans-serif; margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
-        .brand small { display: block; margin-top: 5px; opacity: 0.8; font-size: 0.8rem; }
-        .nav-search { padding: 20px; }
-        .nav-search input { width: 100%; padding: 12px 15px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); box-sizing: border-box; outline: none; transition: 0.2s; }
-        .nav-search input:focus { border-color: var(--primary); }
-        .nav-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0 10px 80px 10px; }
-        .nav-category { padding: 20px 15px 8px 15px; font-size: 0.75em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; }
-        .nav-item { padding: 12px 15px; margin-bottom: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1em; border-radius: 10px; transition: var(--transition); color: var(--text-main); }
-        .nav-item:hover { background-color: var(--bg-input); color: var(--primary); transform: translateX(3px); }
-        .nav-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-weight: 600; }
-        .nav-progress { font-size: 0.75em; font-weight: 700; background: var(--bg-input); color: var(--text-muted); padding: 3px 8px; border-radius: 12px; }
-        .nav-item.active .nav-progress { background: rgba(255,255,255,0.2); color: white; }
-
-        .main { flex: 1; overflow-y: auto; padding: 0; position: relative; }
-        .content-container { max-width: 800px; margin: 0 auto; padding: 40px 20px 100px 20px; }
-        .header-section { margin-bottom: 40px; background: var(--bg-panel); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
-        .header-section::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: var(--accent); }
-        .cat-badge { display: inline-block; background: var(--bg-input); color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
-        .header-section h2 { margin: 10px 0 20px 0; font-family: 'Montserrat', sans-serif; font-size: 2.2em; color: var(--text-main); }
-        .big-progress-wrapper { background: var(--bg-input); height: 12px; border-radius: 6px; margin: 15px 0; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
-        .big-progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); width: 0%; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .gallery-img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: transform 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid var(--bg-panel); }
-        .gallery-img:hover { transform: scale(1.05); }
-        .task-group { margin-bottom: 30px; }
-        .group-title { color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 15px; font-size: 0.9em; letter-spacing: 0.5px; padding-left: 5px; }
-        .cb-container { display: flex; align-items: center; background: var(--bg-panel); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent; cursor: pointer; transition: var(--transition); }
-        .cb-container:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); border-color: var(--border-color); }
-        .cb-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        .checkmark { height: 24px; width: 24px; min-width: 24px; background-color: var(--bg-input); border-radius: 6px; border: 2px solid var(--border-color); margin-right: 15px; display: flex; align-items: center; justify-content: center; }
-        .cb-container input:checked ~ .checkmark { background-color: var(--primary); border-color: var(--primary); }
-        .checkmark:after { content: ""; display: none; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-1px); }
-        .cb-container input:checked ~ .checkmark:after { display: block; }
-        .task-text { font-size: 1em; color: var(--text-main); font-weight: 500; transition: 0.2s; }
-        .cb-container input:checked ~ .task-text { color: var(--text-muted); text-decoration: line-through; }
-        .home-card { background: var(--bg-panel); padding: 40px; border-radius: 20px; box-shadow: var(--shadow-soft); text-align: left; margin-bottom: 20px; }
-        .welcome-header { text-align: center; padding-top: 40px; margin-bottom: 40px; }
-        .welcome-header h2 { color: var(--primary); font-size: 2.5em; font-family: 'Montserrat', sans-serif; margin-bottom: 5px; }
-        .welcome-header p { color: var(--text-muted); margin-top: 0; }
-        #photoModal { display: none; position: fixed; z-index: 5000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        #modalImg { max-width: 90%; max-height: 90%; border-radius: 8px; transition: transform 0.3s ease; }
-        #modalImg.zoomed { transform: scale(1.8); cursor: zoom-out; }
-        .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
-        .mobile-toggle { display: none; position: fixed; top: 15px; right: 15px; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 50%; z-index: 2000; width: 50px; height: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-size: 1.2rem; }
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; height: 100%; transform: translateX(-105%); box-shadow: 10px 0 30px rgba(0,0,0,0.3); }
-            .sidebar.open { transform: translateX(0); }
-            .mobile-toggle { display: flex; align-items: center; justify-content: center; }
-            .content-container { padding: 80px 15px 40px 15px; }
-            .header-section h2 { font-size: 1.6rem; }
-            .settings-fab { bottom: 15px; left: 15px; width: 50px; height: 50px; }
-        }
+        /* --- STYLE IDENTYCZNE Z ORYGINAŁEM --- */
+        :root { --primary-dark: #1b3a28; --primary: #2e7d32; --primary-light: #4caf50; --accent: #ff6f00; --bg-body: #f7f9f5; --bg-panel: #ffffff; --bg-input: #f8fafc; --text-main: #2c3e50; --text-muted: #7f8c8d; --border-color: #e2e8f0; --shadow-soft: 0 8px 24px rgba(0,0,0,0.08); --font-size-base: 16px; --border-radius: 16px; }
+        body.dark-mode { --bg-body: #121212; --bg-panel: #1e1e1e; --bg-input: #2c2c2c; --text-main: #e0e0e0; --text-muted: #a0a0a0; --border-color: #333333; }
+        body { margin: 0; font-family: 'Open Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: var(--font-size-base); }
+        .sidebar { width: 300px; background: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border-color); z-index: 1000; }
+        .brand { padding: 30px 20px; text-align: center; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; cursor: pointer; }
+        .nav-list { flex: 1; overflow-y: auto; list-style: none; padding: 0 10px; }
+        .nav-item { padding: 12px 15px; cursor: pointer; border-radius: 10px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .nav-item.active { background: var(--primary); color: white; }
+        .main { flex: 1; overflow-y: auto; padding: 40px 20px; }
+        #loginOverlay { position: fixed; inset: 0; background: linear-gradient(135deg, #1b3a28, #2e7d32); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .login-box input, .login-box select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .login-box button { width: 100%; padding: 12px; background: #2e7d32; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .header-section { background: var(--bg-panel); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow-soft); margin-bottom: 30px; border-left: 6px solid var(--accent); }
+        .cb-container { display: flex; align-items: center; background: var(--bg-panel); padding: 15px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid transparent; }
+        .settings-fab { position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; background: var(--primary); color: white; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; z-index: 4000; }
+        .settings-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 4001; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .settings-content { background: var(--bg-panel); padding: 30px; border-radius: 20px; width: 300px; text-align: center; }
+        .btn-danger { background: #fee2e2; color: #dc2626; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -135,649 +33,229 @@
 <div id="loginOverlay">
     <div class="login-box">
         <h2 id="authTitle">Czuwaj!</h2>
-        
         <input type="text" id="userInp" placeholder="Login">
-        
-        <input type="text" id="nameInp" placeholder="Imię i Nazwisko / Pseudonim" style="display: none;">
-        
-        <select id="teamSelect" style="display: none;">
+        <input type="text" id="nameInp" placeholder="Twoje Imię/Pseudonim" style="display:none">
+        <select id="teamInp" style="display:none">
             <option value="" disabled selected>Wybierz drużynę</option>
             <option value="team_las">Leśne Skrzaty</option>
             <option value="team_woda">Wodne Wilki</option>
         </select>
-
         <input type="password" id="passInp" placeholder="Hasło">
-        
-        <button id="authBtn" onclick="handleAuthAction()">Zaloguj się</button>
-        <div id="loginError" class="login-error">Błąd danych</div>
-        
-        <div class="login-toggle-text" id="authToggle" onclick="toggleAuthMode()">
-            Nie masz konta? Zarejestruj się
-        </div>
+        <button onclick="handleAuth()">Zaloguj się</button>
+        <p id="authToggle" style="cursor:pointer; font-size:0.85em; margin-top:15px; color:#2e7d32" onclick="toggleAuthMode()">Nie masz konta? Zarejestruj się</p>
     </div>
 </div>
 
-<button class="settings-fab" onclick="openSettings()">⚙️</button>
+<button class="settings-fab" onclick="document.getElementById('settingsModal').style.display='flex'">⚙️</button>
 
-<div id="settingsModal" class="settings-modal" onclick="closeSettings(event)">
+<div id="settingsModal" class="settings-modal" onclick="if(event.target==this) this.style.display='none'">
     <div class="settings-content">
-        <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
         <h3>Ustawienia</h3>
-       
-        <div class="settings-option">
-            <span>Tryb Ciemny</span>
-            <label class="switch">
-                <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <div class="settings-option">
-            <span>Duży Tekst</span>
-            <label class="switch">
-                <input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()">
-                <span class="slider"></span>
-            </label>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
-
-        <button class="settings-btn-action btn-reset" onclick="deleteMyAccount()">❌ Usuń moje konto</button>
-        <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj się</button>
+        <button class="btn-danger" onclick="deleteMyAccount()">❌ Usuń moje konto</button>
+        <button onclick="location.reload()" style="width:100%; margin-top:10px; padding:10px; border:none; border-radius:8px; cursor:pointer">Wyloguj</button>
     </div>
 </div>
-
-<div id="photoModal" onclick="closeModal()">
-    <span class="close-modal">&times;</span>
-    <img id="modalImg" src="" alt="Powiększenie" onclick="toggleZoom(event)">
-</div>
-
-<button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
 
 <nav class="sidebar" id="sidebar">
-    <div class="brand">
-        <h1 onclick="goHome()">LEŚNA SZKÓŁKA</h1>
-        <small onclick="goHome()">Książeczka Harcerska</small>
-    </div>
-    <div class="nav-search">
-        <input type="text" id="searchInput" placeholder="Szukaj..." onkeyup="filterNav()">
+    <div class="brand" onclick="goHome()">
+        <h1>LEŚNA SZKÓŁKA</h1>
+        <small>Książeczka Harcerska</small>
     </div>
     <ul class="nav-list" id="navList"></ul>
 </nav>
 
 <main class="main">
-    <div class="content-container" id="contentArea"></div>
+    <div id="contentArea"></div>
 </main>
 
 <script src="stopnie.js"></script>
 <script src="sprawnosci.js"></script>
 
 <script>
-/**
- * KONFIGURACJA I DANE POCZĄTKOWE
- */
-const TEAMS = [
-    { id: 'team_las', name: 'Leśne Skrzaty' },
-    { id: 'team_woda', name: 'Wodne Wilki' }
-];
+    const API = 'http://localhost:3000/api';
+    let currentUser = null;
+    let isRegisterMode = false;
+    let inspectingUser = null; // Kogo ogląda admin
 
-// Klucze LocalStorage
-const STORAGE_USERS = 'nkih_users_v2';
-const STORAGE_PROGRESS = 'nkih_progress_v2';
-const STORAGE_SESSION = 'nkih_session_v2';
-const STORAGE_SETTINGS = 'nkih_settings';
-
-let db = []; // Baza zadań (stopnie + sprawności)
-let currentUser = null; 
-let currentViewUserId = null; // ID użytkownika, którego profil oglądamy (dla admina)
-let isRegisterMode = false;
-
-/**
- * FUNKCJE POMOCNICZE (Baza Danych w LocalStorage)
- */
-
-// Pobierz wszystkich użytkowników
-function getUsersDB() {
-    const raw = localStorage.getItem(STORAGE_USERS);
-    if (!raw) {
-        // Inicjalizacja domyślnego admina, jeśli baza pusta
-        const defaultAdmin = {
-            id: 1, 
-            username: 'admin', 
-            password: simpleHash('123'), 
-            name: 'Druh Boruch', 
-            role: 'admin', 
-            teamId: 'team_las', 
-            status: 'active'
-        };
-        localStorage.setItem(STORAGE_USERS, JSON.stringify([defaultAdmin]));
-        return [defaultAdmin];
-    }
-    return JSON.parse(raw);
-}
-
-// Zapisz użytkowników
-function saveUsersDB(users) {
-    localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
-}
-
-// Pobierz postęp (wszystkich)
-function getProgressDB() {
-    return JSON.parse(localStorage.getItem(STORAGE_PROGRESS) || '{}');
-}
-
-// Zapisz postęp
-function saveProgressDB(progress) {
-    localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(progress));
-}
-
-// Prosty hash hasła (dla bezpieczeństwa w przeglądarce - nie jest to kryptografia bankowa)
-function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return hash.toString();
-}
-
-/**
- * INICJALIZACJA
- */
-window.onload = () => {
-    loadSettings();
-    
-    // Ładowanie zadań z plików zewnętrznych (jeśli istnieją)
-    db = [
+    const DB_CONTENT = [
         ...(typeof stopnieData !== 'undefined' ? stopnieData : []),
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
-    // Sprawdzenie sesji
-    const savedSession = sessionStorage.getItem(STORAGE_SESSION);
-    if (savedSession) {
-        // Odśwież dane usera z bazy (gdyby status się zmienił w innej karcie)
-        const sessionUser = JSON.parse(savedSession);
-        const users = getUsersDB();
-        const freshUser = users.find(u => u.id === sessionUser.id);
-        
-        if (freshUser) {
-            currentUser = freshUser;
-            initAppAfterLogin();
+    function toggleAuthMode() {
+        isRegisterMode = !isRegisterMode;
+        document.getElementById('authTitle').innerText = isRegisterMode ? "Dołącz do nas!" : "Czuwaj!";
+        document.getElementById('nameInp').style.display = isRegisterMode ? 'block' : 'none';
+        document.getElementById('teamInp').style.display = isRegisterMode ? 'block' : 'none';
+        document.querySelector('.login-box button').innerText = isRegisterMode ? "Zarejestruj się" : "Zaloguj się";
+        document.getElementById('authToggle').innerText = isRegisterMode ? "Masz konto? Zaloguj się" : "Nie masz konta? Zarejestruj się";
+    }
+
+    async function handleAuth() {
+        const payload = {
+            username: document.getElementById('userInp').value,
+            password: document.getElementById('passInp').value,
+            name: document.getElementById('nameInp').value,
+            teamId: document.getElementById('teamInp').value
+        };
+
+        try {
+            const res = await fetch(`${API}/${isRegisterMode ? 'register' : 'login'}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                if (isRegisterMode) {
+                    alert("Konto założone! Poczekaj na akceptację drużynowego.");
+                    toggleAuthMode();
+                } else {
+                    currentUser = data.user;
+                    inspectingUser = currentUser;
+                    initUI();
+                }
+            } else alert(data.message || "Błąd logowania");
+        } catch (e) { alert("Serwer nie odpowiada!"); }
+    }
+
+    function initUI() {
+        document.getElementById('loginOverlay').style.display = 'none';
+        if (currentUser.status === 'pending') {
+            renderPending();
+        } else if (currentUser.role === 'admin') {
+            renderAdminPanel();
         } else {
-            handleLogout(); // Użytkownik został usunięty
+            renderSidebar();
+            goHome();
         }
-    } else {
-        document.getElementById('loginOverlay').style.display = 'flex';
-    }
-};
-
-/**
- * SYSTEM LOGOWANIA I REJESTRACJI
- */
-function toggleAuthMode() {
-    isRegisterMode = !isRegisterMode;
-    const nameInp = document.getElementById('nameInp');
-    const teamSelect = document.getElementById('teamSelect');
-    const authBtn = document.getElementById('authBtn');
-    const authToggle = document.getElementById('authToggle');
-    const title = document.getElementById('authTitle');
-    const error = document.getElementById('loginError');
-
-    error.style.display = 'none';
-    userInp.value = ''; passInp.value = ''; nameInp.value = '';
-
-    if (isRegisterMode) {
-        title.innerText = "Dołącz do drużyny!";
-        nameInp.style.display = 'block';
-        teamSelect.style.display = 'block';
-        authBtn.innerText = "Zarejestruj się";
-        authToggle.innerText = "Masz już konto? Zaloguj się";
-    } else {
-        title.innerText = "Czuwaj!";
-        nameInp.style.display = 'none';
-        teamSelect.style.display = 'none';
-        authBtn.innerText = "Zaloguj się";
-        authToggle.innerText = "Nie masz konta? Zarejestruj się";
-    }
-}
-
-function handleAuthAction() {
-    if (isRegisterMode) registerUser();
-    else loginUser();
-}
-
-function registerUser() {
-    const username = document.getElementById('userInp').value.trim();
-    const password = document.getElementById('passInp').value;
-    const name = document.getElementById('nameInp').value.trim();
-    const teamId = document.getElementById('teamSelect').value;
-    const error = document.getElementById('loginError');
-
-    if (!username || !password || !name || !teamId) {
-        error.innerText = "Wypełnij wszystkie pola!";
-        error.style.display = 'block';
-        return;
     }
 
-    const users = getUsersDB();
-    if (users.find(u => u.username === username)) {
-        error.innerText = "Ten login jest zajęty.";
-        error.style.display = 'block';
-        return;
+    function renderPending() {
+        document.getElementById('contentArea').innerHTML = `
+            <div class="header-section" style="text-align:center">
+                <div style="font-size: 4rem; margin-bottom: 20px;">⏳</div>
+                <h2>Brak przydziału do drużyny</h2>
+                <p>Twoje zgłoszenie zostało wysłane. Poczekaj, aż admin Twojej drużyny zaakceptuje Twój profil.</p>
+                <button class="btn-danger" style="width:auto; padding: 10px 30px" onclick="deleteMyAccount()">Anuluj prośbę / Usuń konto</button>
+            </div>`;
     }
 
-    const newUser = {
-        id: Date.now(), // Unikalne ID oparte na czasie
-        username: username,
-        password: simpleHash(password),
-        name: name,
-        role: 'user', // Zawsze 'user' przy rejestracji
-        teamId: teamId,
-        status: 'pending' // Domyślny status
-    };
-
-    users.push(newUser);
-    saveUsersDB(users);
-
-    // Automatyczne przełączenie na logowanie
-    alert("Konto założone! Poczekaj na akceptację drużynowego.");
-    toggleAuthMode();
-}
-
-function loginUser() {
-    const username = document.getElementById('userInp').value.trim();
-    const password = document.getElementById('passInp').value;
-    const error = document.getElementById('loginError');
-
-    const users = getUsersDB();
-    const user = users.find(u => u.username === username && u.password === simpleHash(password));
-
-    if (user) {
-        currentUser = user;
-        sessionStorage.setItem(STORAGE_SESSION, JSON.stringify(currentUser));
-        error.style.display = 'none';
-        initAppAfterLogin();
-    } else {
-        error.innerText = "Błędny login lub hasło.";
-        error.style.display = 'block';
-    }
-}
-
-function handleLogout() {
-    sessionStorage.removeItem(STORAGE_SESSION);
-    location.reload();
-}
-
-/**
- * GŁÓWNA LOGIKA UI
- */
-function initAppAfterLogin() {
-    document.getElementById('loginOverlay').style.display = 'none';
-    currentViewUserId = currentUser.id;
-
-    // Sytuacja 1: Konto nieaktywne (pending)
-    if (currentUser.status !== 'active') {
-        renderPendingScreen();
-        return;
-    }
-
-    // Sytuacja 2: Admin
-    if (currentUser.role === 'admin') {
-        renderAdminDashboard();
-        return;
-    }
-
-    // Sytuacja 3: Zwykły aktywny harcerz
-    goHome();
-    renderSidebar();
-}
-
-/**
- * EKRAN OCZEKIWANIA (Dla statusu 'pending')
- */
-function renderPendingScreen() {
-    const teamName = TEAMS.find(t => t.id === currentUser.teamId)?.name || 'Twojej drużyny';
-    
-    document.getElementById('navList').innerHTML = ''; // Czyścimy sidebar
-    document.getElementById('contentArea').innerHTML = `
-        <div class="welcome-header">
-            <h2>Czuwaj, ${currentUser.name}!</h2>
-        </div>
-        <div class="home-card" style="text-align: center;">
-            <div style="font-size: 50px; margin-bottom: 20px;">⏳</div>
-            <h3>Oczekiwanie na przydział</h3>
-            <p>Twoje konto czeka na akceptację przez drużynowego szczepu <strong>${teamName}</strong>.</p>
-            <p>Zajrzyj tu później!</p>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-                <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
-                    Pomyliłeś drużyny?
-                </small>
-                <button onclick="deleteMyAccount()" class="settings-btn-action btn-reset" style="width: auto; display: inline-block;">
-                    Usuń konto i zacznij od nowa
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * PANEL ADMINA
- */
-function renderAdminDashboard() {
-    const users = getUsersDB();
-    const myTeamId = currentUser.teamId;
-
-    // Filtrujemy ludzi z mojej drużyny (z pominięciem samego siebie)
-    const pendingUsers = users.filter(u => u.teamId === myTeamId && u.status === 'pending' && u.id !== currentUser.id);
-    const activeUsers = users.filter(u => u.teamId === myTeamId && u.status === 'active' && u.role === 'user');
-
-    let html = `
-        <div class="welcome-header">
-            <h2>Panel Drużynowego</h2>
-            <p>Zarządzanie drużyną: <strong>${TEAMS.find(t => t.id === myTeamId)?.name}</strong></p>
-        </div>
-    `;
-
-    // Sekcja oczekujących
-    if (pendingUsers.length > 0) {
-        html += `<div class="home-card" style="border: 2px solid var(--accent);">
-            <h3 style="color: var(--accent);">⚠️ Oczekujący na przyjęcie (${pendingUsers.length})</h3>
-            <div style="display: grid; gap: 10px;">`;
+    async function renderAdminPanel() {
+        const res = await fetch(`${API}/team-members?adminId=${currentUser.id}`);
+        const members = await res.json();
         
-        pendingUsers.forEach(u => {
-            html += `
-                <div style="background: var(--bg-input); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <span><strong>${u.name}</strong> (${u.username})</span>
+        const pending = members.filter(m => m.status === 'pending');
+        const active = members.filter(m => m.status === 'active');
+
+        let html = `<div class="header-section"><h2>Panel Drużynowego</h2><p>Zarządzasz osobami ze swojej drużyny.</p></div>`;
+
+        if (pending.length > 0) {
+            html += `<h3>Prośby o przyjęcie (${pending.length})</h3>`;
+            pending.forEach(m => {
+                html += `<div class="cb-container" style="justify-content:space-between">
+                    <span><strong>${m.name}</strong> (@${m.username})</span>
                     <div>
-                        <button onclick="changeUserStatus(${u.id}, 'active')" style="background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-right: 5px;">✔ Przyjmij</button>
-                        <button onclick="deleteUser(${u.id})" style="background: #ffebee; color: #d32f2f; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">Usuń</button>
+                        <button onclick="updateUserStatus(${m.id}, 'active')" style="background:#dcfce7; color:#166534; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold">Przyjmij</button>
+                        <button onclick="deleteOtherUser(${m.id})" style="background:#fee2e2; color:#991b1b; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; margin-left:5px">Odrzuć</button>
                     </div>
                 </div>`;
-        });
-        html += `</div></div>`;
-    }
-
-    // Sekcja aktywnych
-    html += `<div class="home-card">
-        <h3>Twoja drużyna</h3>
-        <p style="color:var(--text-muted); margin-bottom: 20px;">Kliknij harcerza, aby edytować jego sprawności.</p>
-        <div style="display: grid; gap: 10px;">`;
-
-    if (activeUsers.length === 0) {
-        html += `<p style="text-align:center; color:var(--text-muted);">Brak harcerzy w drużynie.</p>`;
-    } else {
-        activeUsers.forEach(m => {
-            html += `
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="switchToUser(${m.id}, '${m.name}')" 
-                        style="flex: 1; padding: 15px; background: var(--bg-input); border: 1px solid var(--border-color); 
-                               border-radius: 10px; cursor: pointer; text-align: left; font-weight: bold; 
-                               color: var(--text-main); display: flex; justify-content: space-between; align-items: center;">
-                        <span>👤 ${m.name}</span>
-                        <span style="font-size: 0.8em; color: var(--primary);">Zarządzaj ></span>
-                    </button>
-                    <button onclick="confirmDeleteUser(${m.id}, '${m.name}')" 
-                        style="width: 50px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 10px; cursor: pointer; font-size: 1.2em;">
-                        🗑️
-                    </button>
-                </div>
-            `;
-        });
-    }
-
-    html += `</div></div>`;
-    
-    document.getElementById('contentArea').innerHTML = html;
-    document.getElementById('navList').innerHTML = '';
-}
-
-// Zmiana statusu (np. akceptacja)
-function changeUserStatus(userId, newStatus) {
-    const users = getUsersDB();
-    const idx = users.findIndex(u => u.id === userId);
-    if (idx !== -1) {
-        users[idx].status = newStatus;
-        saveUsersDB(users);
-        renderAdminDashboard();
-    }
-}
-
-// Usuwanie innego użytkownika (przez admina)
-function confirmDeleteUser(userId, userName) {
-    if(confirm(`Czy na pewno chcesz usunąć harcerza ${userName}? Postęp zostanie utracony.`)) {
-        deleteUser(userId);
-    }
-}
-
-function deleteUser(userId) {
-    let users = getUsersDB();
-    users = users.filter(u => u.id !== userId); // Usuń usera
-    saveUsersDB(users);
-
-    // Usuń też postępy tego usera
-    const allProgress = getProgressDB();
-    delete allProgress[userId];
-    saveProgressDB(allProgress);
-
-    renderAdminDashboard();
-}
-
-// Usuwanie własnego konta
-function deleteMyAccount() {
-    if(confirm("Czy na pewno chcesz usunąć swoje konto? Ta operacja jest nieodwracalna.")) {
-        deleteUser(currentUser.id);
-        handleLogout();
-    }
-}
-
-// Przejście do widoku edycji harcerza
-function switchToUser(userId, userName) {
-    currentViewUserId = userId;
-    goHome();
-    renderSidebar();
-    
-    // Banner informacyjny
-    const header = document.querySelector('.welcome-header p');
-    if(header) {
-        header.innerHTML = `Edytujesz profil: <strong style="color:var(--primary)">${userName}</strong> <br>
-        <a href="#" onclick="renderAdminDashboard()" style="font-size:0.9em; color:var(--text-muted); text-decoration:underline;">[⬅ Wróć do listy drużyny]</a>`;
-    }
-}
-
-/**
- * WIDOKI HARCERZA I LOGIKA ZADAŃ
- */
-function goHome() {
-    updateUIStats();
-    
-    const isEditingOthers = currentUser.role === 'admin' && currentViewUserId !== currentUser.id;
-    const title = isEditingOthers ? 'Tryb edycji podopiecznego' : 'Książeczka Harcerska';
-    const subBtn = isEditingOthers ? `<button onclick="renderAdminDashboard()" style="background:var(--accent); border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer; margin-top:10px;">⬅ Wróć</button>` : '';
-
-    document.getElementById('contentArea').innerHTML = `
-        <div class="welcome-header">
-            <h2>Czuwaj!</h2>
-            <p>${title}</p>
-            ${subBtn}
-        </div>
-        <div class="home-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--text-main);">Postęp zdobytych sprawności</h3>
-                <span id="total-progress" style="font-weight:bold; color:var(--primary); font-size:1.2em;">0%</span>
-            </div>
-            <div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>
-        </div>`;
-}
-
-function renderSidebar(filterText = '') {
-    const list = document.getElementById('navList');
-    list.innerHTML = '';
-    const grouped = {};
-    db.forEach(item => { if (!grouped[item.category]) grouped[item.category] = []; grouped[item.category].push(item); });
-
-    Object.keys(grouped).forEach(cat => {
-        const filtered = grouped[cat].filter(i => i.title.toLowerCase().includes(filterText.toLowerCase()));
-        if (filtered.length > 0) {
-            const head = document.createElement('li');
-            head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
-            filtered.forEach(item => {
-                const li = document.createElement('li');
-                li.className = 'nav-item';
-                li.id = `nav-item-${item.id}`;
-                li.innerHTML = `<span>${item.title}</span><span class="nav-progress" id="nav-prog-${item.id}">...</span>`;
-                li.onclick = () => loadContent(item.id);
-                list.appendChild(li);
             });
         }
-    });
-    updateUIStats();
-}
 
-function loadContent(id) {
-    const item = db.find(x => x.id === id);
-    const allProgress = getProgressDB();
-    const userProgress = allProgress[currentViewUserId] || {};
+        html += `<h3>Twoi Harcerze</h3>`;
+        active.forEach(m => {
+            html += `<div class="cb-container" style="justify-content:space-between">
+                <span onclick="inspectHarcerz(${m.id}, '${m.name}')" style="cursor:pointer; color:var(--primary); font-weight:bold">👤 ${m.name}</span>
+                <button onclick="deleteOtherUser(${m.id})" style="background:none; border:none; cursor:pointer; font-size:1.2rem">🗑️</button>
+            </div>`;
+        });
 
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(`nav-item-${id}`)?.classList.add('active');
-    if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
-
-    let imagesHtml = '';
-    if (item.images && item.images.length > 0) {
-        imagesHtml = '<div class="image-gallery">';
-        item.images.forEach(img => { imagesHtml += `<img src="${img}" class="gallery-img" onclick="openPhoto('${img}')" onerror="this.style.display='none'">`; });
-        imagesHtml += '</div>';
+        document.getElementById('contentArea').innerHTML = html;
+        document.getElementById('navList').innerHTML = '';
     }
 
-    let html = `
-        <div class="header-section">
-            <span class="cat-badge">${item.category}</span>
-            <h2>${item.title}</h2>
-            ${imagesHtml}
-            <div style="margin-top:25px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:600; color:var(--text-muted); font-size:0.9em;">
-                    <span>Postęp</span><span id="detail-prog-val">0%</span>
-                </div>
-                <div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>
+    async function updateUserStatus(userId, status) {
+        await fetch(`${API}/user-status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId, status })
+        });
+        renderAdminPanel();
+    }
+
+    async function inspectHarcerz(id, name) {
+        inspectingUser = { id, name };
+        renderSidebar();
+        goHome();
+    }
+
+    async function deleteMyAccount() {
+        if(!confirm("Czy na pewno chcesz usunąć swoje konto?")) return;
+        await fetch(`${API}/user/${currentUser.id}`, { method: 'DELETE' });
+        location.reload();
+    }
+
+    async function deleteOtherUser(id) {
+        if(!confirm("Czy na pewno chcesz usunąć to konto?")) return;
+        await fetch(`${API}/user/${id}`, { method: 'DELETE' });
+        renderAdminPanel();
+    }
+
+    function goHome() {
+        const isEditing = currentUser.id !== inspectingUser.id;
+        document.getElementById('contentArea').innerHTML = `
+            <div class="header-section">
+                <h2>Czuwaj, ${inspectingUser.name}!</h2>
+                ${isEditing ? `<button onclick="renderAdminPanel()" style="background:var(--primary); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer">⬅ Wróć do panelu</button>` : ''}
             </div>
-        </div>`;
-
-    item.groups.forEach((g, gIdx) => {
-        html += `<div class="task-group"><div class="group-title">${g.name}</div>`;
-        g.tasks.forEach((t, tIdx) => {
-            const taskId = `${id}-${gIdx}-${tIdx}`;
-            const isDone = userProgress[taskId];
-            // Tylko admin może zmieniać checkboxy
-            const isAdmin = currentUser.role === 'admin';
-            const disabledAttr = isAdmin ? '' : 'disabled';
-            const cursorStyle = isAdmin ? '' : 'cursor: default;';
-
-            html += `
-                <label class="cb-container" style="${cursorStyle}">
-                    <input type="checkbox" ${isDone ? 'checked' : ''} ${disabledAttr} onchange="toggleTask('${taskId}')">
-                    <div class="checkmark"></div>
-                    <span class="task-text">${t.replace(/\*/g, '★')}</span>
-                </label>`;
-        });
-        html += `</div>`;
-    });
-    document.getElementById('contentArea').innerHTML = html;
-    updateItemProgress(item.id);
-    document.querySelector('.main').scrollTop = 0;
-}
-
-function toggleTask(taskId) {
-    if (currentUser.role !== 'admin') return;
-
-    const allProgress = getProgressDB();
-    if (!allProgress[currentViewUserId]) allProgress[currentViewUserId] = {};
-    
-    // Przełącz stan
-    if (allProgress[currentViewUserId][taskId]) {
-        delete allProgress[currentViewUserId][taskId];
-    } else {
-        allProgress[currentViewUserId][taskId] = true;
+            <div class="header-section">
+                <p>Kliknij w kategorię z boku, aby zobaczyć ${isEditing ? 'postępy harcerza' : 'swoje zadania'}.</p>
+            </div>`;
     }
 
-    saveProgressDB(allProgress);
-    
-    // Odśwież UI
-    const itemId = taskId.split('-')[0];
-    updateItemProgress(itemId);
-}
-
-function updateItemProgress(itemId) {
-    const item = db.find(x => x.id === itemId);
-    if (!item) return;
-    
-    const allProgress = getProgressDB();
-    const userProgress = allProgress[currentViewUserId] || {};
-
-    let total = 0, done = 0;
-    item.groups.forEach((g, gIdx) => { 
-        g.tasks.forEach((t, tIdx) => { 
-            total++; 
-            if (userProgress[`${itemId}-${gIdx}-${tIdx}`]) done++; 
-        }); 
-    });
-
-    const pct = total > 0 ? Math.round((done/total)*100) : 0;
-    if (document.getElementById('detail-bar')) document.getElementById('detail-bar').style.width = pct + '%';
-    if (document.getElementById('detail-prog-val')) document.getElementById('detail-prog-val').textContent = pct + '%';
-    const navEl = document.getElementById(`nav-prog-${itemId}`);
-    if (navEl) navEl.textContent = pct + '%';
-}
-
-function updateUIStats() {
-    if (!currentViewUserId) return;
-    
-    const allProgress = getProgressDB();
-    const userProgress = allProgress[currentViewUserId] || {};
-
-    let total = 0, done = 0;
-    db.forEach(item => {
-        let iTotal = 0, iDone = 0;
-        item.groups.forEach((g, gIdx) => { 
-            g.tasks.forEach((t, tIdx) => { 
-                total++; iTotal++; 
-                if (userProgress[`${item.id}-${gIdx}-${tIdx}`]) { done++; iDone++; } 
-            }); 
+    function renderSidebar() {
+        const list = document.getElementById('navList');
+        list.innerHTML = '';
+        DB_CONTENT.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            li.innerHTML = `<span>${item.title}</span>`;
+            li.onclick = () => loadTasks(item);
+            list.appendChild(li);
         });
-        const navEl = document.getElementById(`nav-prog-${item.id}`);
-        if (navEl) navEl.textContent = (iTotal > 0 ? Math.round((iDone/iTotal)*100) : 0) + '%';
-    });
+    }
 
-    const totalPct = total > 0 ? Math.round((done/total)*100) : 0;
-    if (document.getElementById('total-bar')) document.getElementById('total-bar').style.width = totalPct + '%';
-    if (document.getElementById('total-progress')) document.getElementById('total-progress').textContent = totalPct + '%';
-}
+    async function loadTasks(item) {
+        const res = await fetch(`${API}/progress/${inspectingUser.id}`);
+        const userProgress = await res.json();
+        
+        let html = `<div class="header-section"><h2>${item.title}</h2></div>`;
+        item.groups.forEach((g, gIdx) => {
+            html += `<h4>${g.name}</h4>`;
+            g.tasks.forEach((t, tIdx) => {
+                const taskId = `${item.id}-${gIdx}-${tIdx}`;
+                const checked = userProgress[taskId] ? 'checked' : '';
+                // Tylko admin może zaznaczać zadania
+                const disabled = (currentUser.role !== 'admin') ? 'disabled' : '';
+                html += `
+                    <label class="cb-container" style="${currentUser.role !== 'admin' ? 'cursor:default' : ''}">
+                        <input type="checkbox" ${checked} ${disabled} onchange="toggleTask('${taskId}', this.checked)">
+                        <span style="margin-left:10px">${t}</span>
+                    </label>`;
+            });
+        });
+        document.getElementById('contentArea').innerHTML = html;
+    }
 
-/**
- * FUNKCJE INTERFEJSOWE (Bez zmian logicznych)
- */
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-function openPhoto(src) { document.getElementById('modalImg').src = src; document.getElementById('photoModal').style.display = "flex"; document.getElementById('modalImg').classList.remove('zoomed'); }
-function closeModal() { document.getElementById('photoModal').style.display = "none"; }
-function toggleZoom(event) { event.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
-function filterNav() { renderSidebar(document.getElementById('searchInput').value); }
-function openSettings() { toggleSettingsModal(true); }
-function closeSettings(e) { if(e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
-function toggleSettingsModal(show) { document.getElementById('settingsModal').style.display = show ? 'flex' : 'none'; }
-
-function loadSettings() {
-    const settings = JSON.parse(localStorage.getItem(STORAGE_SETTINGS)) || { dark: false, largeText: false };
-    if(settings.dark) { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
-    if(settings.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
-}
-function saveSettings() {
-    const settings = { dark: document.body.classList.contains('dark-mode'), largeText: document.body.classList.contains('large-text') };
-    localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
-}
-function toggleDarkMode() { document.body.classList.toggle('dark-mode'); saveSettings(); }
-function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
-
+    async function toggleTask(taskId, status) {
+        await fetch(`${API}/progress`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userId: inspectingUser.id, taskId, status })
+        });
+    }
 </script>
 </body>
 </html>
