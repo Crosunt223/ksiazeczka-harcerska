@@ -852,7 +852,50 @@
         updateItemProgress(item.id);
         document.querySelector('.main').scrollTop = 0;
     }
+// Funkcja wywoływana przez admina w panelu drużyny
+async function deleteUser(targetUserId) {
+    if (!confirm("Czy na pewno chcesz CAŁKOWICIE usunąć tego użytkownika i jego postępy? Te zmiany są nieodwracalne.")) {
+        return;
+    }
 
+    try {
+        const response = await fetch('http://localhost:3000/api/delete-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adminId: currentUser.id,
+                targetUserId: targetUserId
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("Użytkownik został usunięty.");
+            // Odśwież widok panelu admina
+            renderAdminDashboard(); 
+        } else {
+            alert("Błąd: " + result.message);
+        }
+    } catch (error) {
+        console.error("Błąd połączenia:", error);
+    }
+}
+
+// Zaktualizowana funkcja decydowania o statusie (np. dla przycisku Odrzuć)
+async function decideUser(userId, status) {
+    if (status === 'rejected') {
+        // Jeśli admin odrzuca kogoś, od razu go usuwamy
+        await deleteUser(userId);
+    } else {
+        // Jeśli akceptuje - standardowa zmiana statusu
+        const response = await fetch('http://localhost:3000/api/change-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ adminId: currentUser.id, targetUserId: userId, newStatus: status })
+        });
+        if (response.ok) renderAdminDashboard();
+    }
+}
     function toggleTask(taskId, itemId) {
         if (currentUser.role !== 'admin') {
             return; // Bezpiecznik UI, input i tak jest disabled
