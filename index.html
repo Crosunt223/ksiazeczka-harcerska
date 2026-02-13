@@ -6,351 +6,119 @@
     <title>Książeczka Harcerska - Leśna Szkółka</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        /* --- STYLE POZOSTAJĄ BEZ ZMIAN (zachowano oryginał) --- */
         :root {
-            /* --- Paleta Kolorów (Tryb Jasny - Domyślny) --- */
             --primary-dark: #1b3a28;
             --primary: #2e7d32;
             --primary-light: #4caf50;
             --accent: #ff6f00;
-            
             --bg-body: #f7f9f5;
             --bg-panel: #ffffff;
             --bg-input: #f8fafc;
-            
             --text-main: #2c3e50;
             --text-muted: #7f8c8d;
             --text-inverse: #ffffff;
-            
             --border-color: #e2e8f0;
             --shadow-soft: 0 8px 24px rgba(0,0,0,0.08);
-            
             --font-size-base: 16px;
             --border-radius: 16px;
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-
-        /* --- TRYB CIEMNY (Zmienne) --- */
         body.dark-mode {
-            --primary-dark: #4caf50;    /* Jaśniejsza zieleń dla kontrastu */
+            --primary-dark: #4caf50;
             --primary: #66bb6a;
             --primary-light: #81c784;
             --accent: #ffb74d;
-            
             --bg-body: #121212;
             --bg-panel: #1e1e1e;
             --bg-input: #2c2c2c;
-            
             --text-main: #e0e0e0;
             --text-muted: #a0a0a0;
             --text-inverse: #121212;
-            
             --border-color: #333333;
             --shadow-soft: 0 8px 24px rgba(0,0,0,0.4);
         }
-
-        /* --- POWIĘKSZONY TEKST --- */
-        body.large-text {
-            --font-size-base: 20px;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Open Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            font-size: var(--font-size-base);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        /* --- SCROLLBAR --- */
+        body.large-text { --font-size-base: 20px; }
+        body { margin: 0; font-family: 'Open Sans', sans-serif; background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; font-size: var(--font-size-base); transition: background-color 0.3s, color 0.3s; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #90a4ae; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
-        /* --- PRZYCISK USTAWIEŃ (FAB) --- */
-        .settings-fab {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            width: 56px;
-            height: 56px;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            cursor: pointer;
-            z-index: 4000;
-            transition: transform 0.2s, background-color 0.2s;
-            border: none;
-        }
-        .settings-fab:hover {
-            transform: scale(1.1) rotate(45deg);
-            background-color: var(--primary-dark);
-        }
-
-        /* --- PANEL USTAWIEŃ (MODAL) --- */
-        .settings-modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            z-index: 4001;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(4px);
-        }
-        .settings-content {
-            background: var(--bg-panel);
-            padding: 30px;
-            border-radius: 20px;
-            width: 300px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            text-align: center;
-            position: relative;
-            color: var(--text-main);
-        }
+        
+        .settings-fab { position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; background-color: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; z-index: 4000; transition: transform 0.2s, background-color 0.2s; border: none; }
+        .settings-fab:hover { transform: scale(1.1) rotate(45deg); background-color: var(--primary-dark); }
+        .settings-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 4001; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .settings-content { background: var(--bg-panel); padding: 30px; border-radius: 20px; width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative; color: var(--text-main); }
         .settings-content h3 { margin-top: 0; font-family: 'Montserrat', sans-serif; color: var(--primary); }
-        
-        .settings-option {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: var(--bg-body);
-            border-radius: 10px;
-        }
+        .settings-option { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px; background: var(--bg-body); border-radius: 10px; }
         .settings-option span { font-weight: 600; font-size: 0.9em; }
-        
-        /* Toggle Switch Style */
         .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(24px); }
-
-        .settings-btn-action {
-            width: 100%; padding: 12px; margin-top: 10px;
-            border: none; border-radius: 10px;
-            font-weight: bold; cursor: pointer;
-            transition: 0.2s; font-size: 0.9rem;
-        }
+        .settings-btn-action { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
         .btn-reset { background: #ffebee; color: #d32f2f; }
         .btn-reset:hover { background: #ffcdd2; }
         .btn-logout { background: var(--primary); color: white; margin-top: 5px; }
         .btn-logout:hover { opacity: 0.9; }
+        .close-settings { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: var(--text-muted); }
         
-        .close-settings {
-            position: absolute; top: 10px; right: 15px;
-            font-size: 24px; cursor: pointer; color: var(--text-muted);
-        }
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1b3a28, #2e7d32); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: rgba(255, 255, 255, 0.95); padding: 50px 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center; width: 320px; backdrop-filter: blur(10px); color: #2c3e50; transition: height 0.3s; }
+        .login-box h2 { color: #1b3a28; margin-bottom: 30px; font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; }
+        .login-box input, .login-box select { width: 100%; padding: 14px; margin-bottom: 15px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; outline: none; background: #fff; font-family: inherit; }
+        .login-box button { width: 100%; padding: 14px; margin-top: 10px; background: #2e7d32; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .login-toggle-text { margin-top: 20px; font-size: 0.9em; color: #2e7d32; cursor: pointer; text-decoration: underline; }
+        .login-error { color: #d32f2f; font-size: 0.9em; margin-top: 10px; display: none; font-weight: bold; }
 
-        /* --- SYSTEM LOGOWANIA --- */
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #1b3a28, #2e7d32); /* Zawsze zielone tło logowania */
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
-        }
-        .login-box {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 50px 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 320px;
-            backdrop-filter: blur(10px);
-            color: #2c3e50;
-            transition: height 0.3s ease;
-        }
-        .login-box h2 { color: #1b3a28; margin-bottom: 20px; font-family: 'Montserrat', sans-serif; font-weight: 700; text-transform: uppercase; }
-        .login-box input, .login-box select {
-            width: 100%; padding: 14px; margin-bottom: 15px;
-            border: 2px solid #e2e8f0; border-radius: 10px;
-            box-sizing: border-box; outline: none;
-            font-family: 'Open Sans', sans-serif;
-            background: white;
-            color: #2c3e50;
-        }
-        .login-box button {
-            width: 100%; padding: 14px; margin-top: 10px;
-            background: #2e7d32; border: none; border-radius: 10px;
-            color: white; font-weight: bold; cursor: pointer; text-transform: uppercase;
-        }
-        .auth-toggle {
-            margin-top: 15px; font-size: 0.85em; color: #2e7d32; 
-            cursor: pointer; text-decoration: underline; display: block;
-        }
-        .hidden-field { display: none; }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 300px;
-            background: var(--bg-panel);
-            display: flex; flex-direction: column;
-            border-right: 1px solid var(--border-color);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.02);
-        }
+        .sidebar { width: 300px; background: var(--bg-panel); display: flex; flex-direction: column; border-right: 1px solid var(--border-color); transition: transform 0.3s ease; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.02); }
         .sidebar.open { transform: translateX(0); }
-        
-        .brand {
-            padding: 30px 20px;
-            text-align: center;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-        }
-        .brand h1 {
-            font-family: 'Montserrat', sans-serif;
-            margin: 0; font-size: 1.4rem;
-            font-weight: 700; letter-spacing: 1px; cursor: pointer;
-        }
+        .brand { padding: 30px 20px; text-align: center; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .brand h1 { font-family: 'Montserrat', sans-serif; margin: 0; font-size: 1.4rem; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
         .brand small { display: block; margin-top: 5px; opacity: 0.8; font-size: 0.8rem; }
-
         .nav-search { padding: 20px; }
-        .nav-search input {
-            width: 100%; padding: 12px 15px; border-radius: 30px;
-            border: 1px solid var(--border-color); background: var(--bg-input);
-            color: var(--text-main); box-sizing: border-box; outline: none;
-            transition: 0.2s;
-        }
+        .nav-search input { width: 100%; padding: 12px 15px; border-radius: 30px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); box-sizing: border-box; outline: none; transition: 0.2s; }
         .nav-search input:focus { border-color: var(--primary); }
-        
         .nav-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0 10px 80px 10px; }
-        
-        .nav-category {
-            padding: 20px 15px 8px 15px; font-size: 0.75em;
-            text-transform: uppercase; color: var(--text-muted);
-            font-weight: 700; letter-spacing: 1px;
-        }
-        
-        .nav-item {
-            padding: 12px 15px; margin-bottom: 4px;
-            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            font-size: 1em; border-radius: 10px;
-            transition: var(--transition); color: var(--text-main);
-        }
+        .nav-category { padding: 20px 15px 8px 15px; font-size: 0.75em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 1px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 1em; border-radius: 10px; transition: var(--transition); color: var(--text-main); }
         .nav-item:hover { background-color: var(--bg-input); color: var(--primary); transform: translateX(3px); }
-        .nav-item.active {
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            font-weight: 600;
-        }
-        
-        .nav-progress {
-            font-size: 0.75em; font-weight: 700;
-            background: var(--bg-input); color: var(--text-muted);
-            padding: 3px 8px; border-radius: 12px;
-        }
+        .nav-item.active { background: linear-gradient(90deg, var(--primary), var(--primary-light)); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-weight: 600; }
+        .nav-progress { font-size: 0.75em; font-weight: 700; background: var(--bg-input); color: var(--text-muted); padding: 3px 8px; border-radius: 12px; }
         .nav-item.active .nav-progress { background: rgba(255,255,255,0.2); color: white; }
 
-        /* --- CONTENT --- */
         .main { flex: 1; overflow-y: auto; padding: 0; position: relative; }
         .content-container { max-width: 800px; margin: 0 auto; padding: 40px 20px 100px 20px; }
-
-        .header-section {
-            margin-bottom: 40px; background: var(--bg-panel); padding: 30px; border-radius: var(--border-radius);
-            box-shadow: var(--shadow-soft); position: relative; overflow: hidden;
-        }
-        .header-section::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
-            background: var(--accent);
-        }
-        .cat-badge {
-            display: inline-block; background: var(--bg-input); color: var(--accent);
-            padding: 4px 12px; border-radius: 20px; font-size: 0.75em;
-            font-weight: 700; text-transform: uppercase; margin-bottom: 10px;
-        }
+        .header-section { margin-bottom: 40px; background: var(--bg-panel); padding: 30px; border-radius: var(--border-radius); box-shadow: var(--shadow-soft); position: relative; overflow: hidden; }
+        .header-section::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: var(--accent); }
+        .cat-badge { display: inline-block; background: var(--bg-input); color: var(--accent); padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
         .header-section h2 { margin: 10px 0 20px 0; font-family: 'Montserrat', sans-serif; font-size: 2.2em; color: var(--text-main); }
-        
-        .big-progress-wrapper {
-            background: var(--bg-input); height: 12px; border-radius: 6px;
-            margin: 15px 0; overflow: hidden; position: relative; border: 1px solid var(--border-color);
-        }
-        .big-progress-fill {
-            height: 100%; border-radius: 6px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
-            width: 0%; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        /* --- GALERIA --- */
+        .big-progress-wrapper { background: var(--bg-input); height: 12px; border-radius: 6px; margin: 15px 0; overflow: hidden; position: relative; border: 1px solid var(--border-color); }
+        .big-progress-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); width: 0%; transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .gallery-img {
-            width: 100%; height: 150px; object-fit: cover;
-            border-radius: 12px; cursor: pointer; transition: transform 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid var(--bg-panel);
-        }
+        .gallery-img { width: 100%; height: 150px; object-fit: cover; border-radius: 12px; cursor: pointer; transition: transform 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid var(--bg-panel); }
         .gallery-img:hover { transform: scale(1.05); }
-
-        /* --- ZADANIA --- */
         .task-group { margin-bottom: 30px; }
-        .group-title {
-            color: var(--text-muted); text-transform: uppercase;
-            font-weight: 800; margin-bottom: 15px; font-size: 0.9em;
-            letter-spacing: 0.5px; padding-left: 5px;
-        }
-        .cb-container {
-            display: flex; align-items: center;
-            background: var(--bg-panel); padding: 15px 20px;
-            border-radius: 12px; margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent;
-            cursor: pointer; transition: var(--transition);
-        }
+        .group-title { color: var(--text-muted); text-transform: uppercase; font-weight: 800; margin-bottom: 15px; font-size: 0.9em; letter-spacing: 0.5px; padding-left: 5px; }
+        .cb-container { display: flex; align-items: center; background: var(--bg-panel); padding: 15px 20px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent; cursor: pointer; transition: var(--transition); }
         .cb-container:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); border-color: var(--border-color); }
         .cb-container input { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
-        
-        .checkmark {
-            height: 24px; width: 24px; min-width: 24px;
-            background-color: var(--bg-input); border-radius: 6px;
-            border: 2px solid var(--border-color); margin-right: 15px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .checkmark { height: 24px; width: 24px; min-width: 24px; background-color: var(--bg-input); border-radius: 6px; border: 2px solid var(--border-color); margin-right: 15px; display: flex; align-items: center; justify-content: center; }
         .cb-container input:checked ~ .checkmark { background-color: var(--primary); border-color: var(--primary); }
         .checkmark:after { content: ""; display: none; width: 6px; height: 12px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-1px); }
         .cb-container input:checked ~ .checkmark:after { display: block; }
         .task-text { font-size: 1em; color: var(--text-main); font-weight: 500; transition: 0.2s; }
         .cb-container input:checked ~ .task-text { color: var(--text-muted); text-decoration: line-through; }
-
-        /* --- DASHBOARD --- */
-        .home-card {
-            background: var(--bg-panel); padding: 40px; border-radius: 20px;
-            box-shadow: var(--shadow-soft); text-align: left;
-        }
+        .home-card { background: var(--bg-panel); padding: 40px; border-radius: 20px; box-shadow: var(--shadow-soft); text-align: left; margin-bottom: 20px; }
         .welcome-header { text-align: center; padding-top: 40px; margin-bottom: 40px; }
         .welcome-header h2 { color: var(--primary); font-size: 2.5em; font-family: 'Montserrat', sans-serif; margin-bottom: 5px; }
         .welcome-header p { color: var(--text-muted); margin-top: 0; }
-        
-        .user-list-btn {
-            padding: 15px; background: var(--bg-input); border: 1px solid var(--border-color); 
-            border-radius: 10px; cursor: pointer; text-align: left; font-weight: bold; 
-            color: var(--text-main); display: flex; justify-content: space-between; align-items: center;
-            width: 100%; margin-bottom: 10px; transition: 0.2s;
-        }
-        .user-list-btn:hover { background: var(--bg-panel); border-color: var(--primary); }
-        
-        .action-btn {
-            padding: 8px 12px; border-radius: 8px; border: none; 
-            font-weight: bold; cursor: pointer; font-size: 0.8rem;
-        }
-        .btn-accept { background: var(--primary-light); color: white; margin-right: 5px; }
-        .btn-reject { background: #e57373; color: white; }
-
-        /* --- MODAL PHOTO --- */
         #photoModal { display: none; position: fixed; z-index: 5000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         #modalImg { max-width: 90%; max-height: 90%; border-radius: 8px; transition: transform 0.3s ease; }
         #modalImg.zoomed { transform: scale(1.8); cursor: zoom-out; }
         .close-modal { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
-
-        /* --- MOBILE --- */
         .mobile-toggle { display: none; position: fixed; top: 15px; right: 15px; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 50%; z-index: 2000; width: 50px; height: 50px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); cursor: pointer; font-size: 1.2rem; }
         @media (max-width: 768px) {
             .sidebar { position: fixed; height: 100%; transform: translateX(-105%); box-shadow: 10px 0 30px rgba(0,0,0,0.3); }
@@ -366,22 +134,26 @@
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h2 id="authHeader">Czuwaj!</h2>
+        <h2 id="authTitle">Czuwaj!</h2>
         
         <input type="text" id="userInp" placeholder="Login">
-        <input type="password" id="passInp" placeholder="Hasło">
         
-        <input type="text" id="nameInp" class="hidden-field" placeholder="Imię i Nazwisko / Pseudonim">
-        <select id="teamSelect" class="hidden-field">
+        <input type="text" id="nameInp" placeholder="Imię i Nazwisko / Pseudonim" style="display: none;">
+        
+        <select id="teamSelect" style="display: none;">
             <option value="" disabled selected>Wybierz drużynę</option>
             <option value="team_las">Leśne Skrzaty</option>
             <option value="team_woda">Wodne Wilki</option>
         </select>
 
-        <button id="authBtn" onclick="handleAuth()">Zaloguj się</button>
-        <p id="loginError" style="color: #d32f2f; font-size: 0.9em; margin-top: 10px; display: none;">Błąd danych</p>
+        <input type="password" id="passInp" placeholder="Hasło">
         
-        <span class="auth-toggle" id="authToggle" onclick="toggleAuthMode()">Nie masz konta? Zarejestruj się</span>
+        <button id="authBtn" onclick="handleAuthAction()">Zaloguj się</button>
+        <div id="loginError" class="login-error">Błąd danych</div>
+        
+        <div class="login-toggle-text" id="authToggle" onclick="toggleAuthMode()">
+            Nie masz konta? Zarejestruj się
+        </div>
     </div>
 </div>
 
@@ -391,7 +163,7 @@
     <div class="settings-content">
         <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
         <h3>Ustawienia</h3>
-        
+       
         <div class="settings-option">
             <span>Tryb Ciemny</span>
             <label class="switch">
@@ -410,7 +182,7 @@
 
         <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
 
-        <button class="settings-btn-action btn-reset" onclick="resetProgress()">⚠️ Zresetuj Postęp</button>
+        <button class="settings-btn-action btn-reset" onclick="deleteMyAccount()">❌ Usuń moje konto</button>
         <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj się</button>
     </div>
 </div>
@@ -441,547 +213,571 @@
 <script src="sprawnosci.js"></script>
 
 <script>
-    /* ========================================================================
-     LOCAL STORAGE DATABASE (SYMULACJA BACKENDU)
-     Wszystkie dane trzymane są w przeglądarce. Nie ma serwera zewnętrznego.
-     ========================================================================
-    */
-    const DB_KEY = 'harcerze_db_v1';
-    
-    // Prosta funkcja haszująca (dla symulacji bezpieczeństwa)
-    const simpleHash = (str) => {
-        let hash = 0;
-        if (str.length === 0) return hash.toString();
-        for (let i = 0; i < str.length; i++) {
-            const chr = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + chr;
-            hash |= 0; 
-        }
-        return hash.toString();
-    };
+/**
+ * KONFIGURACJA I DANE POCZĄTKOWE
+ */
+const TEAMS = [
+    { id: 'team_las', name: 'Leśne Skrzaty' },
+    { id: 'team_woda', name: 'Wodne Wilki' }
+];
 
-    // Klasa do zarządzania danymi
-    class LocalDB {
-        constructor() {
-            this.data = JSON.parse(localStorage.getItem(DB_KEY)) || this.getInitialData();
-            this.save();
-        }
+// Klucze LocalStorage
+const STORAGE_USERS = 'nkih_users_v2';
+const STORAGE_PROGRESS = 'nkih_progress_v2';
+const STORAGE_SESSION = 'nkih_session_v2';
+const STORAGE_SETTINGS = 'nkih_settings';
 
-        getInitialData() {
-            return {
-                users: [
-                    // Domyślni admini, żeby można było zatwierdzać innych
-                    { id: 1, username: 'admin1', password: simpleHash('123'), role: 'admin', teamId: 'team_las', name: 'Druh Boruch', status: 'active' },
-                    { id: 2, username: 'admin2', password: simpleHash('123'), role: 'admin', teamId: 'team_woda', name: 'Druh Wodnik', status: 'active' }
-                ],
-                progress: {}, // { userId: { taskId: true } }
-                teams: [
-                    { id: 'team_las', name: 'Leśne Skrzaty' },
-                    { id: 'team_woda', name: 'Wodne Wilki' }
-                ]
-            };
-        }
+let db = []; // Baza zadań (stopnie + sprawności)
+let currentUser = null; 
+let currentViewUserId = null; // ID użytkownika, którego profil oglądamy (dla admina)
+let isRegisterMode = false;
 
-        save() {
-            localStorage.setItem(DB_KEY, JSON.stringify(this.data));
-        }
+/**
+ * FUNKCJE POMOCNICZE (Baza Danych w LocalStorage)
+ */
 
-        // --- Metody Użytkowników ---
-        findUser(username, password) {
-            const hash = simpleHash(password);
-            return this.data.users.find(u => u.username === username && u.password === hash);
-        }
-
-        registerUser(username, password, name, teamId) {
-            if (this.data.users.find(u => u.username === username)) return { success: false, msg: 'Login zajęty' };
-            
-            const newUser = {
-                id: Date.now(), // Unikalne ID oparte na czasie
-                username,
-                password: simpleHash(password),
-                role: 'user',
-                teamId,
-                name,
-                status: 'pending' // Domyślnie oczekujący
-            };
-            this.data.users.push(newUser);
-            this.save();
-            return { success: true, msg: 'Konto utworzone. Oczekiwanie na akceptację.' };
-        }
-
-        getTeamMembers(adminId) {
-            const admin = this.data.users.find(u => u.id === adminId);
-            if (!admin || admin.role !== 'admin') return [];
-            return this.data.users.filter(u => u.teamId === admin.teamId && u.role === 'user');
-        }
-
-        updateUserStatus(userId, newStatus) {
-            const user = this.data.users.find(u => u.id === userId);
-            if (user) {
-                user.status = newStatus;
-                this.save();
-                return true;
-            }
-            return false;
-        }
-
-        // --- Metody Postępu ---
-        getProgress(userId) {
-            return this.data.progress[userId] || {};
-        }
-
-        toggleTask(userId, taskId, isChecked) {
-            if (!this.data.progress[userId]) this.data.progress[userId] = {};
-            
-            if (isChecked) this.data.progress[userId][taskId] = true;
-            else delete this.data.progress[userId][taskId];
-            
-            this.save();
-            return this.data.progress[userId];
-        }
-        
-        resetProgress(userId) {
-            if (this.data.progress[userId]) {
-                delete this.data.progress[userId];
-                this.save();
-            }
-        }
+// Pobierz wszystkich użytkowników
+function getUsersDB() {
+    const raw = localStorage.getItem(STORAGE_USERS);
+    if (!raw) {
+        // Inicjalizacja domyślnego admina, jeśli baza pusta
+        const defaultAdmin = {
+            id: 1, 
+            username: 'admin', 
+            password: simpleHash('123'), 
+            name: 'Druh Boruch', 
+            role: 'admin', 
+            teamId: 'team_las', 
+            status: 'active'
+        };
+        localStorage.setItem(STORAGE_USERS, JSON.stringify([defaultAdmin]));
+        return [defaultAdmin];
     }
+    return JSON.parse(raw);
+}
 
-    const db = new LocalDB();
-    let currentUser = null;
-    let currentViewUserId = null;
-    let cachedProgress = {};
+// Zapisz użytkowników
+function saveUsersDB(users) {
+    localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+}
+
+// Pobierz postęp (wszystkich)
+function getProgressDB() {
+    return JSON.parse(localStorage.getItem(STORAGE_PROGRESS) || '{}');
+}
+
+// Zapisz postęp
+function saveProgressDB(progress) {
+    localStorage.setItem(STORAGE_PROGRESS, JSON.stringify(progress));
+}
+
+// Prosty hash hasła (dla bezpieczeństwa w przeglądarce - nie jest to kryptografia bankowa)
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return hash.toString();
+}
+
+/**
+ * INICJALIZACJA
+ */
+window.onload = () => {
+    loadSettings();
     
-    // Symulowana baza zadań (w przypadku braku plików zewnętrznych)
-    let tasksDb = [
+    // Ładowanie zadań z plików zewnętrznych (jeśli istnieją)
+    db = [
         ...(typeof stopnieData !== 'undefined' ? stopnieData : []),
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
-    // --- LOGIKA AUTORYZACJI ---
-    let isRegisterMode = false;
-
-    function toggleAuthMode() {
-        isRegisterMode = !isRegisterMode;
-        const nameInp = document.getElementById('nameInp');
-        const teamSelect = document.getElementById('teamSelect');
-        const authBtn = document.getElementById('authBtn');
-        const authToggle = document.getElementById('authToggle');
-        const head = document.getElementById('authHeader');
-        const error = document.getElementById('loginError');
-
-        error.style.display = 'none';
-
-        if (isRegisterMode) {
-            nameInp.classList.remove('hidden-field');
-            teamSelect.classList.remove('hidden-field');
-            nameInp.required = true;
-            teamSelect.required = true;
-            authBtn.innerText = 'Zarejestruj się';
-            authToggle.innerText = 'Masz już konto? Zaloguj się';
-            head.innerText = 'Dołącz do nas!';
+    // Sprawdzenie sesji
+    const savedSession = sessionStorage.getItem(STORAGE_SESSION);
+    if (savedSession) {
+        // Odśwież dane usera z bazy (gdyby status się zmienił w innej karcie)
+        const sessionUser = JSON.parse(savedSession);
+        const users = getUsersDB();
+        const freshUser = users.find(u => u.id === sessionUser.id);
+        
+        if (freshUser) {
+            currentUser = freshUser;
+            initAppAfterLogin();
         } else {
-            nameInp.classList.add('hidden-field');
-            teamSelect.classList.add('hidden-field');
-            nameInp.required = false;
-            teamSelect.required = false;
-            authBtn.innerText = 'Zaloguj się';
-            authToggle.innerText = 'Nie masz konta? Zarejestruj się';
-            head.innerText = 'Czuwaj!';
+            handleLogout(); // Użytkownik został usunięty
         }
+    } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
     }
+};
 
-    function handleAuth() {
-        const userInp = document.getElementById('userInp').value.trim();
-        const passInp = document.getElementById('passInp').value;
-        const error = document.getElementById('loginError');
+/**
+ * SYSTEM LOGOWANIA I REJESTRACJI
+ */
+function toggleAuthMode() {
+    isRegisterMode = !isRegisterMode;
+    const nameInp = document.getElementById('nameInp');
+    const teamSelect = document.getElementById('teamSelect');
+    const authBtn = document.getElementById('authBtn');
+    const authToggle = document.getElementById('authToggle');
+    const title = document.getElementById('authTitle');
+    const error = document.getElementById('loginError');
 
-        if (!userInp || !passInp) {
-            error.innerText = "Wypełnij login i hasło";
-            error.style.display = 'block';
-            return;
-        }
+    error.style.display = 'none';
+    userInp.value = ''; passInp.value = ''; nameInp.value = '';
 
-        if (isRegisterMode) {
-            // REJESTRACJA
-            const nameInp = document.getElementById('nameInp').value.trim();
-            const teamSelect = document.getElementById('teamSelect').value;
-
-            if (!nameInp || !teamSelect) {
-                error.innerText = "Wypełnij wszystkie pola";
-                error.style.display = 'block';
-                return;
-            }
-
-            const result = db.registerUser(userInp, passInp, nameInp, teamSelect);
-            if (result.success) {
-                alert(result.msg);
-                toggleAuthMode(); // Wróć do logowania
-            } else {
-                error.innerText = result.msg;
-                error.style.display = 'block';
-            }
-
-        } else {
-            // LOGOWANIE
-            const user = db.findUser(userInp, passInp);
-            
-            if (user) {
-                if (user.status !== 'active') {
-                    error.innerText = "Konto oczekuje na akceptację drużynowego.";
-                    error.style.display = 'block';
-                    return;
-                }
-                
-                currentUser = user;
-                sessionStorage.setItem('session_user', JSON.stringify(currentUser));
-                error.style.display = 'none';
-                initApp();
-            } else {
-                error.innerText = "Błędny login lub hasło";
-                error.style.display = 'block';
-            }
-        }
+    if (isRegisterMode) {
+        title.innerText = "Dołącz do drużyny!";
+        nameInp.style.display = 'block';
+        teamSelect.style.display = 'block';
+        authBtn.innerText = "Zarejestruj się";
+        authToggle.innerText = "Masz już konto? Zaloguj się";
+    } else {
+        title.innerText = "Czuwaj!";
+        nameInp.style.display = 'none';
+        teamSelect.style.display = 'none';
+        authBtn.innerText = "Zaloguj się";
+        authToggle.innerText = "Nie masz konta? Zarejestruj się";
     }
+}
 
-    // --- INICJALIZACJA APLIKACJI ---
-    window.onload = () => {
-        loadSettings();
-        const savedSession = sessionStorage.getItem('session_user');
-        if (savedSession) {
-            currentUser = JSON.parse(savedSession);
-            // Sprawdź czy user nadal istnieje w bazie (np. po resecie localStorage)
-            const freshUser = db.data.users.find(u => u.id === currentUser.id);
-            if(freshUser) {
-                currentUser = freshUser;
-                initApp();
-            } else {
-                sessionStorage.removeItem('session_user');
-                document.getElementById('loginOverlay').style.display = 'flex';
-            }
-        } else {
-            document.getElementById('loginOverlay').style.display = 'flex';
-        }
-    };
+function handleAuthAction() {
+    if (isRegisterMode) registerUser();
+    else loginUser();
+}
 
-    function initApp() {
-        document.getElementById('loginOverlay').style.display = 'none';
-        currentViewUserId = currentUser.id;
+function registerUser() {
+    const username = document.getElementById('userInp').value.trim();
+    const password = document.getElementById('passInp').value;
+    const name = document.getElementById('nameInp').value.trim();
+    const teamId = document.getElementById('teamSelect').value;
+    const error = document.getElementById('loginError');
 
-        if (currentUser.role === 'admin') {
-            renderAdminDashboard();
-        } else {
-            goHome();
-            renderSidebar();
-        }
-    }
-
-    function handleLogout() {
-        sessionStorage.removeItem('session_user');
-        location.reload();
-    }
-
-    // --- DASHBOARD ADMINA ---
-    function renderAdminDashboard() {
-        // Pobieramy wszystkich członków drużyny
-        const members = db.getTeamMembers(currentUser.id);
-        const activeMembers = members.filter(m => m.status === 'active');
-        const pendingMembers = members.filter(m => m.status === 'pending');
-
-        let html = `
-            <div class="welcome-header">
-                <h2>Czuwaj, ${currentUser.name}!</h2>
-                <p>Panel Drużynowego (${db.data.teams.find(t=>t.id===currentUser.teamId)?.name || 'Drużyna'})</p>
-            </div>
-            
-            ${pendingMembers.length > 0 ? `
-            <div class="home-card" style="margin-bottom: 30px; border: 2px solid var(--accent);">
-                <h3 style="color: var(--accent);">⚠️ Oczekujący na akceptację</h3>
-                <div style="display: grid; gap: 10px;">
-                    ${pendingMembers.map(m => `
-                        <div class="user-list-btn" style="cursor: default; background: #fff3e0;">
-                            <span>${m.name} <small>(${m.username})</small></span>
-                            <div>
-                                <button class="action-btn btn-accept" onclick="decideUser(${m.id}, 'active')">Zatwierdź</button>
-                                <button class="action-btn btn-reject" onclick="decideUser(${m.id}, 'rejected')">Odrzuć</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>` : ''}
-
-            <div class="home-card">
-                <h3>Twoja drużyna</h3>
-                <p style="color:var(--text-muted); margin-bottom: 20px;">Wybierz harcerza, aby zarządzać jego sprawnościami.</p>
-                <div style="display: grid; gap: 10px;">
-        `;
-
-        if (activeMembers.length === 0) html += `<p>Brak aktywnych członków.</p>`;
-
-        activeMembers.forEach(m => {
-            html += `
-                <button onclick="switchToUser(${m.id}, '${m.name}')" class="user-list-btn">
-                    <span>👤 ${m.name}</span>
-                    <span style="font-size: 0.8em; color: var(--primary);">Zarządzaj ></span>
-                </button>
-            `;
-        });
-
-        html += `</div></div>`;
-        document.getElementById('contentArea').innerHTML = html;
-        document.getElementById('navList').innerHTML = ''; 
-    }
-
-    function decideUser(userId, status) {
-        if(status === 'rejected') {
-            if(!confirm("Czy na pewno chcesz odrzucić to konto?")) return;
-            // W prawdziwej bazie byśmy usuwali lub oznaczali jako zablokowane. 
-            // Tu po prostu zmieniamy status, user nie wejdzie.
-        }
-        db.updateUserStatus(userId, status);
-        renderAdminDashboard(); // Odśwież widok
-    }
-
-    function switchToUser(userId, userName) {
-        currentViewUserId = userId;
-        // Załaduj postęp z LS
-        cachedProgress = db.getProgress(userId);
-        
-        goHome();
-        renderSidebar();
-        
-        const header = document.querySelector('.welcome-header p');
-        if(header) header.innerHTML = `Edytujesz profil: <strong style="color:var(--primary)">${userName}</strong> <br><a href="#" onclick="renderAdminDashboard()" style="font-size:0.8em; color:var(--text-muted)">[Wróć do listy]</a>`;
-    }
-
-    // --- UI & LOGIKA ZADAŃ ---
-
-    function goHome() {
-        // Jeśli nie mamy postępu w cache, pobierz
-        cachedProgress = db.getProgress(currentViewUserId);
-        
-        updateUIStats();
-        
-        document.getElementById('contentArea').innerHTML = `
-            <div class="welcome-header">
-                <h2>Czuwaj!</h2>
-                <p>${currentUser.role === 'admin' ? 'Tryb edycji podopiecznego' : 'Książeczka Harcerska'}</p>
-                ${currentUser.role === 'admin' ? `<button onclick="renderAdminDashboard()" style="background:var(--accent); border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer; margin-top:10px;">⬅ Wróć do drużyny</button>` : ''}
-            </div>
-            <div class="home-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0; color:var(--text-main);">Postęp zdobytych sprawności</h3>
-                    <span id="total-progress" style="font-weight:bold; color:var(--primary); font-size:1.2em;">0%</span>
-                </div>
-                <div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>
-            </div>`;
-    }
-
-    function renderSidebar(filterText = '') {
-        const list = document.getElementById('navList');
-        list.innerHTML = '';
-        const grouped = {};
-        tasksDb.forEach(item => { if (!grouped[item.category]) grouped[item.category] = []; grouped[item.category].push(item); });
-
-        Object.keys(grouped).forEach(cat => {
-            const filtered = grouped[cat].filter(i => i.title.toLowerCase().includes(filterText.toLowerCase()));
-            if (filtered.length > 0) {
-                const head = document.createElement('li');
-                head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
-                filtered.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'nav-item';
-                    li.id = `nav-item-${item.id}`;
-                    li.innerHTML = `<span>${item.title}</span><span class="nav-progress" id="nav-prog-${item.id}">...</span>`;
-                    li.onclick = () => loadContent(item.id);
-                    list.appendChild(li);
-                });
-            }
-        });
-        updateUIStats();
-    }
-
-    function loadContent(id) {
-        cachedProgress = db.getProgress(currentViewUserId);
-        const item = tasksDb.find(x => x.id === id);
-        
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.getElementById(`nav-item-${id}`)?.classList.add('active');
-        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
-
-        let imagesHtml = '';
-        if (item.images && item.images.length > 0) {
-            imagesHtml = '<div class="image-gallery">';
-            item.images.forEach(img => { imagesHtml += `<img src="${img}" class="gallery-img" onclick="openPhoto('${img}')" onerror="this.style.display='none'">`; });
-            imagesHtml += '</div>';
-        }
-
-        let html = `
-            <div class="header-section">
-                <span class="cat-badge">${item.category}</span>
-                <h2>${item.title}</h2>
-                ${imagesHtml}
-                <div style="margin-top:25px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:600; color:var(--text-muted); font-size:0.9em;">
-                        <span>Postęp</span><span id="detail-prog-val">0%</span>
-                    </div>
-                    <div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>
-                </div>
-            </div>`;
-
-        item.groups.forEach((g, gIdx) => {
-            html += `<div class="task-group"><div class="group-title">${g.name}</div>`;
-            g.tasks.forEach((t, tIdx) => {
-                const tId = `${id}-${gIdx}-${tIdx}`;
-                const isDone = cachedProgress[tId];
-                // Blokada dla usera, odblokowane dla admina
-                const disabledAttr = currentUser.role !== 'admin' ? 'disabled' : ''; 
-                const cursorStyle = currentUser.role !== 'admin' ? 'cursor: default;' : '';
-
-                html += `
-                    <label class="cb-container" style="${cursorStyle}">
-                        <input type="checkbox" ${isDone ?'checked':''} ${disabledAttr} onchange="toggleTask('${tId}','${id}')">
-                        <div class="checkmark"></div>
-                        <span class="task-text">${t.replace(/\*/g, '★')}</span>
-                    </label>`;
-            });
-            html += `</div>`;
-        });
-        document.getElementById('contentArea').innerHTML = html;
-        updateItemProgress(item.id);
-        document.querySelector('.main').scrollTop = 0;
-    }
-// Funkcja wywoływana przez admina w panelu drużyny
-async function deleteUser(targetUserId) {
-    if (!confirm("Czy na pewno chcesz CAŁKOWICIE usunąć tego użytkownika i jego postępy? Te zmiany są nieodwracalne.")) {
+    if (!username || !password || !name || !teamId) {
+        error.innerText = "Wypełnij wszystkie pola!";
+        error.style.display = 'block';
         return;
     }
 
-    try {
-        const response = await fetch('http://localhost:3000/api/delete-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                adminId: currentUser.id,
-                targetUserId: targetUserId
-            })
-        });
-
-        const result = await response.json();
-        if (result.success) {
-            alert("Użytkownik został usunięty.");
-            // Odśwież widok panelu admina
-            renderAdminDashboard(); 
-        } else {
-            alert("Błąd: " + result.message);
-        }
-    } catch (error) {
-        console.error("Błąd połączenia:", error);
+    const users = getUsersDB();
+    if (users.find(u => u.username === username)) {
+        error.innerText = "Ten login jest zajęty.";
+        error.style.display = 'block';
+        return;
     }
+
+    const newUser = {
+        id: Date.now(), // Unikalne ID oparte na czasie
+        username: username,
+        password: simpleHash(password),
+        name: name,
+        role: 'user', // Zawsze 'user' przy rejestracji
+        teamId: teamId,
+        status: 'pending' // Domyślny status
+    };
+
+    users.push(newUser);
+    saveUsersDB(users);
+
+    // Automatyczne przełączenie na logowanie
+    alert("Konto założone! Poczekaj na akceptację drużynowego.");
+    toggleAuthMode();
 }
 
-// Zaktualizowana funkcja decydowania o statusie (np. dla przycisku Odrzuć)
-async function decideUser(userId, status) {
-    if (status === 'rejected') {
-        // Jeśli admin odrzuca kogoś, od razu go usuwamy
-        await deleteUser(userId);
+function loginUser() {
+    const username = document.getElementById('userInp').value.trim();
+    const password = document.getElementById('passInp').value;
+    const error = document.getElementById('loginError');
+
+    const users = getUsersDB();
+    const user = users.find(u => u.username === username && u.password === simpleHash(password));
+
+    if (user) {
+        currentUser = user;
+        sessionStorage.setItem(STORAGE_SESSION, JSON.stringify(currentUser));
+        error.style.display = 'none';
+        initAppAfterLogin();
     } else {
-        // Jeśli akceptuje - standardowa zmiana statusu
-        const response = await fetch('http://localhost:3000/api/change-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ adminId: currentUser.id, targetUserId: userId, newStatus: status })
-        });
-        if (response.ok) renderAdminDashboard();
+        error.innerText = "Błędny login lub hasło.";
+        error.style.display = 'block';
     }
 }
-    function toggleTask(taskId, itemId) {
-        if (currentUser.role !== 'admin') {
-            return; // Bezpiecznik UI, input i tak jest disabled
-        }
 
-        const isChecked = !cachedProgress[taskId]; // Toggle
-        cachedProgress = db.toggleTask(currentViewUserId, taskId, isChecked);
+function handleLogout() {
+    sessionStorage.removeItem(STORAGE_SESSION);
+    location.reload();
+}
+
+/**
+ * GŁÓWNA LOGIKA UI
+ */
+function initAppAfterLogin() {
+    document.getElementById('loginOverlay').style.display = 'none';
+    currentViewUserId = currentUser.id;
+
+    // Sytuacja 1: Konto nieaktywne (pending)
+    if (currentUser.status !== 'active') {
+        renderPendingScreen();
+        return;
+    }
+
+    // Sytuacja 2: Admin
+    if (currentUser.role === 'admin') {
+        renderAdminDashboard();
+        return;
+    }
+
+    // Sytuacja 3: Zwykły aktywny harcerz
+    goHome();
+    renderSidebar();
+}
+
+/**
+ * EKRAN OCZEKIWANIA (Dla statusu 'pending')
+ */
+function renderPendingScreen() {
+    const teamName = TEAMS.find(t => t.id === currentUser.teamId)?.name || 'Twojej drużyny';
+    
+    document.getElementById('navList').innerHTML = ''; // Czyścimy sidebar
+    document.getElementById('contentArea').innerHTML = `
+        <div class="welcome-header">
+            <h2>Czuwaj, ${currentUser.name}!</h2>
+        </div>
+        <div class="home-card" style="text-align: center;">
+            <div style="font-size: 50px; margin-bottom: 20px;">⏳</div>
+            <h3>Oczekiwanie na przydział</h3>
+            <p>Twoje konto czeka na akceptację przez drużynowego szczepu <strong>${teamName}</strong>.</p>
+            <p>Zajrzyj tu później!</p>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <small style="color: var(--text-muted); display: block; margin-bottom: 10px;">
+                    Pomyliłeś drużyny?
+                </small>
+                <button onclick="deleteMyAccount()" class="settings-btn-action btn-reset" style="width: auto; display: inline-block;">
+                    Usuń konto i zacznij od nowa
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * PANEL ADMINA
+ */
+function renderAdminDashboard() {
+    const users = getUsersDB();
+    const myTeamId = currentUser.teamId;
+
+    // Filtrujemy ludzi z mojej drużyny (z pominięciem samego siebie)
+    const pendingUsers = users.filter(u => u.teamId === myTeamId && u.status === 'pending' && u.id !== currentUser.id);
+    const activeUsers = users.filter(u => u.teamId === myTeamId && u.status === 'active' && u.role === 'user');
+
+    let html = `
+        <div class="welcome-header">
+            <h2>Panel Drużynowego</h2>
+            <p>Zarządzanie drużyną: <strong>${TEAMS.find(t => t.id === myTeamId)?.name}</strong></p>
+        </div>
+    `;
+
+    // Sekcja oczekujących
+    if (pendingUsers.length > 0) {
+        html += `<div class="home-card" style="border: 2px solid var(--accent);">
+            <h3 style="color: var(--accent);">⚠️ Oczekujący na przyjęcie (${pendingUsers.length})</h3>
+            <div style="display: grid; gap: 10px;">`;
         
-        updateItemProgress(itemId);
-        // Po odświeżeniu postępu paska bocznego:
-        const navEl = document.getElementById(`nav-prog-${itemId}`);
-        if(navEl) {
-            let total = 0, done = 0;
-            const item = tasksDb.find(x => x.id === itemId);
-            item.groups.forEach((g, gIdx) => { g.tasks.forEach((t, tIdx) => { total++; if(cachedProgress[`${itemId}-${gIdx}-${tIdx}`]) done++; }); });
-            const pct = total > 0 ? Math.round((done/total)*100) : 0;
-            navEl.textContent = pct+'%';
-        }
-        // Update głównego paska (jeśli widoczny w home) - tutaj jesteśmy w szczegółach, więc nie trzeba
-    }
-
-    function updateItemProgress(itemId) {
-        const item = tasksDb.find(x => x.id === itemId);
-        if(!item) return;
-        const p = cachedProgress;
-        let total = 0, done = 0;
-        item.groups.forEach((g, gIdx) => { g.tasks.forEach((t, tIdx) => { total++; if(p[`${itemId}-${gIdx}-${tIdx}`]) done++; }); });
-        const pct = total > 0 ? Math.round((done/total)*100) : 0;
-        if(document.getElementById('detail-bar')) document.getElementById('detail-bar').style.width = pct+'%';
-        if(document.getElementById('detail-prog-val')) document.getElementById('detail-prog-val').textContent = pct+'%';
-    }
-
-    function updateUIStats() {
-        if(!currentViewUserId) return;
-        const p = cachedProgress;
-        let total = 0, done = 0;
-        tasksDb.forEach(item => {
-            let iTotal = 0, iDone = 0;
-            item.groups.forEach((g, gIdx) => { g.tasks.forEach((t, tIdx) => { total++; iTotal++; if(p[`${item.id}-${gIdx}-${tIdx}`]) { done++; iDone++; } }); });
-            const navEl = document.getElementById(`nav-prog-${item.id}`);
-            if(navEl) navEl.textContent = (iTotal > 0 ? Math.round((iDone/iTotal)*100) : 0) + '%';
+        pendingUsers.forEach(u => {
+            html += `
+                <div style="background: var(--bg-input); padding: 15px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <span><strong>${u.name}</strong> (${u.username})</span>
+                    <div>
+                        <button onclick="changeUserStatus(${u.id}, 'active')" style="background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-right: 5px;">✔ Przyjmij</button>
+                        <button onclick="deleteUser(${u.id})" style="background: #ffebee; color: #d32f2f; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">Usuń</button>
+                    </div>
+                </div>`;
         });
-        const totalPct = total > 0 ? Math.round((done/total)*100) : 0;
-        if(document.getElementById('total-bar')) document.getElementById('total-bar').style.width = totalPct+'%';
-        if(document.getElementById('total-progress')) document.getElementById('total-progress').textContent = totalPct+'%';
+        html += `</div></div>`;
     }
 
-    // --- FUNKCJE POMOCNICZE UI ---
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-    function openPhoto(src) {
-        const modal = document.getElementById('photoModal');
-        document.getElementById('modalImg').src = src;
-        modal.style.display = "flex";
-        document.getElementById('modalImg').classList.remove('zoomed');
+    // Sekcja aktywnych
+    html += `<div class="home-card">
+        <h3>Twoja drużyna</h3>
+        <p style="color:var(--text-muted); margin-bottom: 20px;">Kliknij harcerza, aby edytować jego sprawności.</p>
+        <div style="display: grid; gap: 10px;">`;
+
+    if (activeUsers.length === 0) {
+        html += `<p style="text-align:center; color:var(--text-muted);">Brak harcerzy w drużynie.</p>`;
+    } else {
+        activeUsers.forEach(m => {
+            html += `
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="switchToUser(${m.id}, '${m.name}')" 
+                        style="flex: 1; padding: 15px; background: var(--bg-input); border: 1px solid var(--border-color); 
+                               border-radius: 10px; cursor: pointer; text-align: left; font-weight: bold; 
+                               color: var(--text-main); display: flex; justify-content: space-between; align-items: center;">
+                        <span>👤 ${m.name}</span>
+                        <span style="font-size: 0.8em; color: var(--primary);">Zarządzaj ></span>
+                    </button>
+                    <button onclick="confirmDeleteUser(${m.id}, '${m.name}')" 
+                        style="width: 50px; background: #ffebee; border: 1px solid #ffcdd2; border-radius: 10px; cursor: pointer; font-size: 1.2em;">
+                        🗑️
+                    </button>
+                </div>
+            `;
+        });
     }
-    function closeModal() { document.getElementById('photoModal').style.display = "none"; }
-    function toggleZoom(event) { event.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
-    function filterNav() { renderSidebar(document.getElementById('searchInput').value); }
+
+    html += `</div></div>`;
     
-    // Ustawienia
-    function openSettings() { toggleSettingsModal(true); }
-    function closeSettings(e) { if(e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
-    function toggleSettingsModal(show) { document.getElementById('settingsModal').style.display = show ? 'flex' : 'none'; }
-    function loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('nkih_settings')) || { dark: false, largeText: false };
-        if(settings.dark) { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
-        if(settings.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
+    document.getElementById('contentArea').innerHTML = html;
+    document.getElementById('navList').innerHTML = '';
+}
+
+// Zmiana statusu (np. akceptacja)
+function changeUserStatus(userId, newStatus) {
+    const users = getUsersDB();
+    const idx = users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+        users[idx].status = newStatus;
+        saveUsersDB(users);
+        renderAdminDashboard();
     }
-    function saveSettings() {
-        const settings = { dark: document.body.classList.contains('dark-mode'), largeText: document.body.classList.contains('large-text') };
-        localStorage.setItem('nkih_settings', JSON.stringify(settings));
+}
+
+// Usuwanie innego użytkownika (przez admina)
+function confirmDeleteUser(userId, userName) {
+    if(confirm(`Czy na pewno chcesz usunąć harcerza ${userName}? Postęp zostanie utracony.`)) {
+        deleteUser(userId);
     }
-    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); saveSettings(); }
-    function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
+}
+
+function deleteUser(userId) {
+    let users = getUsersDB();
+    users = users.filter(u => u.id !== userId); // Usuń usera
+    saveUsersDB(users);
+
+    // Usuń też postępy tego usera
+    const allProgress = getProgressDB();
+    delete allProgress[userId];
+    saveProgressDB(allProgress);
+
+    renderAdminDashboard();
+}
+
+// Usuwanie własnego konta
+function deleteMyAccount() {
+    if(confirm("Czy na pewno chcesz usunąć swoje konto? Ta operacja jest nieodwracalna.")) {
+        deleteUser(currentUser.id);
+        handleLogout();
+    }
+}
+
+// Przejście do widoku edycji harcerza
+function switchToUser(userId, userName) {
+    currentViewUserId = userId;
+    goHome();
+    renderSidebar();
     
-    function resetProgress() {
-        if(currentUser.role === 'admin') {
-            if(confirm(`Czy na pewno zresetować postęp użytkownika (ID: ${currentViewUserId})?`)) {
-                db.resetProgress(currentViewUserId);
-                switchToUser(currentViewUserId, '...'); // Reload
-            }
-        } else {
-            alert("Tylko admin może resetować postępy.");
+    // Banner informacyjny
+    const header = document.querySelector('.welcome-header p');
+    if(header) {
+        header.innerHTML = `Edytujesz profil: <strong style="color:var(--primary)">${userName}</strong> <br>
+        <a href="#" onclick="renderAdminDashboard()" style="font-size:0.9em; color:var(--text-muted); text-decoration:underline;">[⬅ Wróć do listy drużyny]</a>`;
+    }
+}
+
+/**
+ * WIDOKI HARCERZA I LOGIKA ZADAŃ
+ */
+function goHome() {
+    updateUIStats();
+    
+    const isEditingOthers = currentUser.role === 'admin' && currentViewUserId !== currentUser.id;
+    const title = isEditingOthers ? 'Tryb edycji podopiecznego' : 'Książeczka Harcerska';
+    const subBtn = isEditingOthers ? `<button onclick="renderAdminDashboard()" style="background:var(--accent); border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer; margin-top:10px;">⬅ Wróć</button>` : '';
+
+    document.getElementById('contentArea').innerHTML = `
+        <div class="welcome-header">
+            <h2>Czuwaj!</h2>
+            <p>${title}</p>
+            ${subBtn}
+        </div>
+        <div class="home-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--text-main);">Postęp zdobytych sprawności</h3>
+                <span id="total-progress" style="font-weight:bold; color:var(--primary); font-size:1.2em;">0%</span>
+            </div>
+            <div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>
+        </div>`;
+}
+
+function renderSidebar(filterText = '') {
+    const list = document.getElementById('navList');
+    list.innerHTML = '';
+    const grouped = {};
+    db.forEach(item => { if (!grouped[item.category]) grouped[item.category] = []; grouped[item.category].push(item); });
+
+    Object.keys(grouped).forEach(cat => {
+        const filtered = grouped[cat].filter(i => i.title.toLowerCase().includes(filterText.toLowerCase()));
+        if (filtered.length > 0) {
+            const head = document.createElement('li');
+            head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
+            filtered.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'nav-item';
+                li.id = `nav-item-${item.id}`;
+                li.innerHTML = `<span>${item.title}</span><span class="nav-progress" id="nav-prog-${item.id}">...</span>`;
+                li.onclick = () => loadContent(item.id);
+                list.appendChild(li);
+            });
         }
-    }
-</script>
+    });
+    updateUIStats();
+}
 
+function loadContent(id) {
+    const item = db.find(x => x.id === id);
+    const allProgress = getProgressDB();
+    const userProgress = allProgress[currentViewUserId] || {};
+
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`nav-item-${id}`)?.classList.add('active');
+    if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+
+    let imagesHtml = '';
+    if (item.images && item.images.length > 0) {
+        imagesHtml = '<div class="image-gallery">';
+        item.images.forEach(img => { imagesHtml += `<img src="${img}" class="gallery-img" onclick="openPhoto('${img}')" onerror="this.style.display='none'">`; });
+        imagesHtml += '</div>';
+    }
+
+    let html = `
+        <div class="header-section">
+            <span class="cat-badge">${item.category}</span>
+            <h2>${item.title}</h2>
+            ${imagesHtml}
+            <div style="margin-top:25px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-weight:600; color:var(--text-muted); font-size:0.9em;">
+                    <span>Postęp</span><span id="detail-prog-val">0%</span>
+                </div>
+                <div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>
+            </div>
+        </div>`;
+
+    item.groups.forEach((g, gIdx) => {
+        html += `<div class="task-group"><div class="group-title">${g.name}</div>`;
+        g.tasks.forEach((t, tIdx) => {
+            const taskId = `${id}-${gIdx}-${tIdx}`;
+            const isDone = userProgress[taskId];
+            // Tylko admin może zmieniać checkboxy
+            const isAdmin = currentUser.role === 'admin';
+            const disabledAttr = isAdmin ? '' : 'disabled';
+            const cursorStyle = isAdmin ? '' : 'cursor: default;';
+
+            html += `
+                <label class="cb-container" style="${cursorStyle}">
+                    <input type="checkbox" ${isDone ? 'checked' : ''} ${disabledAttr} onchange="toggleTask('${taskId}')">
+                    <div class="checkmark"></div>
+                    <span class="task-text">${t.replace(/\*/g, '★')}</span>
+                </label>`;
+        });
+        html += `</div>`;
+    });
+    document.getElementById('contentArea').innerHTML = html;
+    updateItemProgress(item.id);
+    document.querySelector('.main').scrollTop = 0;
+}
+
+function toggleTask(taskId) {
+    if (currentUser.role !== 'admin') return;
+
+    const allProgress = getProgressDB();
+    if (!allProgress[currentViewUserId]) allProgress[currentViewUserId] = {};
+    
+    // Przełącz stan
+    if (allProgress[currentViewUserId][taskId]) {
+        delete allProgress[currentViewUserId][taskId];
+    } else {
+        allProgress[currentViewUserId][taskId] = true;
+    }
+
+    saveProgressDB(allProgress);
+    
+    // Odśwież UI
+    const itemId = taskId.split('-')[0];
+    updateItemProgress(itemId);
+}
+
+function updateItemProgress(itemId) {
+    const item = db.find(x => x.id === itemId);
+    if (!item) return;
+    
+    const allProgress = getProgressDB();
+    const userProgress = allProgress[currentViewUserId] || {};
+
+    let total = 0, done = 0;
+    item.groups.forEach((g, gIdx) => { 
+        g.tasks.forEach((t, tIdx) => { 
+            total++; 
+            if (userProgress[`${itemId}-${gIdx}-${tIdx}`]) done++; 
+        }); 
+    });
+
+    const pct = total > 0 ? Math.round((done/total)*100) : 0;
+    if (document.getElementById('detail-bar')) document.getElementById('detail-bar').style.width = pct + '%';
+    if (document.getElementById('detail-prog-val')) document.getElementById('detail-prog-val').textContent = pct + '%';
+    const navEl = document.getElementById(`nav-prog-${itemId}`);
+    if (navEl) navEl.textContent = pct + '%';
+}
+
+function updateUIStats() {
+    if (!currentViewUserId) return;
+    
+    const allProgress = getProgressDB();
+    const userProgress = allProgress[currentViewUserId] || {};
+
+    let total = 0, done = 0;
+    db.forEach(item => {
+        let iTotal = 0, iDone = 0;
+        item.groups.forEach((g, gIdx) => { 
+            g.tasks.forEach((t, tIdx) => { 
+                total++; iTotal++; 
+                if (userProgress[`${item.id}-${gIdx}-${tIdx}`]) { done++; iDone++; } 
+            }); 
+        });
+        const navEl = document.getElementById(`nav-prog-${item.id}`);
+        if (navEl) navEl.textContent = (iTotal > 0 ? Math.round((iDone/iTotal)*100) : 0) + '%';
+    });
+
+    const totalPct = total > 0 ? Math.round((done/total)*100) : 0;
+    if (document.getElementById('total-bar')) document.getElementById('total-bar').style.width = totalPct + '%';
+    if (document.getElementById('total-progress')) document.getElementById('total-progress').textContent = totalPct + '%';
+}
+
+/**
+ * FUNKCJE INTERFEJSOWE (Bez zmian logicznych)
+ */
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+function openPhoto(src) { document.getElementById('modalImg').src = src; document.getElementById('photoModal').style.display = "flex"; document.getElementById('modalImg').classList.remove('zoomed'); }
+function closeModal() { document.getElementById('photoModal').style.display = "none"; }
+function toggleZoom(event) { event.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
+function filterNav() { renderSidebar(document.getElementById('searchInput').value); }
+function openSettings() { toggleSettingsModal(true); }
+function closeSettings(e) { if(e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
+function toggleSettingsModal(show) { document.getElementById('settingsModal').style.display = show ? 'flex' : 'none'; }
+
+function loadSettings() {
+    const settings = JSON.parse(localStorage.getItem(STORAGE_SETTINGS)) || { dark: false, largeText: false };
+    if(settings.dark) { document.body.classList.add('dark-mode'); document.getElementById('darkModeToggle').checked = true; }
+    if(settings.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
+}
+function saveSettings() {
+    const settings = { dark: document.body.classList.contains('dark-mode'), largeText: document.body.classList.contains('large-text') };
+    localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(settings));
+}
+function toggleDarkMode() { document.body.classList.toggle('dark-mode'); saveSettings(); }
+function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
+
+</script>
 </body>
 </html>
