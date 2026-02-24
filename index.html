@@ -3,161 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Książeczka Harcerska - Leśna Szkółka</title>
+    <title>Ksiazeczka Harcerska - Lesna Szkolka</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-dark: #1b3a28; --primary: #2e7d32; --primary-light: #4caf50; --accent: #ff6f00;
-            --bg-body: #f7f9f5; --bg-panel: #ffffff; --bg-input: #f8fafc;
-            --text-main: #2c3e50; --text-muted: #7f8c8d; --text-inverse: #ffffff;
-            --border-color: #e2e8f0; --shadow-soft: 0 8px 24px rgba(0,0,0,0.08);
-            --font-size-base: 16px; --border-radius: 16px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --primary-dark:#1b3a28;--primary:#2e7d32;--primary-light:#4caf50;--accent:#ff6f00;
+            --bg-body:#f7f9f5;--bg-panel:#ffffff;--bg-input:#f8fafc;
+            --text-main:#2c3e50;--text-muted:#7f8c8d;
+            --border-color:#e2e8f0;--shadow-soft:0 8px 24px rgba(0,0,0,0.08);
+            --font-size-base:16px;--border-radius:16px;
+            --transition:all 0.3s cubic-bezier(0.25,0.8,0.25,1);
         }
         body.dark-mode {
-            --primary-dark: #4caf50; --primary: #66bb6a; --primary-light: #81c784; --accent: #ffb74d;
-            --bg-body: #121212; --bg-panel: #1e1e1e; --bg-input: #2c2c2c;
-            --text-main: #e0e0e0; --text-muted: #a0a0a0; --text-inverse: #121212;
-            --border-color: #333333; --shadow-soft: 0 8px 24px rgba(0,0,0,0.4);
+            --primary-dark:#4caf50;--primary:#66bb6a;--primary-light:#81c784;--accent:#ffb74d;
+            --bg-body:#121212;--bg-panel:#1e1e1e;--bg-input:#2c2c2c;
+            --text-main:#e0e0e0;--text-muted:#a0a0a0;
+            --border-color:#333333;--shadow-soft:0 8px 24px rgba(0,0,0,0.4);
         }
-        body.large-text { --font-size-base: 20px; }
-        body { margin:0; font-family:'Open Sans',sans-serif; background-color:var(--bg-body); color:var(--text-main); display:flex; height:100vh; overflow:hidden; font-size:var(--font-size-base); transition:background-color 0.3s,color 0.3s; }
-        ::-webkit-scrollbar{width:8px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:#90a4ae;border-radius:4px} ::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+        body.large-text{--font-size-base:20px;}
+        body{margin:0;font-family:'Open Sans',sans-serif;background-color:var(--bg-body);color:var(--text-main);display:flex;height:100vh;overflow:hidden;font-size:var(--font-size-base);transition:background-color 0.3s,color 0.3s;}
+        ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#90a4ae;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:var(--primary)}
+        .settings-fab{position:fixed;bottom:20px;left:20px;width:56px;height:56px;background-color:var(--primary);color:white;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:24px;box-shadow:0 4px 12px rgba(0,0,0,0.3);cursor:pointer;z-index:4000;transition:transform 0.2s,background-color 0.2s;border:none;}
+        .settings-fab:hover{transform:scale(1.1) rotate(45deg);background-color:var(--primary-dark);}
+        .settings-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:4001;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
+        .settings-content{background:var(--bg-panel);padding:30px;border-radius:20px;width:300px;box-shadow:0 20px 50px rgba(0,0,0,0.5);text-align:center;position:relative;color:var(--text-main);}
+        .settings-content h3{margin-top:0;font-family:'Montserrat',sans-serif;color:var(--primary);}
+        .settings-option{display:flex;justify-content:space-between;align-items:center;margin:15px 0;padding:10px;background:var(--bg-body);border-radius:10px;}
+        .settings-option span{font-weight:600;font-size:0.9em;}
+        .switch{position:relative;display:inline-block;width:50px;height:26px;}
+        .switch input{opacity:0;width:0;height:0;}
+        .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:#ccc;transition:.4s;border-radius:34px;}
+        .slider:before{position:absolute;content:"";height:18px;width:18px;left:4px;bottom:4px;background-color:white;transition:.4s;border-radius:50%;}
+        input:checked+.slider{background-color:var(--primary);}
+        input:checked+.slider:before{transform:translateX(24px);}
+        .settings-btn-action{width:100%;padding:12px;margin-top:10px;border:none;border-radius:10px;font-weight:bold;cursor:pointer;transition:0.2s;font-size:0.9rem;}
+        .btn-reset{background:#ffebee;color:#d32f2f;}.btn-reset:hover{background:#ffcdd2;}
+        .btn-logout{background:var(--primary);color:white;margin-top:5px;}.btn-logout:hover{opacity:0.9;}
+        .close-settings{position:absolute;top:10px;right:15px;font-size:24px;cursor:pointer;color:var(--text-muted);}
 
-        /* FAB */
-        .settings-fab { position:fixed; bottom:20px; left:20px; width:56px; height:56px; background-color:var(--primary); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:24px; box-shadow:0 4px 12px rgba(0,0,0,0.3); cursor:pointer; z-index:4000; transition:transform 0.2s,background-color 0.2s; border:none; }
-        .settings-fab:hover { transform:scale(1.1) rotate(45deg); background-color:var(--primary-dark); }
-
-        /* SETTINGS MODAL */
-        .settings-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:4001; justify-content:center; align-items:center; backdrop-filter:blur(4px); }
-        .settings-content { background:var(--bg-panel); padding:30px; border-radius:20px; width:300px; box-shadow:0 20px 50px rgba(0,0,0,0.5); text-align:center; position:relative; color:var(--text-main); }
-        .settings-content h3 { margin-top:0; font-family:'Montserrat',sans-serif; color:var(--primary); }
-        .settings-option { display:flex; justify-content:space-between; align-items:center; margin:15px 0; padding:10px; background:var(--bg-body); border-radius:10px; }
-        .settings-option span { font-weight:600; font-size:0.9em; }
-        .switch { position:relative; display:inline-block; width:50px; height:26px; }
-        .switch input { opacity:0; width:0; height:0; }
-        .slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:34px; }
-        .slider:before { position:absolute; content:""; height:18px; width:18px; left:4px; bottom:4px; background-color:white; transition:.4s; border-radius:50%; }
-        input:checked+.slider { background-color:var(--primary); }
-        input:checked+.slider:before { transform:translateX(24px); }
-        .settings-btn-action { width:100%; padding:12px; margin-top:10px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; transition:0.2s; font-size:0.9rem; }
-        .btn-reset { background:#ffebee; color:#d32f2f; } .btn-reset:hover { background:#ffcdd2; }
-        .btn-logout { background:var(--primary); color:white; margin-top:5px; } .btn-logout:hover { opacity:0.9; }
-        .close-settings { position:absolute; top:10px; right:15px; font-size:24px; cursor:pointer; color:var(--text-muted); }
-
-        /* LOGIN OVERLAY */
-        #loginOverlay { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg,#1b3a28,#2e7d32); display:flex; justify-content:center; align-items:center; z-index:9999; }
-        .login-box { background:rgba(255,255,255,0.95); padding:50px 40px; border-radius:20px; box-shadow:0 20px 50px rgba(0,0,0,0.3); text-align:center; width:320px; backdrop-filter:blur(10px); color:#2c3e50; max-height:90vh; overflow-y:auto; }
-        .login-box h2 { color:#1b3a28; margin-bottom:25px; font-family:'Montserrat',sans-serif; font-weight:700; text-transform:uppercase; }
-        .login-box input, .login-box select { width:100%; padding:14px; margin-bottom:12px; border:2px solid #e2e8f0; border-radius:10px; box-sizing:border-box; outline:none; font-size:1rem; font-family:'Open Sans',sans-serif; background:white; color:#2c3e50; }
-        .login-box input:focus, .login-box select:focus { border-color:#2e7d32; }
-        .login-box .btn-main { width:100%; padding:14px; margin-top:8px; background:#2e7d32; border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer; text-transform:uppercase; font-size:1rem; transition:opacity 0.2s; }
-        .login-box .btn-main:hover { opacity:0.9; }
-        .login-box .btn-link { width:100%; padding:12px; margin-top:8px; background:transparent; border:2px solid #2e7d32; border-radius:10px; color:#2e7d32; font-weight:600; cursor:pointer; font-size:0.9rem; transition:0.2s; }
-        .login-box .btn-link:hover { background:#f0f7f0; }
-        .login-msg { font-size:0.88em; margin-top:10px; display:none; padding:8px; border-radius:8px; }
-        .login-msg.error   { color:#d32f2f; background:#ffebee; display:block; }
-        .login-msg.success { color:#2e7d32; background:#e8f5e9; display:block; }
+        /* LOGIN */
+        #loginOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1b3a28,#2e7d32);display:flex;justify-content:center;align-items:center;z-index:9999;}
+        .login-box{background:rgba(255,255,255,0.95);padding:50px 40px;border-radius:20px;box-shadow:0 20px 50px rgba(0,0,0,0.3);text-align:center;width:320px;backdrop-filter:blur(10px);color:#2c3e50;max-height:90vh;overflow-y:auto;}
+        .login-box h2{color:#1b3a28;margin-bottom:25px;font-family:'Montserrat',sans-serif;font-weight:700;text-transform:uppercase;}
+        .login-box input,.login-box select{width:100%;padding:14px;margin-bottom:12px;border:2px solid #e2e8f0;border-radius:10px;box-sizing:border-box;outline:none;font-size:1rem;font-family:'Open Sans',sans-serif;background:white;color:#2c3e50;}
+        .login-box input:focus,.login-box select:focus{border-color:#2e7d32;}
+        .btn-main{width:100%;padding:14px;margin-top:8px;background:#2e7d32;border:none;border-radius:10px;color:white;font-weight:bold;cursor:pointer;text-transform:uppercase;font-size:1rem;transition:opacity 0.2s;}
+        .btn-main:hover{opacity:0.9;}
+        .btn-link{width:100%;padding:12px;margin-top:8px;background:transparent;border:2px solid #2e7d32;border-radius:10px;color:#2e7d32;font-weight:600;cursor:pointer;font-size:0.9rem;transition:0.2s;}
+        .btn-link:hover{background:#f0f7f0;}
+        .login-msg{font-size:0.88em;margin-top:10px;display:none;padding:8px;border-radius:8px;}
+        .login-msg.error{color:#d32f2f;background:#ffebee;display:block;}
+        .login-msg.success{color:#2e7d32;background:#e8f5e9;display:block;}
 
         /* SIDEBAR */
-        .sidebar { width:300px; background:var(--bg-panel); display:flex; flex-direction:column; border-right:1px solid var(--border-color); transition:transform 0.3s ease; z-index:1000; box-shadow:5px 0 15px rgba(0,0,0,0.02); }
-        .brand { padding:30px 20px; text-align:center; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; }
-        .brand h1 { font-family:'Montserrat',sans-serif; margin:0; font-size:1.4rem; font-weight:700; letter-spacing:1px; cursor:pointer; }
-        .brand small { display:block; margin-top:5px; opacity:0.8; font-size:0.8rem; }
-        .nav-search { padding:20px; }
-        .nav-search input { width:100%; padding:12px 15px; border-radius:30px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-main); box-sizing:border-box; outline:none; transition:0.2s; }
-        .nav-search input:focus { border-color:var(--primary); }
-        .nav-list { flex:1; overflow-y:auto; list-style:none; margin:0; padding:0 10px 80px 10px; }
-        .nav-category { padding:20px 15px 8px 15px; font-size:0.75em; text-transform:uppercase; color:var(--text-muted); font-weight:700; letter-spacing:1px; }
-        .nav-item { padding:12px 15px; margin-bottom:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:1em; border-radius:10px; transition:var(--transition); color:var(--text-main); }
-        .nav-item:hover { background-color:var(--bg-input); color:var(--primary); transform:translateX(3px); }
-        .nav-item.active { background:linear-gradient(90deg,var(--primary),var(--primary-light)); color:white; box-shadow:0 4px 10px rgba(0,0,0,0.1); font-weight:600; }
-        .nav-progress { font-size:0.75em; font-weight:700; background:var(--bg-input); color:var(--text-muted); padding:3px 8px; border-radius:12px; }
-        .nav-item.active .nav-progress { background:rgba(255,255,255,0.2); color:white; }
+        .sidebar{width:300px;background:var(--bg-panel);display:flex;flex-direction:column;border-right:1px solid var(--border-color);transition:transform 0.3s ease;z-index:1000;box-shadow:5px 0 15px rgba(0,0,0,0.02);}
+        .brand{padding:30px 20px;text-align:center;background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;}
+        .brand h1{font-family:'Montserrat',sans-serif;margin:0;font-size:1.4rem;font-weight:700;letter-spacing:1px;cursor:pointer;}
+        .brand small{display:block;margin-top:5px;opacity:0.8;font-size:0.8rem;}
+        .nav-search{padding:20px;}
+        .nav-search input{width:100%;padding:12px 15px;border-radius:30px;border:1px solid var(--border-color);background:var(--bg-input);color:var(--text-main);box-sizing:border-box;outline:none;transition:0.2s;}
+        .nav-search input:focus{border-color:var(--primary);}
+        .nav-list{flex:1;overflow-y:auto;list-style:none;margin:0;padding:0 10px 80px 10px;}
+        .nav-category{padding:20px 15px 8px 15px;font-size:0.75em;text-transform:uppercase;color:var(--text-muted);font-weight:700;letter-spacing:1px;}
+        .nav-item{padding:12px 15px;margin-bottom:4px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:1em;border-radius:10px;transition:var(--transition);color:var(--text-main);}
+        .nav-item:hover{background-color:var(--bg-input);color:var(--primary);transform:translateX(3px);}
+        .nav-item.active{background:linear-gradient(90deg,var(--primary),var(--primary-light));color:white;box-shadow:0 4px 10px rgba(0,0,0,0.1);font-weight:600;}
+        .nav-progress{font-size:0.75em;font-weight:700;background:var(--bg-input);color:var(--text-muted);padding:3px 8px;border-radius:12px;}
+        .nav-item.active .nav-progress{background:rgba(255,255,255,0.2);color:white;}
 
         /* CONTENT */
-        .main { flex:1; overflow-y:auto; padding:0; position:relative; }
-        .content-container { max-width:800px; margin:0 auto; padding:40px 20px 100px 20px; }
-        .header-section { margin-bottom:40px; background:var(--bg-panel); padding:30px; border-radius:var(--border-radius); box-shadow:var(--shadow-soft); position:relative; overflow:hidden; }
-        .header-section::before { content:''; position:absolute; top:0; left:0; width:6px; height:100%; background:var(--accent); }
-        .cat-badge { display:inline-block; background:var(--bg-input); color:var(--accent); padding:4px 12px; border-radius:20px; font-size:0.75em; font-weight:700; text-transform:uppercase; margin-bottom:10px; }
-        .header-section h2 { margin:10px 0 20px 0; font-family:'Montserrat',sans-serif; font-size:2.2em; color:var(--text-main); }
-        .big-progress-wrapper { background:var(--bg-input); height:12px; border-radius:6px; margin:15px 0; overflow:hidden; position:relative; border:1px solid var(--border-color); }
-        .big-progress-fill { height:100%; border-radius:6px; background:linear-gradient(90deg,var(--primary),var(--primary-light)); width:0%; transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1); }
-        .image-gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:15px; margin-bottom:25px; }
-        .gallery-img { width:100%; height:150px; object-fit:cover; border-radius:12px; cursor:pointer; transition:transform 0.3s; box-shadow:0 4px 6px rgba(0,0,0,0.1); border:2px solid var(--bg-panel); }
-        .gallery-img:hover { transform:scale(1.05); }
-        .task-group { margin-bottom:30px; }
-        .group-title { color:var(--text-muted); text-transform:uppercase; font-weight:800; margin-bottom:15px; font-size:0.9em; letter-spacing:0.5px; padding-left:5px; }
-        .cb-container { display:flex; align-items:center; background:var(--bg-panel); padding:15px 20px; border-radius:12px; margin-bottom:10px; box-shadow:0 2px 5px rgba(0,0,0,0.03); border:1px solid transparent; cursor:pointer; transition:var(--transition); }
-        .cb-container:hover { transform:translateY(-2px); box-shadow:var(--shadow-soft); border-color:var(--border-color); }
-        .cb-container input { position:absolute; opacity:0; cursor:pointer; height:0; width:0; }
-        .checkmark { height:24px; width:24px; min-width:24px; background-color:var(--bg-input); border-radius:6px; border:2px solid var(--border-color); margin-right:15px; display:flex; align-items:center; justify-content:center; }
-        .cb-container input:checked~.checkmark { background-color:var(--primary); border-color:var(--primary); }
-        .checkmark:after { content:""; display:none; width:6px; height:12px; border:solid white; border-width:0 2px 2px 0; transform:rotate(45deg) translateY(-1px); }
-        .cb-container input:checked~.checkmark:after { display:block; }
-        .task-text { font-size:1em; color:var(--text-main); font-weight:500; transition:0.2s; }
-        .cb-container input:checked~.task-text { color:var(--text-muted); text-decoration:line-through; }
-        .home-card { background:var(--bg-panel); padding:40px; border-radius:20px; box-shadow:var(--shadow-soft); text-align:left; margin-bottom:20px; }
-        .welcome-header { text-align:center; padding-top:40px; margin-bottom:40px; }
-        .welcome-header h2 { color:var(--primary); font-size:2.5em; font-family:'Montserrat',sans-serif; margin-bottom:5px; }
-        .welcome-header p { color:var(--text-muted); margin-top:0; }
-        #photoModal { display:none; position:fixed; z-index:5000; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.9); justify-content:center; align-items:center; backdrop-filter:blur(5px); }
-        #modalImg { max-width:90%; max-height:90%; border-radius:8px; transition:transform 0.3s ease; }
-        #modalImg.zoomed { transform:scale(1.8); cursor:zoom-out; }
-        .close-modal { position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer; }
-        .mobile-toggle { display:none; position:fixed; top:15px; right:15px; background:var(--primary); color:white; border:none; padding:12px; border-radius:50%; z-index:2000; width:50px; height:50px; box-shadow:0 4px 10px rgba(0,0,0,0.2); cursor:pointer; font-size:1.2rem; }
-        @media (max-width:768px) {
-            .sidebar { position:fixed; height:100%; transform:translateX(-105%); box-shadow:10px 0 30px rgba(0,0,0,0.3); }
-            .sidebar.open { transform:translateX(0); }
-            .mobile-toggle { display:flex; align-items:center; justify-content:center; }
-            .content-container { padding:80px 15px 40px 15px; }
-            .header-section h2 { font-size:1.6rem; }
-            .settings-fab { bottom:15px; left:15px; width:50px; height:50px; }
+        .main{flex:1;overflow-y:auto;padding:0;position:relative;}
+        .content-container{max-width:800px;margin:0 auto;padding:40px 20px 100px 20px;}
+        .header-section{margin-bottom:40px;background:var(--bg-panel);padding:30px;border-radius:var(--border-radius);box-shadow:var(--shadow-soft);position:relative;overflow:hidden;}
+        .header-section::before{content:'';position:absolute;top:0;left:0;width:6px;height:100%;background:var(--accent);}
+        .cat-badge{display:inline-block;background:var(--bg-input);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:0.75em;font-weight:700;text-transform:uppercase;margin-bottom:10px;}
+        .header-section h2{margin:10px 0 20px 0;font-family:'Montserrat',sans-serif;font-size:2.2em;color:var(--text-main);}
+        .big-progress-wrapper{background:var(--bg-input);height:12px;border-radius:6px;margin:15px 0;overflow:hidden;border:1px solid var(--border-color);}
+        .big-progress-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--primary),var(--primary-light));width:0%;transition:width 0.8s cubic-bezier(0.34,1.56,0.64,1);}
+        .image-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:15px;margin-bottom:25px;}
+        .gallery-img{width:100%;height:150px;object-fit:cover;border-radius:12px;cursor:pointer;transition:transform 0.3s;box-shadow:0 4px 6px rgba(0,0,0,0.1);border:2px solid var(--bg-panel);}
+        .gallery-img:hover{transform:scale(1.05);}
+        .task-group{margin-bottom:30px;}
+        .group-title{color:var(--text-muted);text-transform:uppercase;font-weight:800;margin-bottom:15px;font-size:0.9em;letter-spacing:0.5px;padding-left:5px;}
+        .cb-container{display:flex;align-items:center;background:var(--bg-panel);padding:15px 20px;border-radius:12px;margin-bottom:10px;box-shadow:0 2px 5px rgba(0,0,0,0.03);border:1px solid transparent;cursor:pointer;transition:var(--transition);}
+        .cb-container:hover{transform:translateY(-2px);box-shadow:var(--shadow-soft);border-color:var(--border-color);}
+        .cb-container input{position:absolute;opacity:0;cursor:pointer;height:0;width:0;}
+        .checkmark{height:24px;width:24px;min-width:24px;background-color:var(--bg-input);border-radius:6px;border:2px solid var(--border-color);margin-right:15px;display:flex;align-items:center;justify-content:center;}
+        .cb-container input:checked~.checkmark{background-color:var(--primary);border-color:var(--primary);}
+        .checkmark:after{content:"";display:none;width:6px;height:12px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-1px);}
+        .cb-container input:checked~.checkmark:after{display:block;}
+        .task-text{font-size:1em;color:var(--text-main);font-weight:500;transition:0.2s;}
+        .cb-container input:checked~.task-text{color:var(--text-muted);text-decoration:line-through;}
+        .home-card{background:var(--bg-panel);padding:40px;border-radius:20px;box-shadow:var(--shadow-soft);text-align:left;margin-bottom:20px;}
+        .welcome-header{text-align:center;padding-top:40px;margin-bottom:40px;}
+        .welcome-header h2{color:var(--primary);font-size:2.5em;font-family:'Montserrat',sans-serif;margin-bottom:5px;}
+        .welcome-header p{color:var(--text-muted);margin-top:0;}
+        #photoModal{display:none;position:fixed;z-index:5000;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.9);justify-content:center;align-items:center;backdrop-filter:blur(5px);}
+        #modalImg{max-width:90%;max-height:90%;border-radius:8px;transition:transform 0.3s ease;}
+        #modalImg.zoomed{transform:scale(1.8);cursor:zoom-out;}
+        .close-modal{position:absolute;top:20px;right:30px;color:white;font-size:40px;cursor:pointer;}
+        .mobile-toggle{display:none;position:fixed;top:15px;right:15px;background:var(--primary);color:white;border:none;padding:12px;border-radius:50%;z-index:2000;width:50px;height:50px;box-shadow:0 4px 10px rgba(0,0,0,0.2);cursor:pointer;font-size:1.2rem;}
+        @media(max-width:768px){
+            .sidebar{position:fixed;height:100%;transform:translateX(-105%);box-shadow:10px 0 30px rgba(0,0,0,0.3);}
+            .sidebar.open{transform:translateX(0);}
+            .mobile-toggle{display:flex;align-items:center;justify-content:center;}
+            .content-container{padding:80px 15px 40px 15px;}
+            .header-section h2{font-size:1.6rem;}
+            .settings-fab{bottom:15px;left:15px;width:50px;height:50px;}
         }
-
-        /* ADMIN PANEL */
-        .member-row { padding:14px 16px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
-        .btn-sm { padding:7px 14px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.82rem; transition:0.2s; }
-        .btn-approve { background:var(--primary); color:white; } .btn-approve:hover { opacity:0.85; }
-        .btn-reject  { background:#ffebee; color:#d32f2f; }  .btn-reject:hover  { background:#ffcdd2; }
-        .btn-delete  { background:#ffebee; color:#d32f2f; }  .btn-delete:hover  { background:#ffcdd2; }
-        .btn-view    { background:var(--bg-panel); color:var(--primary); border:1px solid var(--border-color) !important; }
-        .status-badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:0.75em; font-weight:700; }
-        .status-active   { background:#e8f5e9; color:#2e7d32; }
-        .status-pending  { background:#fff3e0; color:#e65100; }
-        .status-rejected { background:#ffebee; color:#c62828; }
+        /* ADMIN */
+        .member-row{padding:14px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+        .btn-sm{padding:7px 14px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;font-size:0.82rem;transition:0.2s;}
+        .btn-approve{background:var(--primary);color:white;}.btn-approve:hover{opacity:0.85;}
+        .btn-reject{background:#ffebee;color:#d32f2f;}.btn-reject:hover{background:#ffcdd2;}
+        .btn-delete{background:#ffebee;color:#d32f2f;}.btn-delete:hover{background:#ffcdd2;}
+        .btn-view{background:var(--bg-panel);color:var(--primary);border:1px solid var(--border-color)!important;}
+        .btn-teams{background:var(--bg-panel);color:var(--text-main);border:1px solid var(--border-color)!important;}
+        .status-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:0.75em;font-weight:700;}
+        .status-active{background:#e8f5e9;color:#2e7d32;}
+        .status-pending{background:#fff3e0;color:#e65100;}
+        .status-rejected{background:#ffebee;color:#c62828;}
+        .input-add{flex:1;padding:10px 14px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-input);color:var(--text-main);font-size:0.95rem;outline:none;}
+        .input-add:focus{border-color:var(--primary);}
     </style>
 </head>
 <body>
 
-<!-- LOGIN OVERLAY -->
 <div id="loginOverlay">
-    <!-- PANEL LOGOWANIA -->
+    <!-- LOGOWANIE -->
     <div class="login-box" id="panelLogin">
         <h2>Czuwaj!</h2>
         <input type="text"     id="loginUsername" placeholder="Login"  onkeydown="if(event.key==='Enter')handleLogin()">
-        <input type="password" id="loginPassword" placeholder="Hasło"  onkeydown="if(event.key==='Enter')handleLogin()">
-        <button class="btn-main" onclick="handleLogin()">Zaloguj się</button>
-        <button class="btn-link" onclick="showPanel('register')">Nie masz konta? Zarejestruj się</button>
+        <input type="password" id="loginPassword" placeholder="Haslo"  onkeydown="if(event.key==='Enter')handleLogin()">
+        <button class="btn-main" onclick="handleLogin()">Zaloguj sie</button>
+        <button class="btn-link" onclick="showPanel('register')">Nie masz konta? Zarejestruj sie</button>
         <p class="login-msg" id="loginMsg"></p>
     </div>
-
-    <!-- PANEL REJESTRACJI -->
+    <!-- REJESTRACJA -->
     <div class="login-box" id="panelRegister" style="display:none;">
-        <h2>Dołącz!</h2>
+        <h2>Dolacz!</h2>
         <input type="text"     id="regUsername"  placeholder="Login (min. 3 znaki)">
-        <input type="text"     id="regName"      placeholder="Pseudonim / Imię">
-        <input type="password" id="regPassword"  placeholder="Hasło (min. 6 znaków)">
-        <input type="password" id="regPassword2" placeholder="Powtórz hasło">
-        <select id="regTeam"><option value="">-- Wybierz drużynę --</option></select>
-        <button class="btn-main" onclick="handleRegister()">Zarejestruj się</button>
-        <button class="btn-link" onclick="showPanel('login')">Masz już konto? Zaloguj się</button>
+        <input type="text"     id="regName"      placeholder="Pseudonim / Imie">
+        <input type="password" id="regPassword"  placeholder="Haslo (min. 6 znakow)">
+        <input type="password" id="regPassword2" placeholder="Powtorz haslo">
+        <select id="regTeam"><option value="">-- Wybierz druzyne --</option></select>
+        <button class="btn-main" onclick="handleRegister()">Zarejestruj sie</button>
+        <button class="btn-link" onclick="showPanel('login')">Masz konto? Zaloguj sie</button>
         <p class="login-msg" id="registerMsg"></p>
     </div>
 </div>
 
-<button class="settings-fab" onclick="openSettings()">⚙️</button>
+<button class="settings-fab" onclick="openSettings()">&#9881;&#65039;</button>
 
 <div id="settingsModal" class="settings-modal" onclick="closeSettings(event)">
     <div class="settings-content">
@@ -168,26 +164,26 @@
             <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
         </div>
         <div class="settings-option">
-            <span>Duży Tekst</span>
+            <span>Duzy Tekst</span>
             <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
         </div>
         <hr style="border:0;border-top:1px solid var(--border-color);margin:20px 0;">
-        <button class="settings-btn-action btn-reset"  onclick="resetProgress()">⚠️ Zresetuj Progres</button>
-        <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj się</button>
+        <button class="settings-btn-action btn-reset"  onclick="resetProgress()">&#9888;&#65039; Zresetuj Progres</button>
+        <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
     </div>
 </div>
 
 <div id="photoModal" onclick="closeModal()">
     <span class="close-modal">&times;</span>
-    <img id="modalImg" src="" alt="Powiększenie" onclick="toggleZoom(event)">
+    <img id="modalImg" src="" alt="" onclick="toggleZoom(event)">
 </div>
 
-<button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+<button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
 
 <nav class="sidebar" id="sidebar">
     <div class="brand">
-        <h1 onclick="goHome()">LEŚNA SZKÓŁKA</h1>
-        <small onclick="goHome()">Książeczka Harcerska</small>
+        <h1 onclick="goHome()">LESNA SZKOLKA</h1>
+        <small onclick="goHome()">Ksiazeczka Harcerska</small>
     </div>
     <div class="nav-search">
         <input type="text" id="searchInput" placeholder="Szukaj..." onkeyup="filterNav()">
@@ -201,7 +197,6 @@
 
 <script src="stopnie.js"></script>
 <script src="sprawnosci.js"></script>
-
 <script>
 // ================================================================
 // KONFIGURACJA
@@ -212,26 +207,23 @@ const API = 'https://harcerze-backend.onrender.com/api';
 // ZMIENNE GLOBALNE
 // ================================================================
 let db = [];
-let currentUser     = null;   // dane zalogowanego usera
-let authToken       = null;   // JWT token
-let currentViewUserId = null; // czyj profil admin teraz przegląda
-let cachedProgress  = {};     // postęp aktualnie przeglądanego usera
+let currentUser       = null;
+let authToken         = null;
+let currentViewUserId = null;
+let cachedProgress    = {};
 
 // ================================================================
 // INICJALIZACJA
 // ================================================================
 window.onload = async () => {
     loadSettings();
-
     db = [
         ...(typeof stopnieData    !== 'undefined' ? stopnieData    : []),
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
-    // Sprawdzamy sesję (sessionStorage znika po zamknięciu karty)
     const savedToken = sessionStorage.getItem('hk_token');
     const savedUser  = sessionStorage.getItem('hk_user');
-
     if (savedToken && savedUser) {
         authToken   = savedToken;
         currentUser = JSON.parse(savedUser);
@@ -243,7 +235,7 @@ window.onload = async () => {
 };
 
 // ================================================================
-// PRZEŁĄCZANIE PANELI
+// PANELE LOGOWANIA
 // ================================================================
 function showPanel(name) {
     document.getElementById('loginOverlay').style.display = 'flex';
@@ -252,44 +244,44 @@ function showPanel(name) {
     clearMsg('loginMsg');
     clearMsg('registerMsg');
 }
-
-function showMsg(elId, text, type = 'error') {
-    const el = document.getElementById(elId);
+function showMsg(id, text, type) {
+    var el = document.getElementById(id);
     if (!el) return;
     el.textContent = text;
-    el.className = `login-msg ${type}`;
+    el.className = 'login-msg ' + (type || 'error');
 }
-function clearMsg(elId) {
-    const el = document.getElementById(elId);
+function clearMsg(id) {
+    var el = document.getElementById(id);
     if (el) { el.textContent = ''; el.className = 'login-msg'; }
 }
 
 // ================================================================
-// FETCH Z TOKENEM
-// Każde żądanie do API wysyła nagłówek Authorization: Bearer <token>
+// FETCH Z TOKENEM JWT
 // ================================================================
-async function apiFetch(url, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+async function apiFetch(url, options) {
+    options = options || {};
+    var headers = { 'Content-Type': 'application/json' };
+    if (options.headers) Object.assign(headers, options.headers);
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
     try {
-        const res  = await fetch(`${API}${url}`, { ...options, headers });
-        const data = await res.json();
-        return { ok: res.ok, status: res.status, data };
+        var res  = await fetch(API + url, Object.assign({}, options, { headers: headers }));
+        var data = await res.json();
+        return { ok: res.ok, status: res.status, data: data };
     } catch (e) {
-        return { ok: false, status: 0, data: { error: 'Błąd połączenia z serwerem' } };
+        return { ok: false, status: 0, data: { error: 'Blad polaczenia z serwerem' } };
     }
 }
 
 // ================================================================
-// ŁADOWANIE DRUŻYN DO SELECTA
+// LADOWANIE DRUZYN DO SELECTA
 // ================================================================
 async function loadTeams() {
-    const { ok, data } = await apiFetch('/teams');
-    if (!ok) return;
-    const select = document.getElementById('regTeam');
-    select.innerHTML = '<option value="">-- Wybierz drużynę --</option>';
-    data.forEach(t => {
-        const opt = document.createElement('option');
+    var result = await apiFetch('/teams');
+    if (!result.ok) return;
+    var select = document.getElementById('regTeam');
+    select.innerHTML = '<option value="">-- Wybierz druzyne --</option>';
+    result.data.forEach(function(t) {
+        var opt = document.createElement('option');
         opt.value = t.teamId;
         opt.textContent = t.name;
         select.appendChild(opt);
@@ -300,21 +292,16 @@ async function loadTeams() {
 // LOGOWANIE
 // ================================================================
 async function handleLogin() {
-    const username = document.getElementById('loginUsername').value.trim();
-    const password = document.getElementById('loginPassword').value;
+    var username = document.getElementById('loginUsername').value.trim();
+    var password = document.getElementById('loginPassword').value;
     clearMsg('loginMsg');
+    if (!username || !password) { showMsg('loginMsg', 'Podaj login i haslo.'); return; }
 
-    if (!username || !password) { showMsg('loginMsg', 'Podaj login i hasło.'); return; }
+    var result = await apiFetch('/login', { method: 'POST', body: JSON.stringify({ username: username, password: password }) });
+    if (!result.ok) { showMsg('loginMsg', result.data.message || 'Blad logowania.'); return; }
 
-    const { ok, data } = await apiFetch('/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password })
-    });
-
-    if (!ok) { showMsg('loginMsg', data.message || 'Błąd logowania.'); return; }
-
-    authToken   = data.token;
-    currentUser = data.user;
+    authToken   = result.data.token;
+    currentUser = result.data.user;
     sessionStorage.setItem('hk_token', authToken);
     sessionStorage.setItem('hk_user',  JSON.stringify(currentUser));
     document.getElementById('loginOverlay').style.display = 'none';
@@ -325,30 +312,26 @@ async function handleLogin() {
 // REJESTRACJA
 // ================================================================
 async function handleRegister() {
-    const username  = document.getElementById('regUsername').value.trim().toLowerCase();
-    const name      = document.getElementById('regName').value.trim();
-    const password  = document.getElementById('regPassword').value;
-    const password2 = document.getElementById('regPassword2').value;
-    const teamId    = document.getElementById('regTeam').value;
+    var username  = document.getElementById('regUsername').value.trim().toLowerCase();
+    var name      = document.getElementById('regName').value.trim();
+    var password  = document.getElementById('regPassword').value;
+    var password2 = document.getElementById('regPassword2').value;
+    var teamId    = document.getElementById('regTeam').value;
     clearMsg('registerMsg');
 
-    if (username.length < 3)             { showMsg('registerMsg', 'Login musi mieć minimum 3 znaki.'); return; }
-    if (!/^[a-z0-9_]+$/.test(username)) { showMsg('registerMsg', 'Login: tylko litery, cyfry i "_".'); return; }
-    if (!name)                           { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
-    if (password.length < 6)            { showMsg('registerMsg', 'Hasło musi mieć minimum 6 znaków.'); return; }
-    if (password !== password2)          { showMsg('registerMsg', 'Hasła nie są identyczne.'); return; }
-    if (!teamId)                         { showMsg('registerMsg', 'Wybierz drużynę.'); return; }
+    if (username.length < 3)              { showMsg('registerMsg', 'Login min. 3 znaki.'); return; }
+    if (!/^[a-z0-9_]+$/.test(username))  { showMsg('registerMsg', 'Login: tylko litery, cyfry, _'); return; }
+    if (!name)                            { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
+    if (password.length < 6)             { showMsg('registerMsg', 'Haslo min. 6 znakow.'); return; }
+    if (password !== password2)           { showMsg('registerMsg', 'Hasla nie sa identyczne.'); return; }
+    if (!teamId)                          { showMsg('registerMsg', 'Wybierz druzyne.'); return; }
 
-    const { ok, data } = await apiFetch('/register', {
-        method: 'POST',
-        body: JSON.stringify({ username, password, name, teamId })
-    });
+    var result = await apiFetch('/register', { method: 'POST', body: JSON.stringify({ username: username, password: password, name: name, teamId: teamId }) });
+    if (!result.ok) { showMsg('registerMsg', result.data.message || 'Blad rejestracji.'); return; }
 
-    if (!ok) { showMsg('registerMsg', data.message || 'Błąd rejestracji.'); return; }
-
-    ['regUsername','regName','regPassword','regPassword2'].forEach(id => document.getElementById(id).value = '');
+    ['regUsername','regName','regPassword','regPassword2'].forEach(function(id) { document.getElementById(id).value = ''; });
     document.getElementById('regTeam').value = '';
-    showMsg('registerMsg', data.message, 'success');
+    showMsg('registerMsg', result.data.message, 'success');
 }
 
 // ================================================================
@@ -361,7 +344,7 @@ function handleLogout() {
     toggleSettingsModal(false);
     document.getElementById('navList').innerHTML = '';
     document.getElementById('contentArea').innerHTML = '';
-    loadTeams().then(() => showPanel('login'));
+    loadTeams().then(function() { showPanel('login'); });
 }
 
 // ================================================================
@@ -369,12 +352,11 @@ function handleLogout() {
 // ================================================================
 function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
-    const isAdmin = ['admin','superadmin'].includes(currentUser.role);
-    if (isAdmin) {
+    if (currentUser.role === 'admin' || currentUser.role === 'superadmin') {
         renderAdminDashboard();
     } else {
-        apiFetch(`/progress/${currentUser.id}`).then(({ ok, data }) => {
-            cachedProgress = ok ? data : {};
+        apiFetch('/progress/' + currentUser.id).then(function(r) {
+            cachedProgress = r.ok ? r.data : {};
             goHome();
             renderSidebar();
         });
@@ -382,152 +364,210 @@ function initAppAfterLogin() {
 }
 
 // ================================================================
-// TOGGLE ZADANIA (tylko admin)
+// TOGGLE ZADANIA
 // ================================================================
 async function toggleTask(taskId, itemId) {
     if (currentUser.role === 'user') {
-        alert('Tylko drużynowy może zatwierdzać sprawności!');
-        document.querySelectorAll('.cb-container input').forEach(inp => {
+        alert('Tylko druzynowy moze zatwierdzac sprawnosci!');
+        document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
         return;
     }
-
-    const isChecked = !cachedProgress[taskId];
+    var isChecked = !cachedProgress[taskId];
     if (isChecked) cachedProgress[taskId] = true;
     else           delete cachedProgress[taskId];
     updateItemProgress(itemId);
     updateUIStats();
 
-    const { ok } = await apiFetch('/progress', {
-        method: 'POST',
-        body: JSON.stringify({ userId: currentViewUserId, taskId, status: isChecked })
-    });
-
-    if (!ok) {
+    var result = await apiFetch('/progress', { method: 'POST', body: JSON.stringify({ userId: currentViewUserId, taskId: taskId, status: isChecked }) });
+    if (!result.ok) {
         if (isChecked) delete cachedProgress[taskId];
         else           cachedProgress[taskId] = true;
         updateItemProgress(itemId);
-        alert('Błąd zapisu!');
+        alert('Blad zapisu!');
     }
 }
 
 // ================================================================
-// PANEL ADMINA
+// PANEL ADMINA — lista harcerzy
 // ================================================================
 async function renderAdminDashboard() {
     document.getElementById('navList').innerHTML = '';
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p>Ładowanie...</p></div>';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p>Ladowanie...</p></div>';
 
-    const { ok, data: members } = await apiFetch('/team-members');
-    if (!ok) {
-        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:red">Błąd połączenia z serwerem.</p></div>';
+    var result = await apiFetch('/team-members');
+    if (!result.ok) {
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:red">Blad polaczenia z serwerem.<br><small>Sprawdz logi na Render.com</small></p></div>';
         return;
     }
 
-    const pending  = members.filter(u => u.status === 'pending');
-    const active   = members.filter(u => u.status === 'active');
-    const rejected = members.filter(u => u.status === 'rejected');
+    var members  = result.data;
+    var pending  = members.filter(function(u) { return u.status === 'pending';  });
+    var active   = members.filter(function(u) { return u.status === 'active';   });
+    var rejected = members.filter(function(u) { return u.status === 'rejected'; });
 
-    let html = `<div class="welcome-header">
-        <h2>Czuwaj, ${currentUser.name}!</h2>
-        <p>${currentUser.role === 'superadmin' ? '👑 Super Administrator' : 'Panel Drużynowego'}</p>
-    </div>`;
+    var isSuperAdmin = currentUser.role === 'superadmin';
+    var html = '<div class="welcome-header">'
+        + '<h2>Czuwaj, ' + currentUser.name + '!</h2>'
+        + '<p>' + (isSuperAdmin ? '&#128081; Super Administrator' : 'Panel Druzynowego') + '</p>'
+        + (isSuperAdmin ? '<button onclick="renderTeamsPanel()" style="background:var(--accent);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#9881; Zarzadzaj druzyna</button>' : '')
+        + '</div>';
 
-    // OCZEKUJĄCE
+    // OCZEKUJACE
     if (pending.length > 0) {
-        html += `<div class="home-card" style="border-left:4px solid var(--accent);">
-            <h3 style="margin-top:0;color:var(--accent);">⏳ Oczekujące prośby (${pending.length})</h3>
-            <div style="display:grid;gap:10px;">`;
-        pending.forEach(u => {
-            html += `<div class="member-row">
-                <div>
-                    <strong>👤 ${u.name}</strong>
-                    <span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@${u.username}</span>
-                </div>
-                <div style="display:flex;gap:8px;">
-                    <button class="btn-sm btn-approve" onclick="approveUser('${u._id}')">✓ Akceptuj</button>
-                    <button class="btn-sm btn-reject"  onclick="rejectUser('${u._id}')">✗ Odrzuć</button>
-                </div>
-            </div>`;
+        html += '<div class="home-card" style="border-left:4px solid var(--accent);">'
+            + '<h3 style="margin-top:0;color:var(--accent);">&#8987; Oczekujace prosby (' + pending.length + ')</h3>'
+            + '<div style="display:grid;gap:10px;">';
+        pending.forEach(function(u) {
+            html += '<div class="member-row">'
+                + '<div><strong>&#128100; ' + u.name + '</strong>'
+                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span></div>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<button class="btn-sm btn-approve" onclick="approveUser(\'' + u._id + '\')">&#10003; Akceptuj</button>'
+                + '<button class="btn-sm btn-reject"  onclick="rejectUser(\''  + u._id + '\')">&#10007; Odrzuc</button>'
+                + '</div></div>';
         });
-        html += `</div></div>`;
+        html += '</div></div>';
     }
 
     // AKTYWNI
-    html += `<div class="home-card">
-        <h3 style="margin-top:0;">Aktywni harcerze (${active.length})</h3>
-        <div style="display:grid;gap:10px;">`;
+    html += '<div class="home-card"><h3 style="margin-top:0;">Aktywni harcerze (' + active.length + ')</h3><div style="display:grid;gap:10px;">';
     if (active.length === 0) {
-        html += `<p style="color:var(--text-muted);text-align:center;margin:0;">Brak aktywnych harcerzy.</p>`;
+        html += '<p style="color:var(--text-muted);text-align:center;margin:0;">Brak aktywnych harcerzy.</p>';
     } else {
-        active.forEach(u => {
-            const esc = u.name.replace(/'/g, "\\'");
-            html += `<div class="member-row">
-                <div>
-                    <strong>👤 ${u.name}</strong>
-                    <span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@${u.username}</span>
-                    <span class="status-badge status-active" style="margin-left:6px;">aktywny</span>
-                </div>
-                <div style="display:flex;gap:8px;">
-                    <button class="btn-sm btn-view"   onclick="switchToUser('${u._id}','${esc}')">📋 Sprawności</button>
-                    <button class="btn-sm btn-delete" onclick="deleteUser('${u._id}','${esc}')">🗑 Usuń</button>
-                </div>
-            </div>`;
+        active.forEach(function(u) {
+            var esc = u.name.replace(/'/g, "\\'");
+            html += '<div class="member-row">'
+                + '<div><strong>&#128100; ' + u.name + '</strong>'
+                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
+                + '<span class="status-badge status-active" style="margin-left:6px;">aktywny</span></div>'
+                + '<div style="display:flex;gap:8px;">'
+                + '<button class="btn-sm btn-view"   onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\')">&#128203; Sprawnosci</button>'
+                + '<button class="btn-sm btn-delete" onclick="deleteUser(\''   + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + '</div></div>';
         });
     }
-    html += `</div></div>`;
+    html += '</div></div>';
 
     // ODRZUCENI
     if (rejected.length > 0) {
-        html += `<div class="home-card" style="opacity:0.7;">
-            <h3 style="margin-top:0;color:var(--text-muted);">Odrzucone konta (${rejected.length})</h3>
-            <div style="display:grid;gap:10px;">`;
-        rejected.forEach(u => {
-            const esc = u.name.replace(/'/g, "\\'");
-            html += `<div class="member-row">
-                <div>
-                    <strong>👤 ${u.name}</strong>
-                    <span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@${u.username}</span>
-                    <span class="status-badge status-rejected" style="margin-left:6px;">odrzucony</span>
-                </div>
-                <button class="btn-sm btn-delete" onclick="deleteUser('${u._id}','${esc}')">🗑 Usuń</button>
-            </div>`;
+        html += '<div class="home-card" style="opacity:0.7;"><h3 style="margin-top:0;color:var(--text-muted);">Odrzucone konta (' + rejected.length + ')</h3><div style="display:grid;gap:10px;">';
+        rejected.forEach(function(u) {
+            var esc = u.name.replace(/'/g, "\\'");
+            html += '<div class="member-row">'
+                + '<div><strong>&#128100; ' + u.name + '</strong>'
+                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
+                + '<span class="status-badge status-rejected" style="margin-left:6px;">odrzucony</span></div>'
+                + '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + '</div>';
         });
-        html += `</div></div>`;
+        html += '</div></div>';
     }
 
     document.getElementById('contentArea').innerHTML = html;
 }
 
-// AKCJE ADMINA
-async function approveUser(id) {
-    const { ok, data } = await apiFetch(`/users/${id}/approve`, { method: 'POST' });
-    ok ? renderAdminDashboard() : alert(data.error || 'Błąd.');
-}
-async function rejectUser(id) {
-    const { ok, data } = await apiFetch(`/users/${id}/reject`, { method: 'POST' });
-    ok ? renderAdminDashboard() : alert(data.error || 'Błąd.');
-}
-async function deleteUser(id, name) {
-    if (!confirm(`Usunąć konto "${name}"? Tej operacji nie można cofnąć.`)) return;
-    const { ok, data } = await apiFetch(`/users/${id}`, { method: 'DELETE' });
-    ok ? renderAdminDashboard() : alert(data.error || 'Błąd.');
+// ================================================================
+// PANEL DRUZYN (tylko superadmin)
+// ================================================================
+async function renderTeamsPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p>Ladowanie...</p></div>';
+
+    var result = await apiFetch('/teams');
+    if (!result.ok) { document.getElementById('contentArea').innerHTML = '<p style="color:red">Blad.</p>'; return; }
+
+    var teams = result.data;
+    var html = '<div class="welcome-header"><h2>Druzyny</h2><p>Zarzadzaj listą druzyn</p>'
+        + '<button onclick="renderAdminDashboard()" style="background:var(--primary);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#8592; Wróc do harcerzy</button>'
+        + '</div>';
+
+    // FORMULARZ DODAWANIA
+    html += '<div class="home-card">'
+        + '<h3 style="margin-top:0;">Dodaj nowa druzyne</h3>'
+        + '<div style="display:flex;gap:10px;">'
+        + '<input type="text" id="newTeamName" class="input-add" placeholder="Nazwa druzyny (np. 6 Druzyna Harcerska)" onkeydown="if(event.key===\'Enter\')addTeam()">'
+        + '<button class="btn-sm btn-approve" onclick="addTeam()" style="white-space:nowrap;">+ Dodaj</button>'
+        + '</div>'
+        + '<p id="teamMsg" style="margin:8px 0 0;font-size:0.88em;display:none;"></p>'
+        + '</div>';
+
+    // LISTA DRUZYN
+    html += '<div class="home-card"><h3 style="margin-top:0;">Istniejace druzyny (' + teams.length + ')</h3><div style="display:grid;gap:10px;">';
+    teams.forEach(function(t) {
+        var escName = t.name.replace(/'/g, "\\'");
+        var escId   = t.teamId.replace(/'/g, "\\'");
+        html += '<div class="member-row">'
+            + '<div>'
+            + '<strong>' + t.name + '</strong>'
+            + '<span style="color:var(--text-muted);font-size:0.8em;margin-left:8px;">ID: ' + t.teamId + '</span>'
+            + '</div>'
+            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usun</button>'
+            + '</div>';
+    });
+    if (teams.length === 0) html += '<p style="color:var(--text-muted);text-align:center;">Brak druzyn.</p>';
+    html += '</div></div>';
+
+    document.getElementById('contentArea').innerHTML = html;
 }
 
-// WIDOK HARCERZA
+async function addTeam() {
+    var name = document.getElementById('newTeamName').value.trim();
+    var msg  = document.getElementById('teamMsg');
+    if (!name) { showTeamMsg('Wpisz nazwe druzyny.', 'error'); return; }
+
+    var result = await apiFetch('/teams', { method: 'POST', body: JSON.stringify({ name: name }) });
+    if (result.ok) {
+        document.getElementById('newTeamName').value = '';
+        renderTeamsPanel();
+    } else {
+        showTeamMsg(result.data.message || 'Blad.', 'error');
+    }
+}
+
+function showTeamMsg(text, type) {
+    var el = document.getElementById('teamMsg');
+    if (!el) return;
+    el.textContent = text;
+    el.style.color  = type === 'error' ? '#d32f2f' : '#2e7d32';
+    el.style.display = 'block';
+}
+
+async function deleteTeam(teamId, teamName) {
+    if (!confirm('Usunac druzyne "' + teamName + '"?\nUSUNIE TEZ wszystkich jej czlonkow i postepy!')) return;
+    var result = await apiFetch('/teams/' + teamId, { method: 'DELETE' });
+    result.ok ? renderTeamsPanel() : alert(result.data.error || 'Blad.');
+}
+
+// ================================================================
+// AKCJE NA UZYTKOWNIKACH
+// ================================================================
+async function approveUser(id) {
+    var r = await apiFetch('/users/' + id + '/approve', { method: 'POST' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+async function rejectUser(id) {
+    var r = await apiFetch('/users/' + id + '/reject', { method: 'POST' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+async function deleteUser(id, name) {
+    if (!confirm('Usunac konto "' + name + '"? Tej operacji nie mozna cofnac.')) return;
+    var r = await apiFetch('/users/' + id, { method: 'DELETE' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+
 async function switchToUser(userId, userName) {
     currentViewUserId = userId;
     cachedProgress    = {};
-    const { ok, data } = await apiFetch(`/progress/${userId}`);
-    cachedProgress = ok ? data : {};
+    var r = await apiFetch('/progress/' + userId);
+    cachedProgress = r.ok ? r.data : {};
     goHome();
     renderSidebar();
-    setTimeout(() => {
-        const p = document.querySelector('.welcome-header p');
-        if (p) p.innerHTML = `Edytujesz: <strong style="color:var(--primary)">${userName}</strong>
-            &nbsp;<a href="#" onclick="renderAdminDashboard();return false;"
-            style="font-size:0.8em;color:var(--text-muted)">[Wróć]</a>`;
+    setTimeout(function() {
+        var p = document.querySelector('.welcome-header p');
+        if (p) p.innerHTML = 'Edytujesz: <strong style="color:var(--primary)">' + userName + '</strong>'
+            + ' &nbsp;<a href="#" onclick="renderAdminDashboard();return false;" style="font-size:0.8em;color:var(--text-muted)">[Wróc]</a>';
     }, 30);
 }
 
@@ -535,41 +575,43 @@ async function switchToUser(userId, userName) {
 // UI CORE
 // ================================================================
 function goHome() {
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    const isAdmin = ['admin','superadmin'].includes(currentUser.role);
-    document.getElementById('contentArea').innerHTML = `
-        <div class="welcome-header">
-            <h2>Czuwaj!</h2>
-            <p>${isAdmin ? 'Tryb edycji podopiecznego' : 'Książeczka Harcerska'}</p>
-            ${isAdmin ? `<button onclick="renderAdminDashboard()"
-                style="background:var(--accent);border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:10px;font-size:0.9rem;">
-                ⬅ Wróć do drużyny</button>` : ''}
-        </div>
-        <div class="home-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-                <h3 style="margin:0;color:var(--text-main);">Postęp zdobytych sprawności</h3>
-                <span id="total-progress" style="font-weight:bold;color:var(--primary);font-size:1.2em;">0%</span>
-            </div>
-            <div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>
-        </div>`;
+    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    var isAdmin = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+    document.getElementById('contentArea').innerHTML =
+        '<div class="welcome-header">'
+        + '<h2>Czuwaj!</h2>'
+        + '<p>' + (isAdmin ? 'Tryb edycji podopiecznego' : 'Ksiazeczka Harcerska') + '</p>'
+        + (isAdmin ? '<button onclick="renderAdminDashboard()" style="background:var(--accent);border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:10px;font-size:0.9rem;">&#8592; Wróc do druzyny</button>' : '')
+        + '</div>'
+        + '<div class="home-card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">'
+        + '<h3 style="margin:0;color:var(--text-main);">Postep zdobytych sprawnosci</h3>'
+        + '<span id="total-progress" style="font-weight:bold;color:var(--primary);font-size:1.2em;">0%</span>'
+        + '</div>'
+        + '<div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>'
+        + '</div>';
     updateUIStats();
 }
 
-function renderSidebar(filterText = '') {
-    const list = document.getElementById('navList');
+function renderSidebar(filterText) {
+    filterText = filterText || '';
+    var list = document.getElementById('navList');
     list.innerHTML = '';
-    const grouped = {};
-    db.forEach(item => { if (!grouped[item.category]) grouped[item.category] = []; grouped[item.category].push(item); });
-    Object.keys(grouped).forEach(cat => {
-        const filtered = grouped[cat].filter(i => i.title.toLowerCase().includes(filterText.toLowerCase()));
+    var grouped = {};
+    db.forEach(function(item) {
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+    });
+    Object.keys(grouped).forEach(function(cat) {
+        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
         if (!filtered.length) return;
-        const head = document.createElement('li');
+        var head = document.createElement('li');
         head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
-        filtered.forEach(item => {
-            const li = document.createElement('li');
-            li.className = 'nav-item'; li.id = `nav-item-${item.id}`;
-            li.innerHTML = `<span>${item.title}</span><span class="nav-progress" id="nav-prog-${item.id}">0%</span>`;
-            li.onclick = () => loadContent(item.id);
+        filtered.forEach(function(item) {
+            var li = document.createElement('li');
+            li.className = 'nav-item'; li.id = 'nav-item-' + item.id;
+            li.innerHTML = '<span>' + item.title + '</span><span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
+            li.onclick = function() { loadContent(item.id); };
             list.appendChild(li);
         });
     });
@@ -577,43 +619,43 @@ function renderSidebar(filterText = '') {
 }
 
 function loadContent(id) {
-    const item = db.find(x => x.id === id);
+    var item = db.find(function(x) { return x.id === id; });
     if (!item) return;
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById(`nav-item-${id}`)?.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    var navEl = document.getElementById('nav-item-' + id);
+    if (navEl) navEl.classList.add('active');
     if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
 
-    const isAdmin = currentUser.role !== 'user';
-    let imagesHtml = '';
-    if (item.images?.length) {
+    var isAdmin = currentUser.role !== 'user';
+    var imagesHtml = '';
+    if (item.images && item.images.length) {
         imagesHtml = '<div class="image-gallery">';
-        item.images.forEach(img => { imagesHtml += `<img src="${img}" class="gallery-img" onclick="openPhoto('${img}')" onerror="this.style.display='none'">`; });
+        item.images.forEach(function(img) {
+            imagesHtml += '<img src="' + img + '" class="gallery-img" onclick="openPhoto(\'' + img + '\')" onerror="this.style.display=\'none\'">';
+        });
         imagesHtml += '</div>';
     }
 
-    let html = `<div class="header-section">
-        <span class="cat-badge">${item.category}</span>
-        <h2>${item.title}</h2>
-        ${imagesHtml}
-        <div style="margin-top:25px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:600;color:var(--text-muted);font-size:0.9em;">
-                <span>Postęp</span><span id="detail-prog-val">0%</span>
-            </div>
-            <div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>
-        </div>
-    </div>`;
+    var html = '<div class="header-section">'
+        + '<span class="cat-badge">' + item.category + '</span>'
+        + '<h2>' + item.title + '</h2>'
+        + imagesHtml
+        + '<div style="margin-top:25px;">'
+        + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:600;color:var(--text-muted);font-size:0.9em;">'
+        + '<span>Postep</span><span id="detail-prog-val">0%</span></div>'
+        + '<div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>'
+        + '</div></div>';
 
-    item.groups.forEach((g, gIdx) => {
-        html += `<div class="task-group"><div class="group-title">${g.name}</div>`;
-        g.tasks.forEach((t, tIdx) => {
-            const tId   = `${id}-${gIdx}-${tIdx}`;
-            const isDone = !!cachedProgress[tId];
-            html += `<label class="cb-container" style="${!isAdmin ? 'cursor:default' : ''}">
-                <input type="checkbox" ${isDone ? 'checked' : ''} ${!isAdmin ? 'disabled' : ''}
-                       data-tid="${tId}" onchange="toggleTask('${tId}','${id}')">
-                <div class="checkmark"></div>
-                <span class="task-text">${t.replace(/\*/g,'★')}</span>
-            </label>`;
+    item.groups.forEach(function(g, gIdx) {
+        html += '<div class="task-group"><div class="group-title">' + g.name + '</div>';
+        g.tasks.forEach(function(t, tIdx) {
+            var tId   = id + '-' + gIdx + '-' + tIdx;
+            var isDone = !!cachedProgress[tId];
+            html += '<label class="cb-container" style="' + (!isAdmin ? 'cursor:default' : '') + '">'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (!isAdmin ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+                + '<div class="checkmark"></div>'
+                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
+                + '</label>';
         });
         html += '</div>';
     });
@@ -624,33 +666,37 @@ function loadContent(id) {
 }
 
 function updateItemProgress(itemId) {
-    const item = db.find(x => x.id === itemId);
+    var item = db.find(function(x) { return x.id === itemId; });
     if (!item) return;
-    let total = 0, done = 0;
-    item.groups.forEach((g, gi) => g.tasks.forEach((t, ti) => { total++; if (cachedProgress[`${itemId}-${gi}-${ti}`]) done++; }));
-    const pct = total ? Math.round(done / total * 100) : 0;
-    const bar = document.getElementById('detail-bar');
-    const val = document.getElementById('detail-prog-val');
+    var total = 0, done = 0;
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) { total++; if (cachedProgress[itemId + '-' + gi + '-' + ti]) done++; });
+    });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    var bar = document.getElementById('detail-bar');
+    var val = document.getElementById('detail-prog-val');
     if (bar) bar.style.width = pct + '%';
     if (val) val.textContent = pct + '%';
-    const nav = document.getElementById(`nav-prog-${itemId}`);
+    var nav = document.getElementById('nav-prog-' + itemId);
     if (nav) nav.textContent = pct + '%';
 }
 
 function updateUIStats() {
-    let total = 0, done = 0;
-    db.forEach(item => {
-        let iTotal = 0, iDone = 0;
-        item.groups.forEach((g, gi) => g.tasks.forEach((t, ti) => {
-            total++; iTotal++;
-            if (cachedProgress[`${item.id}-${gi}-${ti}`]) { done++; iDone++; }
-        }));
-        const nav = document.getElementById(`nav-prog-${item.id}`);
+    var total = 0, done = 0;
+    db.forEach(function(item) {
+        var iTotal = 0, iDone = 0;
+        item.groups.forEach(function(g, gi) {
+            g.tasks.forEach(function(t, ti) {
+                total++; iTotal++;
+                if (cachedProgress[item.id + '-' + gi + '-' + ti]) { done++; iDone++; }
+            });
+        });
+        var nav = document.getElementById('nav-prog-' + item.id);
         if (nav) nav.textContent = (iTotal ? Math.round(iDone / iTotal * 100) : 0) + '%';
     });
-    const pct = total ? Math.round(done / total * 100) : 0;
-    const bar = document.getElementById('total-bar');
-    const prog = document.getElementById('total-progress');
+    var pct  = total ? Math.round(done / total * 100) : 0;
+    var bar  = document.getElementById('total-bar');
+    var prog = document.getElementById('total-progress');
     if (bar)  bar.style.width = pct + '%';
     if (prog) prog.textContent = pct + '%';
 }
@@ -667,7 +713,7 @@ function openSettings()     { toggleSettingsModal(true); }
 function closeSettings(e)   { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
 function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
 function loadSettings() {
-    const s = JSON.parse(localStorage.getItem('nkih_settings')) || {};
+    var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
     if (s.dark)      { document.body.classList.add('dark-mode');  document.getElementById('darkModeToggle').checked = true; }
     if (s.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
 }
@@ -679,7 +725,7 @@ function saveSettings() {
 }
 function toggleDarkMode() { document.body.classList.toggle('dark-mode');  saveSettings(); }
 function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
-function resetProgress()  { alert('Skontaktuj się z administratorem.'); }
+function resetProgress()  { alert('Skontaktuj sie z administratorem.'); }
 </script>
 </body>
 </html>
