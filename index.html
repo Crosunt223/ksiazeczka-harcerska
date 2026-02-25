@@ -614,7 +614,7 @@ function buildRoleSelector(userId, currentRole, userName) {
     roles.forEach(function(r) {
         opts += '<option value="' + r + '"' + (r === currentRole ? ' selected' : '') + '>' + r.charAt(0).toUpperCase() + r.slice(1) + '</option>';
     });
-    return '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;cursor:pointer;" onchange="promoteUser('' + userId + '','' + userName + '',this.value,this)">' + opts + '</select>';
+    return '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;cursor:pointer;" onchange="promoteUser(\'' + userId + '\',\'' + userName + '\',this.value,this)">' + opts + '</select>';
 }
 
 async function promoteUser(id, name, newRole, selectEl) {
