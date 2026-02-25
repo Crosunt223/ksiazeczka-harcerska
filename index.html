@@ -233,7 +233,6 @@ function canManage(myRole, targetRole) {
     return myRole === 'superadmin' || rankIndex(myRole) < rankIndex(targetRole);
 }
 function availableRoles(myRole) {
-    // Tylko superadmin i druzynowy moga nadawac role
     if (myRole === 'superadmin') return ['ksis','instruktor','druzynowy','zastepowy','podzastepowy','user'];
     if (myRole === 'druzynowy')  return ['zastepowy','podzastepowy','user'];
     return [];
@@ -245,7 +244,8 @@ function availableRoles(myRole) {
 let db = [];
 let currentUser       = null;
 let authToken         = null;
-let currentViewUserId = null;
+let currentViewUserId   = null;
+let currentViewUserRole = 'user';
 let cachedProgress    = {};
 
 // ================================================================
@@ -374,7 +374,7 @@ async function handleRegister() {
 // WYLOGOWANIE
 // ================================================================
 function handleLogout() {
-    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {};
+    authToken = null; currentUser = null; currentViewUserId = null; currentViewUserRole = 'user'; cachedProgress = {};
     sessionStorage.removeItem('hk_token');
     sessionStorage.removeItem('hk_user');
     toggleSettingsModal(false);
@@ -388,7 +388,7 @@ function handleLogout() {
 // ================================================================
 function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
-    if (['superadmin','ksis','instruktor','druzynowy','zastepowy','podzastepowy'].includes(currentUser.role)) {
+    if (currentUser.role !== 'user') {
         renderAdminDashboard();
     } else {
         apiFetch('/progress/' + currentUser.id).then(function(r) {
@@ -410,8 +410,11 @@ function initAppAfterLogin() {
 // TOGGLE ZADANIA
 // ================================================================
 async function toggleTask(taskId, itemId) {
-    if (currentUser.role === 'user') {
-        alert('Tylko druzynowy moze zatwierdzac sprawnosci!');
+    var myRank     = rankIndex(currentUser.role);
+    var targetRank = rankIndex(currentViewUserRole || 'user');
+    var canToggle  = currentUser.role === 'superadmin' || myRank < targetRank;
+    if (!canToggle) {
+        alert('Nie mozesz zatwierdzac sprawnosci tej osoby!');
         document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
@@ -441,24 +444,35 @@ async function renderAdminDashboard() {
 
     var result = await apiFetch('/team-members');
     if (!result.ok) {
-        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:red">Blad polaczenia z serwerem.<br><small>Sprawdz logi na Render.com</small></p></div>';
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:red">Blad polaczenia z serwerem.</p></div>';
         return;
     }
 
-    var members  = result.data;
+    var members = result.data;
     var pending  = members.filter(function(u) { return u.status === 'pending';  });
     var active   = members.filter(function(u) { return u.status === 'active';   });
     var rejected = members.filter(function(u) { return u.status === 'rejected'; });
+    var role     = currentUser.role;
+    var myRank   = rankIndex(role);
 
-    var isSuperAdmin = currentUser.role === 'superadmin';
+    var panelTitle = {
+        'superadmin':   '&#128081; Super Administrator',
+        'ksis':         '&#11088; Panel Ksiecia/Ksis',
+        'instruktor':   '&#127775; Panel Instruktora',
+        'druzynowy':    '&#128210; Panel Druzynowego',
+        'zastepowy':    '&#128203; Panel Zastepowego',
+        'podzastepowy': '&#128196; Panel Podzastepowego'
+    }[role] || 'Panel';
+
     var html = '<div class="welcome-header">'
         + '<h2>Czuwaj, ' + currentUser.name + '!</h2>'
-        + '<p>' + (isSuperAdmin ? '&#128081; Super Administrator' : 'Panel Druzynowego') + '</p>'
-        + (isSuperAdmin ? '<button onclick="renderTeamsPanel()" style="background:var(--accent);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#9881; Zarzadzaj druzyna</button>' : '')
+        + '<p>' + panelTitle + '</p>'
+        + (role === 'superadmin' ? '<button onclick="renderTeamsPanel()" style="background:var(--accent);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#9881; Zarzadzaj druzyna</button>' : '')
         + '</div>';
 
-    // OCZEKUJACE
-    if (pending.length > 0) {
+    // OCZEKUJACE — tylko druzynowy i superadmin moga akceptowac
+    var canApprove = (role === 'superadmin' || role === 'druzynowy');
+    if (canApprove && pending.length > 0) {
         html += '<div class="home-card" style="border-left:4px solid var(--accent);">'
             + '<h3 style="margin-top:0;color:var(--accent);">&#8987; Oczekujace prosby (' + pending.length + ')</h3>'
             + '<div style="display:grid;gap:10px;">';
@@ -467,8 +481,8 @@ async function renderAdminDashboard() {
                 + '<div><strong>&#128100; ' + u.name + '</strong>'
                 + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span></div>'
                 + '<div style="display:flex;gap:8px;">'
-                + '<button class="btn-sm btn-approve" onclick="approveUser(\'' + u._id + '\')">&#10003; Akceptuj</button>'
-                + '<button class="btn-sm btn-reject"  onclick="rejectUser(\''  + u._id + '\')">&#10007; Odrzuc</button>'
+                + '<button class="btn-sm btn-approve" onclick="approveUser('' + u._id + '')">&#10003; Akceptuj</button>'
+                + '<button class="btn-sm btn-reject"  onclick="rejectUser('' + u._id + '')">&#10007; Odrzuc</button>'
                 + '</div></div>';
         });
         html += '</div></div>';
@@ -480,32 +494,57 @@ async function renderAdminDashboard() {
         html += '<p style="color:var(--text-muted);text-align:center;margin:0;">Brak aktywnych harcerzy.</p>';
     } else {
         active.forEach(function(u) {
-            var esc = u.name.replace(/'/g, "\\'");
+            var esc       = u.name.replace(/'/g, "\'");
+            var uRank     = rankIndex(u.role);
+            var isLower   = role === 'superadmin' || myRank < uRank;
+
+            var roleLabel = ROLE_LABELS[u.role] || u.role;
+            var roleColor = ROLE_COLORS[u.role] || '#546e7a';
+
+            // Sprawnosci — kazdy moze edytowac osoby nizej w hierarchii
+            var canSprawnosci = isLower;
+            // Usuwanie — tylko superadmin
+            var canDelete = (role === 'superadmin');
+            // Zmiana roli — tylko superadmin i druzynowy
+            var canRole = isLower && (role === 'superadmin' || role === 'druzynowy');
+
+            var roleDropdown = '';
+            if (canRole) {
+                var availRoles = availableRoles(role);
+                var opts = '<option value="">-- Zmien range --</option>';
+                availRoles.forEach(function(r) {
+                    opts += '<option value="' + r + '"' + (r === u.role ? ' selected' : '') + '>'
+                        + (ROLE_LABELS[r] || r) + '</option>';
+                });
+                roleDropdown = '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;cursor:pointer;border:1px solid #90caf9;border-radius:8px;padding:6px 10px;font-weight:600;" data-uid="' + u._id + '" data-uname="' + esc + '" onchange="promoteUser(this.dataset.uid,this.dataset.uname,this.value,this)">' + opts + '</select>';
+            }
+
             html += '<div class="member-row">'
-                + '<div><strong>&#128100; ' + u.name + '</strong>'
-                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
-                + '<span class="status-badge status-active" style="margin-left:6px;">aktywny</span>'
-                + '<span style="font-size:0.75em;margin-left:6px;padding:2px 8px;border-radius:12px;background:#f5f5f5;color:' + (ROLE_COLORS[u.role] || '#546e7a') + ';font-weight:700;">' + (u.role || 'user') + '</span>'
+                + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+                + '<strong>&#128100; ' + u.name + '</strong>'
+                + '<span style="color:var(--text-muted);font-size:0.85em;">@' + u.username + '</span>'
+                + '<span class="status-badge status-active">aktywny</span>'
+                + '<span style="font-size:0.75em;padding:2px 8px;border-radius:12px;background:#f5f5f5;color:' + roleColor + ';font-weight:700;">' + roleLabel + '</span>'
                 + '</div>'
                 + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'
-                + (buildRoleSelector(u._id, u.role, esc) || '')
-                + '<button class="btn-sm btn-view"   onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\')">&#128203; Sprawnosci</button>'
-                + '<button class="btn-sm btn-delete" onclick="deleteUser(\''   + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + roleDropdown
+                + (canSprawnosci ? '<button class="btn-sm btn-view" onclick="switchToUser('' + u._id + '','' + esc + '','' + u.role + '')">&#128203; Sprawnosci</button>' : '')
+                + (canDelete     ? '<button class="btn-sm btn-delete" onclick="deleteUser('' + u._id + '','' + esc + '')">&#128465; Usun</button>' : '')
                 + '</div></div>';
         });
     }
     html += '</div></div>';
 
-    // ODRZUCENI
-    if (rejected.length > 0) {
+    // ODRZUCENI — tylko superadmin
+    if (role === 'superadmin' && rejected.length > 0) {
         html += '<div class="home-card" style="opacity:0.7;"><h3 style="margin-top:0;color:var(--text-muted);">Odrzucone konta (' + rejected.length + ')</h3><div style="display:grid;gap:10px;">';
         rejected.forEach(function(u) {
-            var esc = u.name.replace(/'/g, "\\'");
+            var esc = u.name.replace(/'/g, "\'");
             html += '<div class="member-row">'
                 + '<div><strong>&#128100; ' + u.name + '</strong>'
                 + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
                 + '<span class="status-badge status-rejected" style="margin-left:6px;">odrzucony</span></div>'
-                + '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + '<button class="btn-sm btn-delete" onclick="deleteUser('' + u._id + '','' + esc + '')">&#128465; Usun</button>'
                 + '</div>';
         });
         html += '</div></div>';
@@ -633,9 +672,10 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
-async function switchToUser(userId, userName) {
-    currentViewUserId = userId;
-    cachedProgress    = {};
+async function switchToUser(userId, userName, userRole) {
+    currentViewUserId   = userId;
+    currentViewUserRole = userRole || 'user';
+    cachedProgress      = {};
     var r = await apiFetch('/progress/' + userId);
     cachedProgress = r.ok ? r.data : {};
     goHome();
@@ -643,6 +683,7 @@ async function switchToUser(userId, userName) {
     setTimeout(function() {
         var p = document.querySelector('.welcome-header p');
         if (p) p.innerHTML = 'Edytujesz: <strong style="color:var(--primary)">' + userName + '</strong>'
+            + ' <span style="font-size:0.8em;color:var(--text-muted);">(' + (ROLE_LABELS[userRole] || userRole) + ')</span>'
             + ' &nbsp;<a href="#" onclick="renderAdminDashboard();return false;" style="font-size:0.8em;color:var(--text-muted)">[Wróc]</a>';
     }, 30);
 }
