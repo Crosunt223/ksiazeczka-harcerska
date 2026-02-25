@@ -204,6 +204,42 @@
 const API = 'https://harcerze-backend.onrender.com/api';
 
 // ================================================================
+// HIERARCHIA RAN
+// ================================================================
+var HIERARCHY = ['superadmin','ksis','instruktor','druzynowy','zastepowy','podzastepowy','user'];
+var ROLE_LABELS = {
+    'superadmin':  '&#128081; Super Admin',
+    'ksis':        '&#11088; Ksis',
+    'instruktor':  '&#127775; Instruktor',
+    'druzynowy':   '&#128210; Druzynowy',
+    'zastepowy':   '&#128203; Zastepowy',
+    'podzastepowy':'&#128196; Podzastepowy',
+    'user':        '&#128100; Harcerz'
+};
+var ROLE_COLORS = {
+    'superadmin': '#7b1fa2',
+    'ksis':       '#c62828',
+    'instruktor': '#e65100',
+    'druzynowy':  '#1565c0',
+    'zastepowy':    '#2e7d32',
+    'podzastepowy': '#558b2f',
+    'user':         '#546e7a'
+};
+function rankIndex(role) {
+    var i = HIERARCHY.indexOf(role);
+    return i === -1 ? 999 : i;
+}
+function canManage(myRole, targetRole) {
+    return myRole === 'superadmin' || rankIndex(myRole) < rankIndex(targetRole);
+}
+function availableRoles(myRole) {
+    // Zwraca role ktore moge nadac (nizsze od mojej)
+    if (myRole === 'superadmin') return ['ksis','instruktor','druzynowy','zastepowy','user'];
+    var myIdx = rankIndex(myRole);
+    return HIERARCHY.filter(function(r) { return rankIndex(r) > myIdx && r !== 'superadmin'; });
+}
+
+// ================================================================
 // ZMIENNE GLOBALNE
 // ================================================================
 let db = [];
@@ -360,6 +396,13 @@ function initAppAfterLogin() {
             goHome();
             renderSidebar();
         });
+        // Pobierz nazwe druzyny i pokaz w sidebarze
+        apiFetch('/my-team').then(function(r) {
+            if (r.ok && r.data.teamName) {
+                var brand = document.querySelector('.brand small');
+                if (brand) brand.textContent = r.data.teamName;
+            }
+        });
     }
 }
 
@@ -441,7 +484,9 @@ async function renderAdminDashboard() {
             html += '<div class="member-row">'
                 + '<div><strong>&#128100; ' + u.name + '</strong>'
                 + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
-                + '<span class="status-badge status-active" style="margin-left:6px;">aktywny</span></div>'
+                + '<span class="status-badge status-active" style="margin-left:6px;">aktywny</span>'
+                + '<span style="font-size:0.75em;margin-left:6px;padding:2px 8px;border-radius:12px;background:#f5f5f5;color:' + (ROLE_COLORS[u.role] || '#546e7a') + ';font-weight:700;">' + (u.role || 'user') + '</span>'
+                + '</div>'
                 + '<div style="display:flex;gap:8px;">'
                 + '<button class="btn-sm btn-view"   onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\')">&#128203; Sprawnosci</button>'
                 + '<button class="btn-sm btn-delete" onclick="deleteUser(\''   + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
@@ -557,6 +602,36 @@ async function deleteUser(id, name) {
     r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
 }
 
+function buildRoleSelector(userId, currentRole, userName) {
+    var roles = availableRoles(currentUser.role);
+    if (roles.length === 0) return '';
+    var myRank = rankIndex(currentUser.role);
+    var targetRank = rankIndex(currentRole);
+    // Moge zmienic tylko jesli mam wyzsza range
+    if (currentUser.role !== 'superadmin' && myRank >= targetRank) return '';
+
+    var opts = '<option value="">-- Zmien range --</option>';
+    roles.forEach(function(r) {
+        opts += '<option value="' + r + '"' + (r === currentRole ? ' selected' : '') + '>' + r.charAt(0).toUpperCase() + r.slice(1) + '</option>';
+    });
+    return '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;cursor:pointer;" onchange="promoteUser('' + userId + '','' + userName + '',this.value,this)">' + opts + '</select>';
+}
+
+async function promoteUser(id, name, newRole, selectEl) {
+    if (!newRole) return;
+    if (!confirm('Zmienic range uzytkownika "' + name + '" na: ' + newRole + '?')) {
+        selectEl.value = '';
+        return;
+    }
+    var r = await apiFetch('/users/' + id + '/promote', { method: 'POST', body: JSON.stringify({ newRole: newRole }) });
+    if (r.ok) {
+        renderAdminDashboard();
+    } else {
+        alert(r.data.error || 'Blad.');
+        selectEl.value = '';
+    }
+}
+
 async function switchToUser(userId, userName) {
     currentViewUserId = userId;
     cachedProgress    = {};
@@ -581,6 +656,7 @@ function goHome() {
         '<div class="welcome-header">'
         + '<h2>Czuwaj!</h2>'
         + '<p>' + (isAdmin ? 'Tryb edycji podopiecznego' : 'Ksiazeczka Harcerska') + '</p>'
+        + '<p id="user-team-info" style="color:var(--primary);font-weight:600;font-size:0.95em;margin-top:4px;"></p>'
         + (isAdmin ? '<button onclick="renderAdminDashboard()" style="background:var(--accent);border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:10px;font-size:0.9rem;">&#8592; Wróc do druzyny</button>' : '')
         + '</div>'
         + '<div class="home-card">'
@@ -616,6 +692,13 @@ function renderSidebar(filterText) {
         });
     });
     updateUIStats();
+    // Pokaz druzyne zalogowanego usera
+    if (currentUser && currentUser.teamId) {
+        apiFetch('/my-team').then(function(r) {
+            var el = document.getElementById('user-team-info');
+            if (el && r.ok && r.data.teamName) el.textContent = '&#128210; ' + r.data.teamName;
+        });
+    }
 }
 
 function loadContent(id) {
