@@ -240,6 +240,65 @@ body.dark .login-box h2{color:var(--f2);}
 .bnav-label{font-size:.59rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
 
 /* Placeholder kafelki */
+.team-edit-panel{
+  background:var(--panel);border-radius:var(--r);border:1px solid var(--border);
+  padding:20px;margin-top:16px;display:flex;flex-direction:column;gap:14px;
+  max-width:420px;margin-left:auto;margin-right:auto;
+}
+.team-edit-row{display:flex;flex-direction:column;gap:6px;}
+.team-edit-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.team-profile-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;text-align:center;
+}
+.team-profile-img{
+  width:160px;height:160px;border-radius:24px;object-fit:cover;
+  border:3px solid var(--f4);box-shadow:0 8px 32px rgba(13,31,20,.18);
+  margin-bottom:20px;background:var(--panel2);
+}
+.team-profile-name{
+  font-family:"Playfair Display",serif;font-size:1.6rem;
+  color:var(--text);font-weight:700;
+}
+.profile-card{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:32px 24px 24px;margin-bottom:16px;border:1px solid var(--border);
+  text-align:center;
+}
+.profile-avatar-wrap{position:relative;display:inline-block;margin-bottom:16px;}
+.profile-avatar{
+  width:100px;height:100px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--f4);box-shadow:0 4px 16px rgba(13,31,20,.15);
+  background:var(--panel2);
+}
+.profile-avatar-edit{
+  position:absolute;bottom:2px;right:2px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--amber);border:none;color:#fff;
+  font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.profile-name{
+  font-family:"Playfair Display",serif;font-size:1.5rem;
+  color:var(--text);margin-bottom:6px;font-weight:700;
+}
+.profile-edit-name-btn{
+  background:none;border:none;color:var(--muted);font-size:.82rem;
+  cursor:pointer;text-decoration:underline;margin-bottom:10px;
+  font-family:"DM Sans",sans-serif;
+}
+.profile-role-badge{
+  display:inline-block;padding:4px 14px;border-radius:20px;
+  background:var(--panel2);color:var(--f4);font-size:.78rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;
+}
+.profile-team{
+  color:var(--muted);font-size:.9rem;margin-top:4px;
+}
+.profile-edit-form{
+  background:var(--panel2);border-radius:var(--rs);
+  padding:16px;margin-top:12px;text-align:left;
+  border:1px solid var(--border);
+}
 .placeholder-screen{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   min-height:60vh;color:var(--muted);
@@ -511,8 +570,8 @@ input:checked+.slider:before{transform:translateX(21px);}
   <!-- BOTTOM NAV — 4 przyciski jak na screenshocie -->
   <nav class="bottom-nav">
     <button class="bnav-btn" id="bnav-profile" onclick="bnavClick('profile')">
-      <div class="bnav-icon">&#128100;</div>
-      <span class="bnav-label">Profil</span>
+      <div class="bnav-icon">&#127956;</div>
+      <span class="bnav-label">Druzyna</span>
     </button>
     <button class="bnav-btn" id="bnav-book" onclick="bnavClick('book')">
       <div class="bnav-icon">&#128214;</div>
@@ -727,6 +786,7 @@ function initAppAfterLogin() {
     document.getElementById('appShell').style.display = 'flex';
     if (currentUser.role !== 'user') {
         bnavSetActive('book');
+        showSidebarArea();
         renderAdminDashboard();
     } else if (currentUser.status === 'pending' || currentUser.status === 'rejected') {
         showPendingScreen();
@@ -1176,27 +1236,141 @@ function bnavSetActive(tab) {
 
 function bnavClick(tab) {
     bnavSetActive(tab);
+    if (tab === 'profile') {
+        hideSidebarArea();
+        showProfileTab();
+    }
     if (tab === 'book') {
-        // Pokaż sidebar na mobile, wróć do głównego widoku
+        showSidebarArea();
         goHome();
         renderSidebar();
-        // Na mobile — otwórz sidebar
-        if (window.innerWidth <= 900) { openSidebar(); }
-    }
-    if (tab === 'profile') {
-        closeSidebar();
-        document.getElementById('contentArea').innerHTML =
-            '<div class="placeholder-screen"><div class="ph-icon">&#128100;</div><p>Profil — wkrótce</p></div>';
     }
     if (tab === 'uniform') {
-        closeSidebar();
+        hideSidebarArea();
         document.getElementById('contentArea').innerHTML =
             '<div class="placeholder-screen"><div class="ph-icon">&#129333;</div><p>Moj mundur — wkrótce</p></div>';
     }
     if (tab === 'settings') {
-        closeSidebar();
+        hideSidebarArea();
         openSettings();
     }
+}
+
+function showProfileTab() {
+    var teamName = (currentUser && currentUser.teamName) || (document.querySelector('.sidebar-team-name') || {}).textContent || '';
+    var storedImg = localStorage.getItem('team_img_' + (currentUser && currentUser.teamId || 'default'));
+    var storedName = localStorage.getItem('team_name_' + (currentUser && currentUser.teamId || 'default'));
+    if (storedName) teamName = storedName;
+    var imgSrc = storedImg || ('https://api.dicebear.com/7.x/shapes/svg?seed=' + encodeURIComponent(teamName||'druzyna') + '&backgroundColor=1a3424');
+    var isSuperAdmin = currentUser && currentUser.role === 'superadmin';
+
+    var editHtml = '';
+    if (isSuperAdmin) {
+        editHtml = '<div class="team-edit-panel">'
+            + '<div class="team-edit-row">'
+            +   '<label class="team-edit-label">Nazwa druzyny</label>'
+            +   '<div style="display:flex;gap:8px;align-items:center">'
+            +     '<input id="teamNameInput" class="input-add" value="' + teamName.replace(/"/g,'&quot;') + '" placeholder="Nazwa druzyny">'
+            +     '<button class="btn-sm btn-approve" onclick="saveTeamName()">Zapisz</button>'
+            +   '</div>'
+            + '</div>'
+            + '<div class="team-edit-row">'
+            +   '<label class="team-edit-label">Zdjecie druzyny</label>'
+            +   '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+            +     '<input type="file" id="teamImgFile" accept="image/*" style="display:none" onchange="handleTeamImgFile(event)">'
+            +     '<button class="btn-sm btn-view" onclick="document.getElementById('teamImgFile').click()">&#128247; Wybierz plik</button>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    document.getElementById('contentArea').innerHTML =
+        '<div class="team-profile-card">'
+        + '<div class="team-img-wrap">'
+        +   '<img id="teamProfileImg" src="' + imgSrc + '" class="team-profile-img" alt="druzyna">'
+        + '</div>'
+        + '<div class="team-profile-name" id="teamProfileNameDisplay">' + teamName + '</div>'
+        + '</div>'
+        + editHtml;
+}
+
+function saveTeamName() {
+    var val = document.getElementById('teamNameInput').value.trim();
+    if (!val) return;
+    var key = 'team_name_' + (currentUser && currentUser.teamId || 'default');
+    localStorage.setItem(key, val);
+    currentUser.teamName = val;
+    var el = document.getElementById('teamProfileNameDisplay');
+    if (el) el.textContent = val;
+    var sb = document.querySelector('.sidebar-team-name');
+    if (sb) sb.textContent = val;
+    // Spróbuj też zapisać na serwerze
+    apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ name: val }) }).catch(function(){});
+}
+
+function handleTeamImgFile(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        var key = 'team_img_' + (currentUser && currentUser.teamId || 'default');
+        localStorage.setItem(key, dataUrl);
+        var img = document.getElementById('teamProfileImg');
+        if (img) img.src = dataUrl;
+        // Spróbuj też zapisać na serwerze
+        apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ avatar: dataUrl }) }).catch(function(){});
+    };
+    reader.readAsDataURL(file);
+}
+
+function openNameEdit() {
+    document.getElementById('nameEditForm').style.display = 'block';
+    document.getElementById('nameEditInput').value = currentUser.name || '';
+    document.getElementById('nameEditInput').focus();
+}
+function closeNameEdit() { document.getElementById('nameEditForm').style.display = 'none'; }
+
+async function saveName() {
+    var val = document.getElementById('nameEditInput').value.trim();
+    if (!val) return;
+    var r = await apiFetch('/update-profile', { method: 'POST', body: JSON.stringify({ name: val }) });
+    if (r.ok) {
+        currentUser.name = val;
+        document.getElementById('profileNameDisplay').textContent = val;
+        closeNameEdit();
+    } else {
+        alert((r.data && r.data.message) || 'Blad zapisu.');
+    }
+}
+
+function openAvatarEdit() {
+    document.getElementById('avatarEditForm').style.display = 'block';
+    document.getElementById('avatarEditInput').value = currentUser.avatar || '';
+    document.getElementById('avatarEditInput').focus();
+}
+function closeAvatarEdit() { document.getElementById('avatarEditForm').style.display = 'none'; }
+
+async function saveAvatar() {
+    var val = document.getElementById('avatarEditInput').value.trim();
+    if (!val) return;
+    var r = await apiFetch('/update-profile', { method: 'POST', body: JSON.stringify({ avatar: val }) });
+    if (r.ok) {
+        currentUser.avatar = val;
+        document.getElementById('profileAvatar').src = val;
+        closeAvatarEdit();
+    } else {
+        alert((r.data && r.data.message) || 'Blad zapisu.');
+    }
+}
+
+function showSidebarArea() {
+    document.getElementById('sidebar').style.display = '';
+}
+function hideSidebarArea() {
+    // Na PC chowamy sidebar, na mobile i tak jest ukryty
+    document.getElementById('sidebar').style.display = 'none';
+    closeSidebar();
 }
 
 // ── Sidebar mobile ────────────────────────────────────
@@ -1297,11 +1471,12 @@ async function submitRegisterWithTeam() {
 
     if (result.ok) {
         document.getElementById('teamPickOverlay').classList.remove('active');
+        ['regUsername','regName','regPassword','regPassword2'].forEach(function(id){ document.getElementById(id).value=''; });
         showPanel('login');
-        showMsg('loginMsg', 'Konto utworzone! Poczekaj na akceptacje druzynowego.', 'success');
+        showMsg('loginMsg', (result.data && result.data.message) || 'Konto utworzone! Poczekaj na akceptacje druzynowego.', 'success');
     } else {
         document.getElementById('teamPickOverlay').classList.remove('active');
-        showMsg('registerMsg', result.error || 'Blad rejestracji.');
+        showMsg('registerMsg', (result.data && result.data.message) || 'Blad rejestracji.');
     }
 }
 
