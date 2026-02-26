@@ -747,6 +747,11 @@ async function handleLogin() {
 // REJESTRACJA
 // ================================================================
 async function handleRegister() {
+    // Przekieruj do nowego flow z wyborem druzyny
+    goToTeamPick();
+    return;
+}
+async function _handleRegisterOriginal() {
     var username  = document.getElementById('regUsername').value.trim().toLowerCase();
     var name      = document.getElementById('regName').value.trim();
     var password  = document.getElementById('regPassword').value;
@@ -1552,11 +1557,13 @@ function goToTeamPick() {
         teams.forEach(function(t) {
             var btn = document.createElement('button');
             btn.className = 'team-pick-btn';
-            btn.textContent = t.name;
+            // Pokaz nazwe druzyny
+            btn.textContent = t.name || t.teamId;
             btn.onclick = function() {
                 document.querySelectorAll('.team-pick-btn').forEach(function(b){ b.classList.remove('sel'); });
                 btn.classList.add('sel');
-                _selectedTeamId = t._id;
+                // Serwer sprawdza Team.findOne({ teamId }) wiec wysylamy string teamId
+                _selectedTeamId = t.teamId;
                 document.getElementById('teamPickConfirm').classList.add('show');
             };
             list.appendChild(btn);
