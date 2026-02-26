@@ -784,6 +784,16 @@ function handleLogout() {
 function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
     document.getElementById('appShell').style.display = 'flex';
+
+    // Pobierz dane druzyny dla kazdego uzytkownika
+    apiFetch('/my-team').then(function(r) {
+        if (r.ok && r.data) {
+            if (r.data.teamName) currentUser.teamName = r.data.teamName;
+            if (r.data.teamId)   currentUser.teamId   = r.data.teamId;
+            if (r.data._id)      currentUser.teamId   = r.data._id;
+        }
+    });
+
     if (currentUser.role !== 'user') {
         bnavSetActive('book');
         showSidebarArea();
@@ -796,13 +806,6 @@ function initAppAfterLogin() {
             bnavSetActive('book');
             goHome();
             renderSidebar();
-        });
-        // Pobierz nazwe druzyny i pokaz w sidebarze
-        apiFetch('/my-team').then(function(r) {
-            if (r.ok && r.data.teamName) {
-                var brand = document.querySelector('.brand small');
-                if (brand) brand.textContent = r.data.teamName;
-            }
         });
     }
 }
@@ -1257,11 +1260,28 @@ function bnavClick(tab) {
 }
 
 function showProfileTab() {
-    var teamName = (currentUser && currentUser.teamName) || (document.querySelector('.sidebar-team-name') || {}).textContent || '';
-    var storedImg = localStorage.getItem('team_img_' + (currentUser && currentUser.teamId || 'default'));
-    var storedName = localStorage.getItem('team_name_' + (currentUser && currentUser.teamId || 'default'));
+    if (!(currentUser && currentUser.teamName)) {
+        apiFetch('/my-team').then(function(r) {
+            if (r.ok && r.data) {
+                if (r.data.teamName) currentUser.teamName = r.data.teamName;
+                if (r.data._id)      currentUser.teamId   = r.data._id;
+            }
+            _renderProfileTab();
+        });
+    } else {
+        _renderProfileTab();
+    }
+}
+
+function _renderProfileTab() {
+    var teamName   = (currentUser && currentUser.teamName) || 'Twoja druzyna';
+    var teamKey    = 'team_' + ((currentUser && currentUser.teamId) || 'default');
+    var storedImg  = localStorage.getItem(teamKey + '_img');
+    var storedName = localStorage.getItem(teamKey + '_name');
     if (storedName) teamName = storedName;
-    var imgSrc = storedImg || ('https://api.dicebear.com/7.x/shapes/svg?seed=' + encodeURIComponent(teamName||'druzyna') + '&backgroundColor=1a3424');
+
+    var imgSrc = storedImg || ('https://api.dicebear.com/7.x/shapes/svg?seed='
+        + encodeURIComponent(teamName) + '&backgroundColor=1a3424&size=200');
     var isSuperAdmin = currentUser && currentUser.role === 'superadmin';
 
     var editHtml = '';
@@ -1276,28 +1296,28 @@ function showProfileTab() {
             + '</div>'
             + '<div class="team-edit-row">'
             +   '<label class="team-edit-label">Zdjecie druzyny</label>'
-            +   '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-            +     '<input type="file" id="teamImgFile" accept="image/*" style="display:none" onchange="handleTeamImgFile(event)">'
-            +     '<button class="btn-sm btn-view" onclick="document.getElementById('teamImgFile').click()">&#128247; Wybierz plik</button>'
-            +   '</div>'
+            +   '<input type="file" id="teamImgFile" accept="image/*" style="display:none" onchange="handleTeamImgFile(event)">'
+            +   '<button class="btn-sm btn-view" onclick="triggerTeamImgPick()">&#128247; Wybierz zdjecie z dysku</button>'
             + '</div>'
             + '</div>';
     }
 
     document.getElementById('contentArea').innerHTML =
         '<div class="team-profile-card">'
-        + '<div class="team-img-wrap">'
-        +   '<img id="teamProfileImg" src="' + imgSrc + '" class="team-profile-img" alt="druzyna">'
-        + '</div>'
+        + '<img id="teamProfileImg" src="' + imgSrc + '" class="team-profile-img" alt="druzyna">'
         + '<div class="team-profile-name" id="teamProfileNameDisplay">' + teamName + '</div>'
         + '</div>'
         + editHtml;
 }
 
+
+function triggerTeamImgPick() {
+    document.getElementById('teamImgFile').click();
+}
 function saveTeamName() {
     var val = document.getElementById('teamNameInput').value.trim();
     if (!val) return;
-    var key = 'team_name_' + (currentUser && currentUser.teamId || 'default');
+    var key = 'team_' + ((currentUser && currentUser.teamId) || 'default') + '_name';
     localStorage.setItem(key, val);
     currentUser.teamName = val;
     var el = document.getElementById('teamProfileNameDisplay');
@@ -1314,7 +1334,7 @@ function handleTeamImgFile(event) {
     var reader = new FileReader();
     reader.onload = function(e) {
         var dataUrl = e.target.result;
-        var key = 'team_img_' + (currentUser && currentUser.teamId || 'default');
+        var key = 'team_' + ((currentUser && currentUser.teamId) || 'default') + '_img';
         localStorage.setItem(key, dataUrl);
         var img = document.getElementById('teamProfileImg');
         if (img) img.src = dataUrl;
