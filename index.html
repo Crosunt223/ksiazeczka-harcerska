@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ksiazeczka Harcerska</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/franklin-gothic-book" rel="stylesheet">
 <style>
 :root{
   --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
@@ -31,7 +32,7 @@ body.dark-mode{
 }
 body.large-text{font-size:20px;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
+body{font-family:"Barlow", sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
 /* ══════════════════════════════════════════════
@@ -49,14 +50,14 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);tra
 }
 body.dark .login-box{background:rgba(23,34,24,.97);}
 .login-box h2{
-  font-family:"Playfair Display",serif;font-size:2rem;color:var(--f8);
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;color:var(--f8);
   margin-bottom:24px;text-align:center;
 }
 body.dark .login-box h2{color:var(--f2);}
 .login-box input,.login-box select{
   width:100%;padding:13px 15px;border:1.5px solid var(--border);
   border-radius:var(--rs);background:var(--bg);color:var(--text);
-  font-family:"DM Sans",sans-serif;font-size:.95rem;outline:none;
+  font-family:"Barlow", sans-serif;font-size:.95rem;outline:none;
   transition:.2s;margin-bottom:10px;display:block;
 }
 .login-box input:focus,.login-box select:focus{
@@ -67,14 +68,14 @@ body.dark .login-box h2{color:var(--f2);}
   background:linear-gradient(135deg,var(--f5),var(--f3));
   border:none;border-radius:var(--rs);color:#fff;font-weight:600;
   font-size:1rem;cursor:pointer;transition:.2s;margin-top:4px;
-  font-family:"DM Sans",sans-serif;
+  font-family:"Barlow", sans-serif;
 }
 .btn-main:hover{opacity:.9;transform:translateY(-1px);}
 .btn-link{
   width:100%;padding:11px;background:transparent;
   border:1.5px solid var(--border);border-radius:var(--rs);
   color:var(--muted);font-size:.88rem;cursor:pointer;transition:.2s;
-  margin-top:8px;font-family:"DM Sans",sans-serif;
+  margin-top:8px;font-family:"Barlow", sans-serif;
 }
 .btn-link:hover{border-color:var(--f4);color:var(--f5);}
 .login-msg{font-size:.83em;padding:8px 12px;border-radius:var(--rs);margin-top:8px;display:none;}
@@ -97,7 +98,7 @@ body.dark .login-box h2{color:var(--f2);}
   box-shadow:0 24px 64px rgba(0,0,0,.55);
 }
 .team-pick-title{
-  font-family:"Playfair Display",serif;font-size:1.3rem;font-weight:700;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.3rem;font-weight:700;
   color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;
 }
 .team-pick-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
@@ -106,7 +107,7 @@ body.dark .login-box h2{color:var(--f2);}
   border:2px solid rgba(168,208,128,.25);
   background:rgba(255,255,255,.05);
   color:var(--f1);font-size:.95rem;font-weight:500;
-  cursor:pointer;transition:.2s;font-family:"DM Sans",sans-serif;
+  cursor:pointer;transition:.2s;font-family:"Barlow", sans-serif;
 }
 .team-pick-btn:hover{background:rgba(78,138,42,.2);border-color:var(--f3);}
 .team-pick-btn.sel{
@@ -116,7 +117,7 @@ body.dark .login-box h2{color:var(--f2);}
   width:100%;padding:14px;
   background:linear-gradient(135deg,var(--f5),var(--f3));
   border:none;border-radius:var(--rs);color:#fff;font-weight:700;
-  font-size:1rem;cursor:pointer;font-family:"DM Sans",sans-serif;
+  font-size:1rem;cursor:pointer;font-family:"Barlow", sans-serif;
   display:none;transition:.2s;
 }
 .team-pick-confirm.show{display:block;}
@@ -124,7 +125,7 @@ body.dark .login-box h2{color:var(--f2);}
 .team-pick-back{
   margin-top:14px;background:none;border:none;
   color:rgba(168,208,128,.6);font-size:.83rem;cursor:pointer;
-  font-family:"DM Sans",sans-serif;text-decoration:underline;
+  font-family:"Barlow", sans-serif;text-decoration:underline;
 }
 
 /* ══════════════════════════════════════════════
@@ -140,7 +141,7 @@ body.dark .login-box h2{color:var(--f2);}
 .pending-icon{font-size:3.5rem;margin-bottom:20px;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 .pending-title{
-  font-family:"Playfair Display",serif;font-size:1.5rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.5rem;
   color:var(--text);margin-bottom:12px;
 }
 .pending-sub{color:var(--muted);font-size:.92rem;line-height:1.65;max-width:280px;}
@@ -148,7 +149,7 @@ body.dark .login-box h2{color:var(--f2);}
   margin-top:32px;padding:10px 22px;
   background:transparent;border:1.5px solid var(--border);
   border-radius:var(--rs);color:var(--muted);cursor:pointer;
-  font-size:.85rem;font-family:"DM Sans",sans-serif;transition:.2s;
+  font-size:.85rem;font-family:"Barlow", sans-serif;transition:.2s;
 }
 .pending-logout:hover{border-color:var(--f4);color:var(--f5);}
 
@@ -163,7 +164,7 @@ body.dark .login-box h2{color:var(--f2);}
   display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
 }
 .topbar-brand{
-  font-family:"Playfair Display",serif;font-size:1rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1rem;
   color:#e8f5d0;flex:1;cursor:pointer;line-height:1.2;
 }
 .topbar-brand small{display:block;font-size:.65rem;color:#6a9a6a;}
@@ -182,7 +183,7 @@ body.dark .login-box h2{color:var(--f2);}
   width:100%;padding:9px 13px;border-radius:30px;border:none;
   background:rgba(255,255,255,.08);color:var(--f1);
   font-size:.86rem;outline:none;transition:.2s;
-  font-family:"DM Sans",sans-serif;
+  font-family:"Barlow", sans-serif;
 }
 .sidebar-search input::placeholder{color:#4a6a4a;}
 .sidebar-search input:focus{background:rgba(255,255,255,.14);}
@@ -225,7 +226,7 @@ body.dark .login-box h2{color:var(--f2);}
   align-items:center;justify-content:center;gap:4px;
   cursor:pointer;padding:6px 4px;border-radius:var(--rs);
   transition:.18s;color:#4a6a4a;border:none;background:none;
-  font-family:"DM Sans",sans-serif;
+  font-family:"Barlow", sans-serif;
 }
 .bnav-btn:hover{color:var(--f2);}
 .bnav-btn.active{color:var(--f1);}
@@ -259,7 +260,7 @@ body.dark .login-box h2{color:var(--f2);}
   margin-bottom:20px;background:var(--panel2);
 }
 .team-profile-name{
-  font-family:"Playfair Display",serif;font-size:1.6rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.6rem;
   color:var(--text);font-weight:700;
 }
 .profile-card{
@@ -280,13 +281,13 @@ body.dark .login-box h2{color:var(--f2);}
   font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
 }
 .profile-name{
-  font-family:"Playfair Display",serif;font-size:1.5rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.5rem;
   color:var(--text);margin-bottom:6px;font-weight:700;
 }
 .profile-edit-name-btn{
   background:none;border:none;color:var(--muted);font-size:.82rem;
   cursor:pointer;text-decoration:underline;margin-bottom:10px;
-  font-family:"DM Sans",sans-serif;
+  font-family:"Barlow", sans-serif;
 }
 .profile-role-badge{
   display:inline-block;padding:4px 14px;border-radius:20px;
@@ -333,7 +334,7 @@ body.dark .login-box h2{color:var(--f2);}
 }
 body.dark .cat-badge{color:var(--f2);}
 .header-section h2{
-  font-family:"Playfair Display",serif;font-size:1.75rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.75rem;
   color:var(--text);margin:6px 0 16px;
 }
 .big-progress-wrapper{background:var(--panel2);height:7px;border-radius:4px;overflow:hidden;}
@@ -370,7 +371,7 @@ body.dark .cat-badge{color:var(--f2);}
 
 .welcome-header{text-align:center;padding:36px 20px 28px;}
 .welcome-header h2{
-  font-family:"Playfair Display",serif;font-size:2rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;
   color:var(--f5);margin-bottom:6px;
 }
 body.dark .welcome-header h2{color:var(--f2);}
@@ -382,7 +383,7 @@ body.dark .welcome-header h2{color:var(--f2);}
   margin-bottom:18px;border:1px solid var(--border);
 }
 .home-card h3{
-  font-family:"Playfair Display",serif;font-size:1.05rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.05rem;
   margin-bottom:14px;color:var(--text);
 }
 .image-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
@@ -398,7 +399,7 @@ body.dark .welcome-header h2{color:var(--f2);}
 .btn-sm{
   padding:7px 13px;border:none;border-radius:var(--rs);
   font-weight:600;cursor:pointer;font-size:.79rem;transition:.16s;
-  font-family:"DM Sans",sans-serif;
+  font-family:"Barlow", sans-serif;
 }
 .btn-approve{background:var(--f4);color:#fff;}.btn-approve:hover{background:var(--f5);}
 .btn-reject{background:#fee8e8;color:#c33;}.btn-reject:hover{background:#fdd;}
@@ -413,7 +414,7 @@ body.dark .welcome-header h2{color:var(--f2);}
 .input-add{
   flex:1;padding:10px 13px;border:1.5px solid var(--border);
   border-radius:var(--rs);background:var(--panel2);color:var(--text);
-  font-size:.9rem;outline:none;font-family:"DM Sans",sans-serif;
+  font-size:.9rem;outline:none;font-family:"Barlow", sans-serif;
 }
 .input-add:focus{border-color:var(--f4);}
 
@@ -428,7 +429,7 @@ body.dark .welcome-header h2{color:var(--f2);}
   width:290px;box-shadow:var(--shadow-lg);position:relative;color:var(--text);
 }
 .settings-content h3{
-  font-family:"Playfair Display",serif;font-size:1.15rem;
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.15rem;
   margin-bottom:18px;color:var(--f5);
 }
 .close-settings{position:absolute;top:13px;right:16px;font-size:20px;cursor:pointer;color:var(--muted);}
@@ -448,7 +449,7 @@ input:checked+.slider{background:var(--f4);}
 input:checked+.slider:before{transform:translateX(21px);}
 .settings-btn-action{
   width:100%;padding:11px;margin-top:10px;border:none;border-radius:var(--rs);
-  font-weight:600;cursor:pointer;transition:.2s;font-size:.88rem;font-family:"DM Sans",sans-serif;
+  font-weight:600;cursor:pointer;transition:.2s;font-size:.88rem;font-family:"Barlow", sans-serif;
 }
 .btn-reset {background:#fee8e8;color:#c33;}
 .btn-logout{background:var(--f5);color:#fff;margin-top:6px;}
