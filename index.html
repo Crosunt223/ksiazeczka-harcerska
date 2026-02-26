@@ -656,8 +656,8 @@ window.onload = async () => {
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
-    const savedToken = sessionStorage.getItem('hk_token');
-    const savedUser  = sessionStorage.getItem('hk_user');
+    const savedToken = localStorage.getItem('hk_token');
+    const savedUser  = localStorage.getItem('hk_user');
     if (savedToken && savedUser) {
         authToken   = savedToken;
         currentUser = JSON.parse(savedUser);
@@ -737,8 +737,8 @@ async function handleLogin() {
 
     authToken   = result.data.token;
     currentUser = result.data.user;
-    sessionStorage.setItem('hk_token', authToken);
-    sessionStorage.setItem('hk_user',  JSON.stringify(currentUser));
+    localStorage.setItem('hk_token', authToken);
+    localStorage.setItem('hk_user', JSON.stringify(currentUser));
     document.getElementById('loginOverlay').style.display = 'none';
     initAppAfterLogin();
 }
@@ -779,8 +779,8 @@ async function _handleRegisterOriginal() {
 // ================================================================
 function handleLogout() {
     authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen();
-    sessionStorage.removeItem('hk_token');
-    sessionStorage.removeItem('hk_user');
+    localStorage.removeItem('hk_token');
+    localStorage.removeItem('hk_user');
     toggleSettingsModal(false);
     document.getElementById('navList').innerHTML = '';
     document.getElementById('contentArea').innerHTML = '';
@@ -794,6 +794,8 @@ function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
     window._currentViewUserRole = currentUser.role;
     window._currentViewUserName = currentUser.name;
+    // Panele dla zastepowy/podzastepowy — traktuj jak admin (maja panel)
+    if (!currentUser._originalRole) currentUser._originalRole = currentUser.role;
     document.getElementById('appShell').style.display = 'flex';
 
     // Pobierz dane druzyny dla kazdego uzytkownika
@@ -826,9 +828,19 @@ function initAppAfterLogin() {
 // TOGGLE ZADANIA
 // ================================================================
 async function toggleTask(taskId, itemId) {
-    var myRank = rankIndex(currentUser.role);
-    var targetRank = rankIndex(window._currentViewUserRole || 'user');
-    if (currentUser.role !== 'superadmin' && myRank >= targetRank) {
+    var myRank     = rankIndex(currentUser.role);
+    var viewRole   = window._currentViewUserRole || currentUser.role;
+    var targetRank = rankIndex(viewRole);
+    var viewingSelf = (currentViewUserId === currentUser.id);
+    // Zablokuj jeśli: nie superadmin I (oglądasz siebie LUB jesteś na tym samym poziomie co oglądany)
+    if (!viewingSelf && currentUser.role !== 'superadmin' && myRank >= targetRank) {
+        document.querySelectorAll('.cb-container input').forEach(function(inp) {
+            if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
+        });
+        return;
+    }
+    // Zwykły user nie może sam sobie zdawać — tylko wyświetla
+    if (viewingSelf && currentUser.role === 'user') {
         document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
@@ -1214,8 +1226,10 @@ function loadContent(id) {
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
-            html += '<label class="cb-container" style="' + (!isAdmin ? 'cursor:default' : '') + '">'
-                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (!isAdmin ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+            var viewingSelf = (currentViewUserId === currentUser.id);
+            var isReadOnly = (viewingSelf && currentUser.role === 'user') || (!viewingSelf && false);
+            html += '<label class="cb-container" style="' + (isReadOnly ? 'cursor:default' : '') + '">'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (isReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
                 + '<div class="checkmark"></div>'
                 + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
                 + '</label>';
@@ -1679,11 +1693,13 @@ async function pickMember(userId, userName, userRole) {
 
     if (!userId) {
         // Wróć do własnych sprawności
-        window._currentViewUserRole = currentUser.role;
+        window._currentViewUserRole = currentUser.role || 'user';
         window._currentViewUserName = currentUser.name;
         currentViewUserId = currentUser.id;
     window._currentViewUserRole = currentUser.role;
     window._currentViewUserName = currentUser.name;
+    // Panele dla zastepowy/podzastepowy — traktuj jak admin (maja panel)
+    if (!currentUser._originalRole) currentUser._originalRole = currentUser.role;
         cachedProgress = {};
         var r = await apiFetch('/progress/' + currentUser.id);
         cachedProgress = r.ok ? r.data : {};
