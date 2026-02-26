@@ -240,6 +240,8 @@ body.dark .login-box h2{color:var(--f2);}
 .bnav-label{font-size:.59rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
 
 /* Placeholder kafelki */
+.member-picker-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:.88rem;display:flex;align-items:center;gap:8px;}
+.member-picker-item:hover{background:var(--panel2);}
 .team-edit-panel{
   background:var(--panel);border-radius:var(--r);border:1px solid var(--border);
   padding:20px;margin-top:16px;display:flex;flex-direction:column;gap:14px;
@@ -569,9 +571,12 @@ input:checked+.slider:before{transform:translateX(21px);}
 
   <!-- BOTTOM NAV — 4 przyciski jak na screenshocie -->
   <nav class="bottom-nav">
-    <button class="bnav-btn" id="bnav-profile" onclick="bnavClick('profile')">
-      <div class="bnav-icon">&#127956;</div>
-      <span class="bnav-label">Druzyna</span>
+    <button class="bnav-btn bnav-team-btn" id="bnav-profile" onclick="bnavClick('profile')">
+      <div class="bnav-icon bnav-team-icon">
+        <img id="bnavTeamImg" src="" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;display:none;">
+        <span id="bnavTeamEmoji" style="font-size:1.3rem">&#127956;</span>
+      </div>
+      <span class="bnav-label" id="bnavTeamName">Druzyna</span>
     </button>
     <button class="bnav-btn" id="bnav-book" onclick="bnavClick('book')">
       <div class="bnav-icon">&#128214;</div>
@@ -627,10 +632,9 @@ function canManage(myRole, targetRole) {
     return myRole === 'superadmin' || rankIndex(myRole) < rankIndex(targetRole);
 }
 function availableRoles(myRole) {
-    // Zwraca role ktore moge nadac (nizsze od mojej)
-    if (myRole === 'superadmin') return ['ksis','instruktor','druzynowy','zastepowy','user'];
-    var myIdx = rankIndex(myRole);
-    return HIERARCHY.filter(function(r) { return rankIndex(r) > myIdx && r !== 'superadmin'; });
+    if (myRole === 'superadmin') return ['ksis','instruktor','druzynowy','zastepowy','podzastepowy','user'];
+    if (myRole === 'druzynowy')  return ['zastepowy','podzastepowy','user'];
+    return [];
 }
 
 // ================================================================
@@ -783,6 +787,8 @@ function handleLogout() {
 // ================================================================
 function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
+    window._currentViewUserRole = currentUser.role;
+    window._currentViewUserName = currentUser.name;
     document.getElementById('appShell').style.display = 'flex';
 
     // Pobierz dane druzyny dla kazdego uzytkownika
@@ -792,6 +798,7 @@ function initAppAfterLogin() {
             if (r.data.teamId)   currentUser.teamId   = r.data.teamId;
             if (r.data._id)      currentUser.teamId   = r.data._id;
         }
+        updateBnavTeam();
     });
 
     if (currentUser.role !== 'user') {
@@ -814,8 +821,9 @@ function initAppAfterLogin() {
 // TOGGLE ZADANIA
 // ================================================================
 async function toggleTask(taskId, itemId) {
-    if (currentUser.role === 'user') {
-        alert('Tylko druzynowy moze zatwierdzac sprawnosci!');
+    var myRank = rankIndex(currentUser.role);
+    var targetRank = rankIndex(window._currentViewUserRole || 'user');
+    if (currentUser.role !== 'superadmin' && myRank >= targetRank) {
         document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
@@ -841,73 +849,118 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 async function renderAdminDashboard() {
     document.getElementById('navList').innerHTML = '';
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p>Ladowanie...</p></div>';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
 
     var result = await apiFetch('/team-members');
     if (!result.ok) {
-        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:red">Blad polaczenia z serwerem.<br><small>Sprawdz logi na Render.com</small></p></div>';
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#c33">Blad polaczenia z serwerem.</p></div>';
         return;
     }
 
-    var members  = result.data;
-    var pending  = members.filter(function(u) { return u.status === 'pending';  });
-    var active   = members.filter(function(u) { return u.status === 'active';   });
-    var rejected = members.filter(function(u) { return u.status === 'rejected'; });
+    var allMembers = result.data;
+    // Druzynowy widzi tylko swoją drużynę
+    var members = (currentUser.role === 'druzynowy' && currentUser.teamId)
+        ? allMembers.filter(function(u){ return String(u.teamId) === String(currentUser.teamId); })
+        : allMembers;
+    var pending  = members.filter(function(u){ return u.status==='pending'; });
+    var active   = members.filter(function(u){ return u.status==='active'; });
+    var rejected = members.filter(function(u){ return u.status==='rejected'; });
 
-    var isSuperAdmin = currentUser.role === 'superadmin';
+    var role   = currentUser.role;
+    var myRank = rankIndex(role);
+
+    // Tytuł panelu
+    var panelTitle = {
+        'superadmin':   '&#128081; Super Administrator',
+        'ksis':         '&#11088; Panel Ksis',
+        'instruktor':   '&#127775; Panel Instruktora',
+        'druzynowy':    '&#128210; Panel Druzynowego',
+        'zastepowy':    '&#128203; Panel Zastepowego',
+        'podzastepowy': '&#128196; Panel Podzastepowego'
+    }[role] || 'Panel';
+
     var html = '<div class="welcome-header">'
         + '<h2>Czuwaj, ' + currentUser.name + '!</h2>'
-        + '<p>' + (isSuperAdmin ? '&#128081; Super Administrator' : 'Panel Druzynowego') + '</p>'
-        + (isSuperAdmin ? '<button onclick="renderTeamsPanel()" style="background:var(--accent);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#9881; Zarzadzaj druzyna</button>' : '')
+        + '<p>' + panelTitle + '</p>'
+        + (role === 'superadmin'
+            ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
+            : '')
         + '</div>';
 
-    // OCZEKUJACE
-    if (pending.length > 0) {
-        html += '<div class="home-card" style="border-left:4px solid var(--accent);">'
-            + '<h3 style="margin-top:0;color:var(--accent);">&#8987; Oczekujace prosby (' + pending.length + ')</h3>'
-            + '<div style="display:grid;gap:10px;">';
+    // ── Oczekujące — tylko superadmin i druzynowy ──
+    var canApprove = (role === 'superadmin' || role === 'druzynowy');
+    if (canApprove && pending.length > 0) {
+        html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
+            + '<h3 style="color:var(--amber)">&#8987; Oczekujace (' + pending.length + ')</h3>'
+            + '<div style="display:grid;gap:8px">';
         pending.forEach(function(u) {
             html += '<div class="member-row">'
-                + '<div><strong>&#128100; ' + u.name + '</strong>'
-                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span></div>'
-                + '<div style="display:flex;gap:8px;">'
+                + '<div><strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + u.username + '</span></div>'
+                + '<div style="display:flex;gap:6px">'
                 + '<button class="btn-sm btn-approve" onclick="approveUser(\'' + u._id + '\')">&#10003; Akceptuj</button>'
-                + '<button class="btn-sm btn-reject"  onclick="rejectUser(\''  + u._id + '\')">&#10007; Odrzuc</button>'
+                + '<button class="btn-sm btn-reject"  onclick="rejectUser(\'' + u._id + '\')">&#10007; Odrzuc</button>'
                 + '</div></div>';
         });
         html += '</div></div>';
     }
 
-    // AKTYWNI
-    html += '<div class="home-card"><h3 style="margin-top:0;">Aktywni harcerze (' + active.length + ')</h3><div style="display:grid;gap:10px;">';
-    if (active.length === 0) {
-        html += '<p style="color:var(--text-muted);text-align:center;margin:0;">Brak aktywnych harcerzy.</p>';
+    // ── Aktywni ──
+    html += '<div class="home-card"><h3>Aktywni harcerze (' + active.length + ')</h3><div style="display:grid;gap:8px">';
+    if (!active.length) {
+        html += '<p style="color:var(--muted);text-align:center">Brak aktywnych.</p>';
     } else {
         active.forEach(function(u) {
-            var esc = u.name.replace(/'/g, "\\'");
+            var esc    = u.name.replace(/'/g, "\'");
+            var uRank  = rankIndex(u.role);
+            var isLower = (role === 'superadmin') || (myRank < uRank);
+            var rLabel  = ROLE_LABELS[u.role] || u.role;
+            var rColor  = ROLE_COLORS[u.role] || '#546e7a';
+
+            // Uprawnienia według roli
+            // Sprawnosci: kazdy moze zdawac osobom NIZEJ w hierarchii
+            var canSpraw  = isLower;
+            // Usuwanie: superadmin i druzynowy (tylko nizszych)
+            var canDelete = isLower && (role === 'superadmin' || role === 'druzynowy');
+            // Zmiana rangi: superadmin wszystkie, druzynowy tylko zastepowy/podzastepowy/user
+            var canRole   = isLower && (role === 'superadmin' || role === 'druzynowy');
+
+            var dropdown = '';
+            if (canRole) {
+                var av   = availableRoles(role);
+                var opts = '<option value="">-- Zmien range --</option>';
+                av.forEach(function(r) {
+                    opts += '<option value="' + r + '"' + (r === u.role ? ' selected' : '') + '>'
+                         + (ROLE_LABELS[r] || r) + '</option>';
+                });
+                dropdown = '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:var(--rs);padding:6px 10px;font-weight:600;cursor:pointer;" data-uid="' + u._id + '" data-uname="' + esc + '" onchange="promoteUser(this.dataset.uid,this.dataset.uname,this.value,this)">' + opts + '</select>';
+            }
+
             html += '<div class="member-row">'
-                + '<div><strong>&#128100; ' + u.name + '</strong>'
-                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
-                + '<span class="status-badge status-active" style="margin-left:6px;">aktywny</span>'
-                + '<span style="font-size:0.75em;margin-left:6px;padding:2px 8px;border-radius:12px;background:#f5f5f5;color:' + (ROLE_COLORS[u.role] || '#546e7a') + ';font-weight:700;">' + (u.role || 'user') + '</span>'
+                + '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+                + '<strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em">@' + u.username + '</span>'
+                + '<span class="status-badge status-active">aktywny</span>'
+                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
                 + '</div>'
-                + '<div style="display:flex;gap:8px;">'
-                + '<button class="btn-sm btn-view"   onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\')">&#128203; Sprawnosci</button>'
-                + '<button class="btn-sm btn-delete" onclick="deleteUser(\''   + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+                + dropdown
+                + (canSpraw  ? '<button class="btn-sm btn-view" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
+                + (canDelete ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
                 + '</div></div>';
         });
     }
     html += '</div></div>';
 
-    // ODRZUCENI
-    if (rejected.length > 0) {
-        html += '<div class="home-card" style="opacity:0.7;"><h3 style="margin-top:0;color:var(--text-muted);">Odrzucone konta (' + rejected.length + ')</h3><div style="display:grid;gap:10px;">';
+    // ── Odrzuceni — tylko superadmin ──
+    if (role === 'superadmin' && rejected.length > 0) {
+        html += '<div class="home-card" style="opacity:.7"><h3 style="color:var(--muted)">Odrzucone (' + rejected.length + ')</h3><div style="display:grid;gap:8px">';
         rejected.forEach(function(u) {
-            var esc = u.name.replace(/'/g, "\\'");
+            var esc = u.name.replace(/'/g, "\'");
             html += '<div class="member-row">'
-                + '<div><strong>&#128100; ' + u.name + '</strong>'
-                + '<span style="color:var(--text-muted);font-size:0.85em;margin-left:8px;">@' + u.username + '</span>'
-                + '<span class="status-badge status-rejected" style="margin-left:6px;">odrzucony</span></div>'
+                + '<div><strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + u.username + '</span>'
+                + '<span class="status-badge status-rejected" style="margin-left:6px">odrzucony</span></div>'
                 + '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
                 + '</div>';
         });
@@ -1036,8 +1089,9 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
-async function switchToUser(userId, userName) {
+async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
+    window._currentViewUserRole = userRole || 'user';
     cachedProgress    = {};
     var r = await apiFetch('/progress/' + userId);
     cachedProgress = r.ok ? r.data : {};
@@ -1113,7 +1167,6 @@ function loadContent(id) {
     if (navEl) navEl.classList.add('active');
     if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
 
-    var isAdmin = currentUser.role !== 'user';
     var imagesHtml = '';
     if (item.images && item.images.length) {
         imagesHtml = '<div class="image-gallery">';
@@ -1123,7 +1176,25 @@ function loadContent(id) {
         imagesHtml += '</div>';
     }
 
-    var html = '<div class="header-section">'
+    // Przycisk wyboru osoby (dla kadry)
+    var isAdmin = currentUser.role !== 'user';
+    var memberBtnHtml = '';
+    if (isAdmin) {
+        var viewingName = window._currentViewUserName || currentUser.name;
+        memberBtnHtml = '<button id="memberPickBtn" onclick="toggleMemberPicker()" '
+            + 'style="position:absolute;top:16px;right:16px;background:var(--panel2);border:1.5px solid var(--border);'
+            + 'border-radius:var(--rs);padding:7px 12px;cursor:pointer;font-size:.82rem;font-weight:600;'
+            + 'color:var(--text);display:flex;align-items:center;gap:6px;z-index:10;">'
+            + '&#128101; ' + viewingName
+            + '<span style="font-size:.7rem;color:var(--muted)">&#9660;</span></button>'
+            + '<div id="memberPickerDropdown" style="display:none;position:absolute;top:56px;right:16px;'
+            + 'background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);'
+            + 'box-shadow:var(--shadow-lg);z-index:100;min-width:200px;max-height:300px;overflow-y:auto;" id="memberPickerDropdown">'
+            + '</div>';
+    }
+
+    var html = '<div class="header-section" style="position:relative">'
+        + memberBtnHtml
         + '<span class="cat-badge">' + item.category + '</span>'
         + '<h2>' + item.title + '</h2>'
         + imagesHtml
@@ -1231,6 +1302,28 @@ function hidePendingScreen() {
 }
 
 // ── Bottom nav ────────────────────────────────────────
+function updateBnavTeam() {
+    var teamName = (currentUser && currentUser.teamName) || '';
+    var teamKey  = 'team_' + ((currentUser && currentUser.teamId) || 'default');
+    var storedImg  = localStorage.getItem(teamKey + '_img');
+    var storedName = localStorage.getItem(teamKey + '_name');
+    if (storedName) teamName = storedName;
+
+    var nameEl = document.getElementById('bnavTeamName');
+    var imgEl  = document.getElementById('bnavTeamImg');
+    var emojiEl = document.getElementById('bnavTeamEmoji');
+
+    if (nameEl && teamName) {
+        // Skróć nazwę do ~12 znaków żeby zmieścić się w pasku
+        nameEl.textContent = teamName.length > 13 ? teamName.substring(0,11) + '...' : teamName;
+    }
+    if (imgEl && storedImg) {
+        imgEl.src = storedImg;
+        imgEl.style.display = 'block';
+        if (emojiEl) emojiEl.style.display = 'none';
+    }
+}
+
 function bnavSetActive(tab) {
     document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('active'); });
     var el = document.getElementById('bnav-' + tab);
@@ -1282,7 +1375,7 @@ function _renderProfileTab() {
 
     var imgSrc = storedImg || ('https://api.dicebear.com/7.x/shapes/svg?seed='
         + encodeURIComponent(teamName) + '&backgroundColor=1a3424&size=200');
-    var isSuperAdmin = currentUser && currentUser.role === 'superadmin';
+    var isSuperAdmin = currentUser && (currentUser.role === 'superadmin' || currentUser.role === 'druzynowy');
 
     var editHtml = '';
     if (isSuperAdmin) {
@@ -1324,6 +1417,7 @@ function saveTeamName() {
     if (el) el.textContent = val;
     var sb = document.querySelector('.sidebar-team-name');
     if (sb) sb.textContent = val;
+    updateBnavTeam();
     // Spróbuj też zapisać na serwerze
     apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ name: val }) }).catch(function(){});
 }
@@ -1338,6 +1432,7 @@ function handleTeamImgFile(event) {
         localStorage.setItem(key, dataUrl);
         var img = document.getElementById('teamProfileImg');
         if (img) img.src = dataUrl;
+        updateBnavTeam();
         // Spróbuj też zapisać na serwerze
         apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ avatar: dataUrl }) }).catch(function(){});
     };
@@ -1497,6 +1592,115 @@ async function submitRegisterWithTeam() {
     } else {
         document.getElementById('teamPickOverlay').classList.remove('active');
         showMsg('registerMsg', (result.data && result.data.message) || 'Blad rejestracji.');
+    }
+}
+
+
+// ══════════════════════════════════════════════════════
+// PICKER OSOBY w widoku sprawnosci
+// ══════════════════════════════════════════════════════
+var _memberPickerLoaded = false;
+
+function toggleMemberPicker() {
+    var dd = document.getElementById('memberPickerDropdown');
+    if (!dd) return;
+    if (dd.style.display === 'none') {
+        dd.style.display = 'block';
+        if (!_memberPickerLoaded) {
+            _memberPickerLoaded = true;
+            loadMemberPickerList();
+        }
+    } else {
+        dd.style.display = 'none';
+    }
+}
+
+// Zamknij picker kliknięciem poza nim
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#memberPickBtn') && !e.target.closest('#memberPickerDropdown')) {
+        var dd = document.getElementById('memberPickerDropdown');
+        if (dd) dd.style.display = 'none';
+    }
+});
+
+async function loadMemberPickerList() {
+    var dd = document.getElementById('memberPickerDropdown');
+    if (!dd) return;
+    dd.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:.85rem">Ladowanie...</div>';
+
+    var r = await apiFetch('/team-members');
+    if (!r.ok) { dd.innerHTML = '<div style="padding:12px;color:#c33;font-size:.85rem">Blad ladowania.</div>'; return; }
+
+    var role   = currentUser.role;
+    var myRank = rankIndex(role);
+    var members = r.data.filter(function(u) {
+        return u.status === 'active' && u._id !== currentUser.id
+            && (role === 'superadmin' || rankIndex(u.role) > myRank);
+    });
+
+    if (!members.length) {
+        dd.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:.85rem">Brak osob do wybrania.</div>';
+        return;
+    }
+
+    // Własne sprawnosci na górze
+    var selfHtml = '<div onclick="pickMember(null)" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);'
+        + 'font-size:.88rem;font-weight:600;color:var(--f4);display:flex;align-items:center;gap:8px;">'
+        + '&#128100; Moje sprawnosci</div>';
+
+    var listHtml = members.map(function(u) {
+        var rColor = ROLE_COLORS[u.role] || '#546e7a';
+        var rLabel = ROLE_LABELS[u.role] || u.role;
+        return '<div onclick="pickMember(\'' + u._id + '\',\'' + u.name.replace(/'/g,"\'") + '\',\'' + u.role + '\')" '
+            + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);'
+            + 'font-size:.88rem;display:flex;align-items:center;gap:8px;" '
+            + 'class="member-picker-item">'
+            + '<span>&#128100;</span>'
+            + '<span style="flex:1">' + u.name + '</span>'
+            + '<span style="font-size:.7rem;padding:2px 7px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+            + '</div>';
+    }).join('');
+
+    dd.innerHTML = selfHtml + listHtml;
+}
+
+async function pickMember(userId, userName, userRole) {
+    // Zamknij dropdown i odśwież picker
+    _memberPickerLoaded = false;
+    var dd = document.getElementById('memberPickerDropdown');
+    if (dd) dd.style.display = 'none';
+
+    if (!userId) {
+        // Wróć do własnych sprawności
+        window._currentViewUserRole = currentUser.role;
+        window._currentViewUserName = currentUser.name;
+        currentViewUserId = currentUser.id;
+    window._currentViewUserRole = currentUser.role;
+    window._currentViewUserName = currentUser.name;
+        cachedProgress = {};
+        var r = await apiFetch('/progress/' + currentUser.id);
+        cachedProgress = r.ok ? r.data : {};
+    } else {
+        window._currentViewUserRole = userRole || 'user';
+        window._currentViewUserName = userName;
+        currentViewUserId = userId;
+        cachedProgress = {};
+        var r = await apiFetch('/progress/' + userId);
+        cachedProgress = r.ok ? r.data : {};
+    }
+
+    // Odśwież aktywny widok sprawnosci/stopnia
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+
+    // Zaktualizuj przycisk
+    var btn = document.getElementById('memberPickBtn');
+    if (btn) {
+        btn.innerHTML = '&#128101; ' + (userName || currentUser.name)
+            + '<span style="font-size:.7rem;color:var(--muted)">&#9660;</span>';
     }
 }
 
