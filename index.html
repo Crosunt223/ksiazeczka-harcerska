@@ -839,10 +839,18 @@ async function toggleTask(taskId, itemId) {
     // 1. Zwykły 'user' nigdy nie może zaznaczać — tylko podgląd
     // 2. Kadra może zaznaczać TYLKO osobom NIŻEJ w hierarchii (nie sobie, nie wyżej)
     // 3. Superadmin może wszystkim
+    // Kto moze co:
+    // superadmin     - wszystko
+    // ksis/instruktor/druzynowy - mogą sobie zdawać I osobom niżej
+    // zastepowy/podzastepowy - TYLKO osobom niżej (nie sobie)
+    // user           - nic
+    var SELF_ALLOWED = ['superadmin','ksis','instruktor','druzynowy'];
     var canToggle = false;
     if (myRole === 'superadmin') {
         canToggle = true;
-    } else if (myRole !== 'user' && !viewingOwnId && myRank < targetRank) {
+    } else if (viewingOwnId && SELF_ALLOWED.includes(myRole)) {
+        canToggle = true;
+    } else if (!viewingOwnId && myRole !== 'user' && myRank < targetRank) {
         canToggle = true;
     }
 
@@ -1237,7 +1245,7 @@ function loadContent(id) {
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
-                    var cbReadOnly = (currentUser.role === 'user');
+                    var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
             html += '<label class="cb-container" style="' + (cbReadOnly ? 'cursor:default' : '') + '">'
                 + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (cbReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
                 + '<div class="checkmark"></div>'
