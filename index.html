@@ -828,31 +828,42 @@ function initAppAfterLogin() {
 // TOGGLE ZADANIA
 // ================================================================
 async function toggleTask(taskId, itemId) {
-    var myRank     = rankIndex(currentUser.role);
-    var viewRole   = window._currentViewUserRole || currentUser.role;
-    var targetRank = rankIndex(viewRole);
-    var viewingSelf = (currentViewUserId === currentUser.id);
-    // Zablokuj jeśli: nie superadmin I (oglądasz siebie LUB jesteś na tym samym poziomie co oglądany)
-    if (!viewingSelf && currentUser.role !== 'superadmin' && myRank >= targetRank) {
+    // Kto ogląda czyje sprawnosci?
+    var viewingOwnId  = (currentViewUserId === currentUser.id);
+    var myRole        = currentUser.role;
+    var myRank        = rankIndex(myRole);
+    var targetRole    = window._currentViewUserRole || (viewingOwnId ? myRole : 'user');
+    var targetRank    = rankIndex(targetRole);
+
+    // Zasady:
+    // 1. Zwykły 'user' nigdy nie może zaznaczać — tylko podgląd
+    // 2. Kadra może zaznaczać TYLKO osobom NIŻEJ w hierarchii (nie sobie, nie wyżej)
+    // 3. Superadmin może wszystkim
+    var canToggle = false;
+    if (myRole === 'superadmin') {
+        canToggle = true;
+    } else if (myRole !== 'user' && !viewingOwnId && myRank < targetRank) {
+        canToggle = true;
+    }
+
+    if (!canToggle) {
+        // Przywróć checkbox do poprzedniego stanu
         document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
         return;
     }
-    // Zwykły user nie może sam sobie zdawać — tylko wyświetla
-    if (viewingSelf && currentUser.role === 'user') {
-        document.querySelectorAll('.cb-container input').forEach(function(inp) {
-            if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
-        });
-        return;
-    }
+
     var isChecked = !cachedProgress[taskId];
     if (isChecked) cachedProgress[taskId] = true;
     else           delete cachedProgress[taskId];
     updateItemProgress(itemId);
     updateUIStats();
 
-    var result = await apiFetch('/progress', { method: 'POST', body: JSON.stringify({ userId: currentViewUserId, taskId: taskId, status: isChecked }) });
+    var result = await apiFetch('/progress', {
+        method: 'POST',
+        body: JSON.stringify({ userId: currentViewUserId, taskId: taskId, status: isChecked })
+    });
     if (!result.ok) {
         if (isChecked) delete cachedProgress[taskId];
         else           cachedProgress[taskId] = true;
@@ -1226,10 +1237,9 @@ function loadContent(id) {
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
-            var viewingSelf = (currentViewUserId === currentUser.id);
-            var isReadOnly = (viewingSelf && currentUser.role === 'user') || (!viewingSelf && false);
-            html += '<label class="cb-container" style="' + (isReadOnly ? 'cursor:default' : '') + '">'
-                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (isReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+                    var cbReadOnly = (currentUser.role === 'user');
+            html += '<label class="cb-container" style="' + (cbReadOnly ? 'cursor:default' : '') + '">'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (cbReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
                 + '<div class="checkmark"></div>'
                 + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
                 + '</label>';
@@ -1704,9 +1714,9 @@ async function pickMember(userId, userName, userRole) {
         var r = await apiFetch('/progress/' + currentUser.id);
         cachedProgress = r.ok ? r.data : {};
     } else {
-        window._currentViewUserRole = userRole || 'user';
-        window._currentViewUserName = userName;
         currentViewUserId = userId;
+        window._currentViewUserRole = userRole || 'user';
+        window._currentViewUserName = userName || '';
         cachedProgress = {};
         var r = await apiFetch('/progress/' + userId);
         cachedProgress = r.ok ? r.data : {};
