@@ -513,6 +513,18 @@ input:checked+.slider:before{transform:translateX(21px);}
   <button class="pending-logout" onclick="handleLogout()">Wyloguj sie</button>
 </div>
 
+
+<!-- ══ MODAL: POPROŚ O SPRAWNOŚĆ ══ -->
+<div id="askModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5500;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
+  <div style="background:var(--panel);padding:28px;border-radius:20px;width:310px;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
+    <span onclick="closeAskModal()" style="position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;color:var(--muted)">&times;</span>
+    <h3 style="font-family:'Franklin Gothic Book','Franklin Gothic Medium',Arial Narrow,sans-serif;margin-bottom:6px;color:var(--f5)">&#128226; Popros o zdanie</h3>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:16px" id="askModalItemName"></p>
+    <p style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Wybierz osobe:</p>
+    <div id="askKadraList" style="display:grid;gap:8px;margin-bottom:16px"></div>
+    <p style="color:var(--muted);font-size:.78rem;text-align:center" id="askModalStatus"></p>
+  </div>
+</div>
 <!-- ══ SETTINGS MODAL ══ -->
 <div id="settingsModal" class="settings-modal" onclick="closeSettings(event)">
   <div class="settings-content">
@@ -606,7 +618,7 @@ const API = 'https://harcerze-backend.onrender.com/api';
 // ================================================================
 // HIERARCHIA RAN
 // ================================================================
-var HIERARCHY = ['superadmin','ksis','instruktor','druzynowy','zastepowy','podzastepowy','user'];
+var HIERARCHY = ['superadmin','ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy','user'];
 var ROLE_LABELS = {
     'superadmin':  '&#128081; Super Admin',
     'ksis':        '&#11088; Ksis',
@@ -633,8 +645,9 @@ function canManage(myRole, targetRole) {
     return myRole === 'superadmin' || rankIndex(myRole) < rankIndex(targetRole);
 }
 function availableRoles(myRole) {
-    if (myRole === 'superadmin') return ['ksis','instruktor','druzynowy','zastepowy','podzastepowy','user'];
-    if (myRole === 'druzynowy')  return ['zastepowy','podzastepowy','user'];
+    if (myRole === 'superadmin')  return ['ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy','user'];
+    if (myRole === 'druzynowy')   return ['przyboczny','zastepowy','podzastepowy','user'];
+    if (myRole === 'przyboczny')  return ['zastepowy','podzastepowy','user'];
     return [];
 }
 
@@ -912,6 +925,7 @@ async function renderAdminDashboard() {
         'ksis':         '&#11088; Panel Ksis',
         'instruktor':   '&#127775; Panel Instruktora',
         'druzynowy':    '&#128210; Panel Druzynowego',
+        'przyboczny':   '&#127859; Panel Przybocznego',
         'zastepowy':    '&#128203; Panel Zastepowego',
         'podzastepowy': '&#128196; Panel Podzastepowego'
     }[role] || 'Panel';
@@ -922,10 +936,13 @@ async function renderAdminDashboard() {
         + (role === 'superadmin'
             ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
             : '')
+        + (['druzynowy','przyboczny','superadmin'].includes(role)
+            ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
+            : '')
         + '</div>';
 
     // ── Oczekujące — tylko superadmin i druzynowy ──
-    var canApprove = (role === 'superadmin' || role === 'druzynowy');
+    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
     if (canApprove && pending.length > 0) {
         html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
             + '<h3 style="color:var(--amber)">&#8987; Oczekujace (' + pending.length + ')</h3>'
@@ -958,9 +975,9 @@ async function renderAdminDashboard() {
             // Sprawnosci: kazdy moze zdawac osobom NIZEJ w hierarchii
             var canSpraw  = isLower;
             // Usuwanie: superadmin i druzynowy (tylko nizszych)
-            var canDelete = isLower && (role === 'superadmin' || role === 'druzynowy');
+            var canDelete = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
             // Zmiana rangi: superadmin wszystkie, druzynowy tylko zastepowy/podzastepowy/user
-            var canRole   = isLower && (role === 'superadmin' || role === 'druzynowy');
+            var canRole   = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
 
             var dropdown = '';
             if (canRole) {
@@ -978,6 +995,8 @@ async function renderAdminDashboard() {
                 + '<strong>' + u.name + '</strong>'
                 + '<span style="color:var(--muted);font-size:.82em">@' + u.username + '</span>'
                 + '<span class="status-badge status-active">aktywny</span>'
+            + (u.teamName  ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#127956; '+u.teamName+'</span>' : '')
+            + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; '+u.zastepName+'</span>' : '')
                 + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
                 + '</div>'
                 + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
@@ -1230,8 +1249,17 @@ function loadContent(id) {
             + '</div>';
     }
 
+    // Przycisk "Poproś o sprawność" dla zwykłego usera
+    var askBtnHtml = '';
+    if (currentUser.role === 'user') {
+        askBtnHtml = '<button onclick="openAskModal(\'' + id + '\')" '
+            + 'style="position:absolute;bottom:16px;right:16px;background:var(--f4);border:none;'
+            + 'border-radius:var(--rs);padding:7px 13px;cursor:pointer;font-size:.82rem;font-weight:600;color:#fff;">'
+            + '&#128226; Popros o zdanie</button>';
+    }
     var html = '<div class="header-section" style="position:relative">'
         + memberBtnHtml
+        + askBtnHtml
         + '<span class="cat-badge">' + item.category + '</span>'
         + '<h2>' + item.title + '</h2>'
         + imagesHtml
@@ -1322,10 +1350,92 @@ function saveSettings() {
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); document.body.classList.toggle('dark'); saveSettings(); }
 function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
 function resetProgress()  { alert('Skontaktuj sie z administratorem.'); }
-</script>
 
 
-<script>
+async function renderZastepyPanel() {
+    hideSidebarArea();
+    bnavSetActive('book');
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie zastepow...</p></div>';
+
+    var [rZ, rM] = await Promise.all([apiFetch('/zastepy'), apiFetch('/team-members')]);
+    var zastepy = rZ.ok ? rZ.data : [];
+    var members = rM.ok ? rM.data.filter(function(u){ return u.status === 'active'; }) : [];
+
+    var html = '<div class="welcome-header"><h2>Zastepy</h2>'
+        + '<p>Zarzadzaj podzialem druzyny na zastepy</p>'
+        + '<button onclick="renderAdminDashboard()" style="margin-top:8px;padding:8px 16px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.85rem;">&#8592; Wróc do panelu</button>'
+        + '</div>';
+
+    // Dodaj nowy zastep
+    html += '<div class="home-card">'
+        + '<h3>Dodaj nowy zastep</h3>'
+        + '<div style="display:flex;gap:8px">'
+        + '<input id="newZastepName" class="input-add" placeholder="Nazwa zastepu (np. Zastep Orla)">'
+        + '<button class="btn-sm btn-approve" onclick="addZastep()">+ Dodaj</button>'
+        + '</div></div>';
+
+    // Lista zastepów
+    html += '<div class="home-card"><h3>Zastepy (' + zastepy.length + ')</h3>';
+    if (!zastepy.length) {
+        html += '<p style="color:var(--muted)">Brak zastepow. Dodaj pierwszy zastep powyzej.</p>';
+    } else {
+        zastepy.forEach(function(z) {
+            var inZastep = members.filter(function(u){ return u.zastepId === z.zastepId; });
+            var notInZastep = members.filter(function(u){ return !u.zastepId || u.zastepId !== z.zastepId; });
+            html += '<div style="background:var(--panel2);border-radius:var(--rs);padding:16px;margin-bottom:12px;border:1.5px solid var(--border)">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+                + '<strong style="font-size:1rem">&#128101; ' + z.name + '</strong>'
+                + '<button class="btn-sm btn-delete" data-zid="' + z.zastepId + '" onclick="deleteZastep(this.dataset.zid)">Usun</button>'
+                + '</div>'
+                // Członkowie zastepu
+                + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
+                + inZastep.map(function(u){
+                    return '<span style="background:var(--f4);color:#fff;padding:3px 10px;border-radius:20px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:4px">'
+                        + u.name
+                        + ' <span data-uid="' + u._id + '" onclick="removeFromZastep(this.dataset.uid)" style="opacity:.7;font-weight:700" title="Usun z zastepu">&#10005;</span></span>';
+                }).join('')
+                + (inZastep.length === 0 ? '<span style="color:var(--muted);font-size:.83rem">Brak czlonkow</span>' : '')
+                + '</div>'
+                // Dropdown dodania osoby
+                + '<select class="btn-sm" style="background:var(--panel);border:1.5px solid var(--border);border-radius:var(--rs);padding:6px 10px;cursor:pointer;color:var(--text)" data-zid="\' + z.zastepId + \'" onchange="addToZastep(this.value,this.dataset.zid,this)">'
+                + '<option value="">+ Dodaj czlonka...</option>'
+                + notInZastep.map(function(u){
+                    return '<option value="' + u._id + '">' + u.name + ' (' + (ROLE_LABELS[u.role]||u.role) + ')</option>';
+                }).join('')
+                + '</select>'
+                + '</div>';
+        });
+    }
+    html += '</div>';
+    document.getElementById('contentArea').innerHTML = html;
+}
+
+async function addZastep() {
+    var name = document.getElementById('newZastepName').value.trim();
+    if (!name) return;
+    var r = await apiFetch('/zastepy', { method: 'POST', body: JSON.stringify({ name }) });
+    if (r.ok) { renderZastepyPanel(); }
+    else { alert(r.data.error || 'Blad'); }
+}
+
+async function deleteZastep(zastepId) {
+    if (!confirm('Usunac zastep?')) return;
+    await apiFetch('/zastepy/' + zastepId, { method: 'DELETE' });
+    renderZastepyPanel();
+}
+
+async function addToZastep(userId, zastepId, sel) {
+    if (!userId) return;
+    sel.value = '';
+    await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId }) });
+    renderZastepyPanel();
+}
+
+async function removeFromZastep(userId) {
+    await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: null }) });
+    renderZastepyPanel();
+}
+
 // ══════════════════════════════════════════════════════
 // NOWE FUNKCJE UI
 // ══════════════════════════════════════════════════════
@@ -1635,6 +1745,58 @@ async function submitRegisterWithTeam() {
     }
 }
 
+
+
+// ══════════════════════════════════════════════════════
+// MODAL "POPROŚ O ZDANIE SPRAWNOŚCI"
+// ══════════════════════════════════════════════════════
+var _askItemId = null;
+
+async function openAskModal(itemId) {
+    _askItemId = itemId;
+    var item = db.find(function(x){ return x.id === itemId; });
+    document.getElementById('askModalItemName').textContent = item ? item.title : itemId;
+    document.getElementById('askModalStatus').textContent = '';
+    document.getElementById('askKadraList').innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ladowanie...</p>';
+    document.getElementById('askModal').style.display = 'flex';
+
+    var r = await apiFetch('/my-kadra');
+    var kadra = r.ok ? r.data : [];
+
+    if (!kadra.length) {
+        document.getElementById('askKadraList').innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w Twojej druzynie.</p>';
+        return;
+    }
+
+    document.getElementById('askKadraList').innerHTML = kadra.map(function(k) {
+        var rLabel = ROLE_LABELS[k.role] || k.role;
+        var rColor = ROLE_COLORS[k.role] || '#546e7a';
+        return '<div data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+            + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" '
+            + 'class="member-picker-item">'
+            + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
+            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+            + '</div>';
+    }).join('');
+}
+
+async function sendAskRequest(kadraId, kadraName) {
+    document.getElementById('askModalStatus').textContent = 'Wysylanie prosby do ' + kadraName + '...';
+    var r = await apiFetch('/requests', {
+        method: 'POST',
+        body: JSON.stringify({ targetUserId: kadraId, taskId: _askItemId, itemId: _askItemId })
+    });
+    if (r.ok) {
+        document.getElementById('askModalStatus').textContent = '✓ Prosba wyslana do ' + kadraName + '!';
+        setTimeout(closeAskModal, 1500);
+    } else {
+        document.getElementById('askModalStatus').textContent = 'Blad wysylania prosby.';
+    }
+}
+
+function closeAskModal() {
+    document.getElementById('askModal').style.display = 'none';
+}
 
 // ══════════════════════════════════════════════════════
 // PICKER OSOBY w widoku sprawnosci
