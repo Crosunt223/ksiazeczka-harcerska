@@ -486,6 +486,7 @@ input:checked+.slider:before{transform:translateX(21px);}
   width:72px;height:72px;border-radius:50%;object-fit:contain;
   flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2));
   border:2px solid var(--border);background:var(--panel2);padding:4px;
+  transition:opacity .35s ease;
 }
 .board-header{text-align:center;padding:16px 0 8px;}
 .board-grid{
@@ -968,6 +969,7 @@ async function toggleTask(taskId, itemId) {
     else           delete cachedProgress[taskId];
     updateItemProgress(itemId);
     updateUIStats();
+    refreshCircleIcon(itemId); // odswież ikone w czasie rzeczywistym
 
     var result = await apiFetch('/progress', {
         method: 'POST',
@@ -1460,6 +1462,21 @@ function updateUIStats() {
         });
         var nav = document.getElementById('nav-prog-' + item.id);
         if (nav) nav.textContent = (iTotal ? Math.round(iDone / iTotal * 100) : 0) + '%';
+
+        // Odswiez ikonę w sidebarze (opacity + wariant)
+        if (item.circleVariants) {
+            var opacity = getSprawOpacity(item, cachedProgress);
+            var variant = getSprawVariant(item, cachedProgress);
+            var imgSrc  = getCircleImgForProgress(item, cachedProgress);
+            var navImg  = document.querySelector('#nav-item-' + item.id + ' .nav-circle-img');
+            if (navImg) {
+                if (navImg.getAttribute('data-src') !== imgSrc) {
+                    navImg.src = imgSrc;
+                    navImg.setAttribute('data-src', imgSrc);
+                }
+                navImg.style.opacity = opacity;
+            }
+        }
     });
     var pct  = total ? Math.round(done / total * 100) : 0;
     var bar  = document.getElementById('total-bar');
