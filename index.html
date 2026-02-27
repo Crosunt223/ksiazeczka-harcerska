@@ -482,6 +482,11 @@ input:checked+.slider:before{transform:translateX(21px);}
 #modalImg.zoomed{transform:scale(1.8);cursor:zoom-out;}
 .close-modal{position:absolute;top:18px;right:26px;color:#fff;font-size:34px;cursor:pointer;}
 
+.sprawnosc-circle-icon{
+  width:72px;height:72px;border-radius:50%;object-fit:contain;
+  flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2));
+  border:2px solid var(--border);background:var(--panel2);padding:4px;
+}
 .board-header{text-align:center;padding:16px 0 8px;}
 .board-grid{
   display:grid;grid-template-columns:repeat(3,1fr);
@@ -1377,7 +1382,18 @@ function loadContent(id) {
         + memberBtnHtml
         + askBtnHtml
         + '<span class="cat-badge">' + item.category + '</span>'
-        + '<h2>' + item.title + '</h2>'
+        + (function(){
+            var level = getSprawLevel(item, cachedProgress);
+            var imgSrc = level > 0 ? getCircleImg(item, level) : (item.circleVariants ? getCircleImg(item, 1) : null);
+            if (!imgSrc) return '<h2>' + item.title + '</h2>';
+            return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 2px">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" style="opacity:' + (level > 0 ? '1' : '0.25') + '">'
+                + '<div>'
+                + '<h2 style="margin:0">' + item.title + '</h2>'
+                + (level > 0 ? '<div style="color:var(--amber);font-size:.9rem;letter-spacing:2px">' + '★'.repeat(level) + '<span style="color:var(--muted);font-size:.75rem"> poziom ' + level + '</span></div>' : '<div style="color:var(--muted);font-size:.78rem">Nie zdana</div>')
+                + '</div>'
+                + '</div>';
+          })()
         + imagesHtml
         + '<div style="margin-top:25px;">'
         + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:600;color:var(--text-muted);font-size:0.9em;">'
