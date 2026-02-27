@@ -758,11 +758,17 @@ window.onload = async () => {
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
-    const savedToken = localStorage.getItem('hk_token');
-    const savedUser  = localStorage.getItem('hk_user');
+    const savedToken    = localStorage.getItem('hk_token');
+    const savedUser     = localStorage.getItem('hk_user');
+    const savedProgress = localStorage.getItem('hk_progress');
+
     if (savedToken && savedUser) {
         authToken   = savedToken;
         currentUser = JSON.parse(savedUser);
+        // Zaladuj cache progress od razu (zeby ikony sie pokazaly przed fetchem)
+        if (savedProgress) {
+            try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
+        }
         initAppAfterLogin();
     } else {
         await loadTeams();
@@ -880,6 +886,7 @@ async function _handleRegisterOriginal() {
 // WYLOGOWANIE
 // ================================================================
 function handleLogout() {
+    try { localStorage.removeItem('hk_progress'); } catch(e) {}
     authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen();
     localStorage.removeItem('hk_token');
     localStorage.removeItem('hk_user');
@@ -910,25 +917,99 @@ function initAppAfterLogin() {
         updateBnavTeam();
     });
 
-    if (currentUser.role !== 'user') {
-        bnavSetActive('book');
-        showSidebarArea();
-        renderAdminDashboard();
-    } else if (currentUser.status === 'pending' || currentUser.status === 'rejected') {
+    if (currentUser.status === 'pending' || currentUser.status === 'rejected') {
         showPendingScreen();
-    } else {
-        apiFetch('/progress/' + currentUser.id).then(function(r) {
-            cachedProgress = r.ok ? r.data : {};
+        return;
+    }
+
+    // Zawsze laduj progress (dla wszystkich rol - kadra tez ma swoje sprawnosci)
+    apiFetch('/progress/' + currentUser.id).then(function(r) {
+        cachedProgress = r.ok ? (r.data || {}) : {};
+
+        if (currentUser.role !== 'user') {
+            bnavSetActive('book');
+            showSidebarArea();
+            renderAdminDashboard();
+        } else {
             bnavSetActive('book');
             goHome();
-            renderSidebar();
-        });
-    }
+        }
+        renderSidebar();
+    });
 }
 
 // ================================================================
 // TOGGLE ZADANIA
 // ================================================================
+
+function refreshCircleIcon(itemId) {
+    var item = db.find(function(x){ return x.id === itemId; });
+    if (!item || !item.circleVariants) return;
+
+    var opacity = getSprawOpacity(item, cachedProgress);
+    var variant = getSprawVariant(item, cachedProgress);
+    var imgSrc  = getCircleImgForProgress(item, cachedProgress);
+    var level   = getSprawLevel(item, cachedProgress);
+    var s       = getSprawDone(item, cachedProgress);
+
+    // ── Sidebar ──
+    var navEl  = document.getElementById('nav-item-' + itemId);
+    var navImg = navEl ? navEl.querySelector('.nav-circle-img') : null;
+    if (navImg) {
+        navImg.src = imgSrc;
+        navImg.style.opacity = opacity;
+    } else if (navEl) {
+        var empty = navEl.querySelector('.nav-circle-empty');
+        if (empty) {
+            var img = document.createElement('img');
+            img.className = 'nav-circle-img';
+            img.src = imgSrc;
+            img.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s';
+            empty.parentNode.replaceChild(img, empty);
+        }
+    }
+
+    // ── Header ikona ──
+    var headerImg = document.querySelector('.sprawnosc-circle-icon');
+    if (headerImg) {
+        if (headerImg.getAttribute('data-item') === itemId) {
+            if (headerImg.src.indexOf(imgSrc) < 0) {
+                headerImg.style.transition = 'opacity .15s';
+                headerImg.style.opacity = '0.05';
+                var _src = imgSrc;
+                var _op  = String(opacity);
+                var _el  = headerImg;
+                setTimeout(function(){
+                    _el.src = _src;
+                    _el.style.opacity = _op;
+                }, 150);
+            } else {
+                headerImg.style.transition = 'opacity .3s';
+                headerImg.style.opacity = String(opacity);
+            }
+        }
+    }
+
+    // ── Info tekst pod tytułem ──
+    var infoEl = document.querySelector('.sprawnosc-header-info');
+    if (infoEl) {
+        if (s.done > 0) {
+            infoEl.innerHTML = '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span>'
+                + ' · zdjęcie <strong>#' + variant + '</strong>'
+                + ' · <span style="color:var(--amber)">' + '★'.repeat(level) + '</span>';
+        } else {
+            infoEl.textContent = 'Nie zdana — ' + s.total + ' zadań do zrobienia';
+        }
+    }
+
+    // ── Gwiazdki badge pod kółkiem ──
+    var badge = document.querySelector('.sprawnosc-stars-badge');
+    if (badge) {
+        badge.textContent  = level > 0 ? '★'.repeat(level) : '';
+        badge.style.display = level > 0 ? '' : 'none';
+    }
+}
+
 async function toggleTask(taskId, itemId) {
     // Kto ogląda czyje sprawnosci?
     var viewingOwnId  = (currentViewUserId === currentUser.id);
@@ -971,15 +1052,24 @@ async function toggleTask(taskId, itemId) {
     updateUIStats();
     refreshCircleIcon(itemId); // odswież ikone w czasie rzeczywistym
 
+    // Zapisz do localStorage od razu (cache na wypadek odswiezenia)
+    try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+
     var result = await apiFetch('/progress', {
         method: 'POST',
         body: JSON.stringify({ userId: currentViewUserId, taskId: taskId, status: isChecked })
     });
     if (!result.ok) {
+        // Cofnij zmiany jesli serwer zwrocil blad
         if (isChecked) delete cachedProgress[taskId];
         else           cachedProgress[taskId] = true;
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
         updateItemProgress(itemId);
+        refreshCircleIcon(itemId);
         alert('Blad zapisu!');
+    } else {
+        // Aktualizuj cache po potwierdzeniu serwera
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
     }
 }
 
@@ -2343,33 +2433,35 @@ async function loadMemberPickerList() {
 }
 
 async function pickMember(userId, userName, userRole) {
-    // Zamknij dropdown i odśwież picker
     _memberPickerLoaded = false;
     var dd = document.getElementById('memberPickerDropdown');
     if (dd) dd.style.display = 'none';
 
     if (!userId) {
-        // Wróć do własnych sprawności
-        window._currentViewUserRole = currentUser.role || 'user';
+        currentViewUserId           = currentUser.id;
+        window._currentViewUserRole = currentUser.role;
         window._currentViewUserName = currentUser.name;
-        currentViewUserId = currentUser.id;
-    window._currentViewUserRole = currentUser.role;
-    window._currentViewUserName = currentUser.name;
-    // Panele dla zastepowy/podzastepowy — traktuj jak admin (maja panel)
-    if (!currentUser._originalRole) currentUser._originalRole = currentUser.role;
-        cachedProgress = {};
-        var r = await apiFetch('/progress/' + currentUser.id);
-        cachedProgress = r.ok ? r.data : {};
     } else {
-        currentViewUserId = userId;
+        currentViewUserId           = userId;
         window._currentViewUserRole = userRole || 'user';
         window._currentViewUserName = userName || '';
-        cachedProgress = {};
-        var r = await apiFetch('/progress/' + userId);
-        cachedProgress = r.ok ? r.data : {};
     }
 
-    // Odśwież aktywny widok sprawnosci/stopnia
+    // Załaduj progress wybranej osoby
+    var uid = userId || currentUser.id;
+    var r = await apiFetch('/progress/' + uid);
+    cachedProgress = (r.ok && r.data) ? r.data : {};
+
+    // Zapisz w localStorage jeśli to własny progress
+    if (!userId || userId === currentUser.id) {
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+    }
+
+    // Odśwież sidebar ikony dla nowej osoby
+    renderSidebar();
+    updateUIStats();
+
+    // Odśwież aktywny widok
     var activeNav = document.querySelector('.nav-item.active');
     if (activeNav) {
         var id = activeNav.id.replace('nav-item-','');
