@@ -5,7 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ksiazeczka Harcerska</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-<link href="https://fonts.cdnfonts.com/css/franklin-gothic-book" rel="stylesheet">
+<style>
+/* Franklin Gothic Book - local install first, then system fallbacks */
+@font-face {
+    font-family: 'Franklin Gothic Book';
+    src: local('Franklin Gothic Book'),
+         local('FranklinGothic-Book'),
+         local('Franklin Gothic'),
+         local('ITC Franklin Gothic Std Book');
+    font-weight: normal;
+    font-style: normal;
+}
+</style>
 <style>
 :root{
   --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
@@ -672,20 +683,13 @@ input:checked+.slider:before{transform:translateX(21px);}
 
   <!-- BOTTOM NAV — 4 przyciski jak na screenshocie -->
   <nav class="bottom-nav">
-    <button class="bnav-btn bnav-team-btn" id="bnav-profile" onclick="bnavClick('profile')">
-      <div class="bnav-icon bnav-team-icon">
-        <img id="bnavTeamImg" src="" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:cover;display:none;">
-        <span id="bnavTeamEmoji" style="font-size:1.3rem">&#127956;</span>
-      </div>
-      <span class="bnav-label" id="bnavTeamName">Druzyna</span>
-    </button>
     <button class="bnav-btn" id="bnav-book" onclick="bnavClick('book')">
       <div class="bnav-icon">&#128214;</div>
       <span class="bnav-label">Ksiazeczka</span>
     </button>
-    <button class="bnav-btn" id="bnav-uniform" onclick="bnavClick('uniform')">
-      <div class="bnav-icon">&#129333;</div>
-      <span class="bnav-label">Mundur</span>
+    <button class="bnav-btn" id="bnav-board" onclick="bnavClick('board')">
+      <div class="bnav-icon">&#11088;</div>
+      <span class="bnav-label">Tablica</span>
     </button>
     <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
       <div class="bnav-icon">&#9881;</div>
@@ -697,6 +701,22 @@ input:checked+.slider:before{transform:translateX(21px);}
 
 <script src="stopnie.js"></script>
 <script src="sprawnosci.js"></script>
+<script>
+// Patch: dodaj circleVariants do db po załadowaniu sprawnosci.js
+var _circleVariants = {"aktywista_aktywistka": 4, "altruista_altruistka": 3, "ambasador_ambasadorka_zastepu_druzyny_lesnej_szkolki": 4, "analityk_zywieniowy_analityczka_zywieniowa": 3, "antropocen": 4, "aprowizator_aprowizatorka": 4, "azymut": 3, "b_p": 2, "badacz_badaczka_dziejow_nazwa_miejscowosci": 4, "badacz_badaczka_dziejow_zastepu_druzyny_lesnej_szkolki": 3, "badacz_badaczka_gdyni_gdanska_sopotu": 4, "badacz_badaczka_historii_architektury": 4, "badacz_badaczka_kaszub": 4, "bajt": 3, "bedeker": 4, "biegacz_biegaczka": 3, "botanik_botaniczka": 4, "bourdain": 3, "bratnie_slowo": 4, "bumerang": 4, "busola": 3, "campingaz": 4, "ceramik_ceramiczka": 3, "checz": 4, "chrabaszcz": 3, "coach_coachka": 4, "cukiernik_cukierniczka": 4, "czarna_stopa": 4, "czarny_wilk": 4, "czujny_czujna": 4, "czytelnik_czytelniczka": 2, "dendrolog_dendrolozka": 3, "dietetyk_dietetyczka": 4, "drogowskaz": 1, "dunikowski": 3, "dyplomata_dyplomatka": 4, "dyskutant_dyskutantka": 3, "dzialacz_lokalny_dzialaczka_lokalna": 4, "dziewanna": 4, "dziewiarz_dziewiarka": 3, "enigma": 4, "epos": 4, "etnograf_etnografka": 4, "europejczyk_europejka": 4, "farmer_farmerka": 3, "filar": 3, "filmoznawca_filmoznawczyni": 3, "flagowy_flagowa": 4, "florysta_florystka": 3, "fotograf_fotografka": 3, "frycz_modrzewski": 4, "genealog_genealozka": 4, "geolog_geolozka": 2, "gorolaz_gorolazka": 3, "gospodarz_gospodyni": 3, "gracz_zespolowy": 4, "grafik_komputerowy_graficzka_komputerowa": 3, "grotolaz_grotolazka": 4, "gryf": 4, "grzybiarz_grzybiarka": 4, "hafciarz_hafciarka": 3, "harcografik_harcograficzka": 4, "harcownik_harcowniczka": 3, "herbarz": 3, "higienista_higienistka": 2, "historyk_historyczka": 3, "honorowy_krwiodawca_honorowa_krwiodawczyni": 3, "infografik_infograficzka": 2, "inicjator_inicjatorka": 4, "internista_internistka": 2, "introspektor_introspektorka": 3, "iskra": 2, "jaskier": 4, "jezdziec": 3, "jodelka": 3, "k6": 2, "kaletnik_kaletniczka": 3, "kaligraf_kaligrafka": 3, "kangurka": 4, "karski": 4, "kartograf_kartografka": 3, "kasjopeja": 3, "kolarz_kolarka": 4, "korespondent_korespondentka": 1, "korona_gor_polski": 2, "kortyzol": 4, "korzeniowski": 3, "kosycarz": 3, "krasomowca_krasomowczyni": 3, "krawiec_krawcowa": 3, "kronikarz_kronikarka_zastepu_druzyny_lesnej_szkolki": 4, "krytyk_krytyczka_literatury_harcerskiej": 3, "kucharz_domowy_kucharka_domowa": 3, "kucharz_polowy_kucharka_polowa": 4, "kuchcik": 3, "kukuczka": 2, "kurator_kuratorka": 3, "kustosz_kustoszka": 4, "lampion": 3, "lupa": 4, "lyzwiarz_lyzwiarka": 3, "magazynier_magazynierka": 4, "malarz_malarka": 3, "manitou": 4, "marzyciel_marzycielka": 4, "matejko": 4, "mazurek": 4, "mediator_mediatorka": 4, "meloman_melomanka": 4, "milczek_szara_lilijka": 3, "milosnik_milosniczka_parkow_narodowych": 4, "modelarz_modelarka": 3, "mors": 3, "morszczyn": 2, "mowca_mowczyni": 3, "muzykant_muzykantka": 4, "nawigator_nawigatorka": 2, "necel": 4, "ns": 4, "obserwator_obserwatorka": 4, "obywatel_obywatelka": 3, "ochotnik_ochotniczka": 4, "ognik": 2, "ognik_zimowy": 2, "okrasa": 3, "onc": 3, "opiekun_medyczny_opiekunka_medyczna": 3, "ornitolog_ornitolozka": 4, "otwarty_otwarta": 3, "piekarz_piekarka": 3, "piesza_trzydziestka_piecdziesiatka_setka": 3, "pionier_pionierka": 4, "planer": 3, "plecionkarz_plecionkarka": 3, "plywak_plywaczka": 4, "podzialka": 3, "polarnik_polarniczka": 3, "pomocna_dlon": 3, "postument": 3, "procent": 3, "przewodnik_przewodniczka_po_historii_zastepu_druzyny_lesnej_szkolki": 4, "przyjaciel_przyjaciolka_zwierzat": 3, "quo_vadis": 3, "ratownik_ratowniczka": 3, "reporter_reporterka": 4, "rolkarz_rolkarka": 3, "rolnik_rolniczka": 3, "rowerowa_piecdziesiatka_setka_dwusetka": 3, "rowerzysta_rowerzystka": 3, "rysownik_rysowniczka": 3, "rzecznik_rzeczniczka_zastepu_druzyny_lesnej_szkolki": 4, "rzezbiarz_rzezbiarka": 3, "sanitariusz_sanitariuszka": 2, "secola": 3, "silacz_silaczka": 3, "skaut_skautka": 2, "skojka": 3, "skryba": 4, "slowianin_slowianka": 3, "sluchacz_sluchaczka": 3, "sniegolaz_sniegolazka": 3, "snycerz_snycerka": 4, "socjolog_socjolozka": 3, "sokole_oko": 4, "spiewak_spiewaczka": 3, "spolecznik_spoleczniczka": 4, "stolarz_stolarka": 3, "strazak_strazaczka": 3, "straznik_strazniczka_pamieci": 3, "stylista_stylistka": 2, "swiadomy_konsument_swiadoma_konsumentka": 4, "swietlik": 2, "swiety_jerzy": 2, "sygnalista_sygnalistka": 2, "synoptyk_synoptyczka": 3, "szpajza": 4, "szydelko": 3, "tabata": 3, "tales_z_miletu": 3, "tancerz_tancerka": 3, "technik_obozowy_techniczka_obozowa": 4, "tkacz_tkaczka": 4, "topograf_topografka": 3, "traper_traperka": 2, "tropiciel_tropicielka": 4, "trzy_piora": 2, "trzydziestka_szostka": 2, "upcycling": 2, "wajdelota": 3, "wartownik_wartowniczka": 4, "watchdog": 3, "wedkarz_wedkarka": 3, "wedzarz_wedzarka": 3, "wele_wetka": 4, "wesziwoczka": 4, "wideograf_wideografka": 3, "wloczykij": 2, "wodnik": 4, "woloszanski": 2, "wspinacz_wspinaczka": 4, "wyblinka": 4, "zacios": 4, "zawisza_czarny": 2, "zbrojmistrz_zbrojmistrzyni": 4, "zdobnik_obozowy_zdobniczka_obozowa": 4, "zdobnik_zdobniczka": 4, "zeglarz_zeglarka": 4, "zielarz_zielarka": 4, "znachor_znachorka": 3, "znawca_znawczyni_als": 3, "znawca_znawczyni_lokalnej_kultury": 4, "znawca_znawczyni_musztry": 3, "zwiadowca_zwiadowczyni": 3};
+document.addEventListener('DOMContentLoaded', function() {
+    // Będzie wywołane po window.onload przez db initialization
+});
+// Funkcja do patchowania - wywołana w window.onload po zbudowaniu db
+function patchDbCircleVariants() {
+    if (typeof db === 'undefined') return;
+    db.forEach(function(item) {
+        if (_circleVariants[item.id]) {
+            item.circleVariants = _circleVariants[item.id];
+        }
+    });
+}
+</script>
 <script>
 // ================================================================
 // KONFIGURACJA
@@ -758,6 +778,7 @@ window.onload = async () => {
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
 
+    patchDbCircleVariants(); // dodaj circleVariants do każdej sprawności
     const savedToken    = localStorage.getItem('hk_token');
     const savedUser     = localStorage.getItem('hk_user');
     const savedProgress = localStorage.getItem('hk_progress');
@@ -765,11 +786,23 @@ window.onload = async () => {
     if (savedToken && savedUser) {
         authToken   = savedToken;
         currentUser = JSON.parse(savedUser);
-        // Zaladuj cache progress od razu (zeby ikony sie pokazaly przed fetchem)
+        // Zaladuj cache progress od razu z localStorage
         if (savedProgress) {
             try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
         }
+        // Inicjalizuj od razu (nie czekaj na serwer - działa offline/cold start)
         initAppAfterLogin();
+        // W tle sprawdź token - tylko gdy serwer odpowie 401 to wyloguj
+        apiFetch('/my-team').then(function(pingRes) {
+            if (pingRes.status === 401 || pingRes.status === 403) {
+                authToken = null; currentUser = null;
+                localStorage.removeItem('hk_token');
+                localStorage.removeItem('hk_user');
+                localStorage.removeItem('hk_progress');
+                loadTeams().then(function() { showPanel('login'); });
+            }
+            // status 0 = serwer spi (Render cold start) - nie wylogowuj
+        });
     } else {
         await loadTeams();
         showPanel('login');
@@ -808,8 +841,13 @@ async function apiFetch(url, options) {
     try {
         var res  = await fetch(API + url, Object.assign({}, options, { headers: headers }));
         var data = await res.json();
+        // Jesli 401 - token wygasl, odswierz token lub wyloguj
+        if (res.status === 401) {
+            console.warn('apiFetch 401 na:', url);
+        }
         return { ok: res.ok, status: res.status, data: data };
     } catch (e) {
+        console.warn('apiFetch error:', url, e.message);
         return { ok: false, status: 0, data: { error: 'Blad polaczenia z serwerem' } };
     }
 }
@@ -937,17 +975,14 @@ function initAppAfterLogin() {
     apiFetch('/progress/' + currentUser.id).then(function(r) {
         if (!r.ok) return;
         var fresh = r.data || {};
-        // Porownaj - jesli rozny to odswierz
-        if (JSON.stringify(fresh) !== JSON.stringify(cachedProgress)) {
-            cachedProgress = fresh;
-            try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
-            updateUIStats();    // odswierz procenty i ikony w sidebarze
-            // Odswierz aktualnie otwarty content
-            var activeNav = document.querySelector('.nav-item.active');
-            if (activeNav) {
-                var activeId = activeNav.id.replace('nav-item-','');
-                if (activeId) loadContent(activeId);
-            }
+        cachedProgress = fresh;
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+        updateUIStats(); // odswierz procenty i ikony
+        // Odswierz aktualnie otwarty content
+        var activeNav = document.querySelector('.nav-item.active');
+        if (activeNav) {
+            var activeId = activeNav.id.replace('nav-item-','');
+            if (activeId) loadContent(activeId);
         }
     });
 }
@@ -958,7 +993,13 @@ function initAppAfterLogin() {
 
 function refreshCircleIcon(itemId) {
     var item = db.find(function(x){ return x.id === itemId; });
-    if (!item || !item.circleVariants) return;
+    if (!item) return;
+
+    // Upewnij sie ze item ma circleVariants (patch jesli brak)
+    if (!item.circleVariants && _circleVariants && _circleVariants[item.id]) {
+        item.circleVariants = _circleVariants[item.id];
+    }
+    if (!item.circleVariants) return;
 
     var opacity = getSprawOpacity(item, cachedProgress);
     var variant = getSprawVariant(item, cachedProgress);
@@ -967,44 +1008,47 @@ function refreshCircleIcon(itemId) {
     var s       = getSprawDone(item, cachedProgress);
 
     // ── Sidebar ──
-    var navEl  = document.getElementById('nav-item-' + itemId);
-    var navImg = navEl ? navEl.querySelector('.nav-circle-img') : null;
-    if (navImg) {
-        navImg.src = imgSrc;
-        navImg.style.opacity = opacity;
-    } else if (navEl) {
-        var empty = navEl.querySelector('.nav-circle-empty');
-        if (empty) {
-            var img = document.createElement('img');
-            img.className = 'nav-circle-img';
-            img.src = imgSrc;
-            img.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s';
-            empty.parentNode.replaceChild(img, empty);
+    var navEl = document.getElementById('nav-item-' + itemId);
+    if (navEl) {
+        var navImg   = navEl.querySelector('.nav-circle-img');
+        var navEmpty = navEl.querySelector('.nav-circle-empty');
+        if (navImg) {
+            navImg.style.transition = 'opacity .3s';
+            navImg.style.opacity    = String(opacity);
+            if (navImg.getAttribute('data-src') !== imgSrc) {
+                navImg.setAttribute('data-src', imgSrc);
+                navImg.src = imgSrc;
+            }
+        } else if (navEmpty) {
+            var img2 = document.createElement('img');
+            img2.className = 'nav-circle-img';
+            img2.src = imgSrc;
+            img2.setAttribute('data-src', imgSrc);
+            img2.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s;width:28px;height:28px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0;';
+            navEmpty.parentNode.replaceChild(img2, navEmpty);
         }
     }
 
     // ── Header ikona ──
-    var headerImg = document.querySelector('.sprawnosc-circle-icon');
+    var headerImg = document.querySelector('.sprawnosc-circle-icon[data-item="' + itemId + '"]');
     if (headerImg) {
-        if (headerImg.getAttribute('data-item') === itemId) {
-            if (headerImg.src.indexOf(imgSrc) < 0) {
-                headerImg.style.transition = 'opacity .15s';
-                headerImg.style.opacity = '0.05';
-                var _src = imgSrc;
-                var _op  = String(opacity);
-                var _el  = headerImg;
-                setTimeout(function(){
-                    _el.src = _src;
-                    _el.style.opacity = _op;
-                }, 150);
-            } else {
-                headerImg.style.transition = 'opacity .3s';
+        var newSrc = imgSrc;
+        if (headerImg.getAttribute('data-src') !== newSrc) {
+            headerImg.style.transition = 'opacity .15s';
+            headerImg.style.opacity = '0.05';
+            headerImg.setAttribute('data-src', newSrc);
+            setTimeout(function() {
+                headerImg.src = newSrc;
+                headerImg.style.transition = 'opacity .35s';
                 headerImg.style.opacity = String(opacity);
-            }
+            }, 150);
+        } else {
+            headerImg.style.transition = 'opacity .35s';
+            headerImg.style.opacity = String(opacity);
         }
     }
 
-    // ── Info tekst pod tytułem ──
+    // ── Info pod tytułem ──
     var infoEl = document.querySelector('.sprawnosc-header-info');
     if (infoEl) {
         if (s.done > 0) {
@@ -1016,10 +1060,10 @@ function refreshCircleIcon(itemId) {
         }
     }
 
-    // ── Gwiazdki badge pod kółkiem ──
+    // ── Gwiazdki badge ──
     var badge = document.querySelector('.sprawnosc-stars-badge');
     if (badge) {
-        badge.textContent  = level > 0 ? '★'.repeat(level) : '';
+        badge.textContent   = level > 0 ? '★'.repeat(level) : '';
         badge.style.display = level > 0 ? '' : 'none';
     }
 }
@@ -1404,6 +1448,7 @@ function goHome() {
 }
 
 function renderSidebar(filterText) {
+    patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
     var list = document.getElementById('navList');
     list.innerHTML = '';
@@ -1535,7 +1580,7 @@ function loadContent(id) {
 
     document.getElementById('contentArea').innerHTML = html;
     updateItemProgress(id);
-    document.querySelector('.main').scrollTop = 0;
+    var _main = document.getElementById('contentArea'); if (_main) _main.scrollTop = 0;
 }
 
 function updateItemProgress(itemId) {
@@ -1564,21 +1609,33 @@ function updateUIStats() {
                 if (cachedProgress[item.id + '-' + gi + '-' + ti]) { done++; iDone++; }
             });
         });
+        // Zaktualizuj procent w sidebarze
         var nav = document.getElementById('nav-prog-' + item.id);
         if (nav) nav.textContent = (iTotal ? Math.round(iDone / iTotal * 100) : 0) + '%';
 
-        // Odswiez ikonę w sidebarze (opacity + wariant)
+        // Zaktualizuj ikonę w sidebarze
         if (item.circleVariants) {
             var opacity = getSprawOpacity(item, cachedProgress);
             var variant = getSprawVariant(item, cachedProgress);
             var imgSrc  = getCircleImgForProgress(item, cachedProgress);
-            var navImg  = document.querySelector('#nav-item-' + item.id + ' .nav-circle-img');
+            var navEl   = document.getElementById('nav-item-' + item.id);
+            if (!navEl) return;
+            var navImg  = navEl.querySelector('.nav-circle-img');
+            var navEmpty = navEl.querySelector('.nav-circle-empty');
             if (navImg) {
+                navImg.style.transition = 'opacity .3s';
+                navImg.style.opacity    = opacity;
                 if (navImg.getAttribute('data-src') !== imgSrc) {
                     navImg.src = imgSrc;
                     navImg.setAttribute('data-src', imgSrc);
                 }
-                navImg.style.opacity = opacity;
+            } else if (navEmpty && variant > 0) {
+                var img = document.createElement('img');
+                img.className = 'nav-circle-img';
+                img.src = imgSrc;
+                img.setAttribute('data-src', imgSrc);
+                img.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s';
+                navEmpty.parentNode.replaceChild(img, navEmpty);
             }
         }
     });
