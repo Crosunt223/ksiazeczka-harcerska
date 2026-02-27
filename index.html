@@ -241,6 +241,14 @@ body.dark .login-box h2{color:var(--f2);}
 .bnav-label{font-size:.59rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
 
 /* Placeholder kafelki */
+.zastep-drop-zone{
+  min-height:44px;padding:6px;border-radius:var(--rs);
+  border:2px dashed transparent;transition:.2s;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+}
+.zastep-drop-zone.drag-over{
+  border-color:var(--amber);background:rgba(255,180,0,.07);
+}
+.member-chip:active{cursor:grabbing;}
 .member-picker-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:.88rem;display:flex;align-items:center;gap:8px;}
 .member-picker-item:hover{background:var(--panel2);}
 .team-edit-panel{
@@ -516,13 +524,30 @@ input:checked+.slider:before{transform:translateX(21px);}
 
 <!-- ══ MODAL: POPROŚ O SPRAWNOŚĆ ══ -->
 <div id="askModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5500;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
-  <div style="background:var(--panel);padding:28px;border-radius:20px;width:310px;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
+  <div style="background:var(--panel);padding:24px;border-radius:20px;width:340px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
     <span onclick="closeAskModal()" style="position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;color:var(--muted)">&times;</span>
-    <h3 style="font-family:'Franklin Gothic Book','Franklin Gothic Medium',Arial Narrow,sans-serif;margin-bottom:6px;color:var(--f5)">&#128226; Popros o zdanie</h3>
-    <p style="color:var(--muted);font-size:.83rem;margin-bottom:16px" id="askModalItemName"></p>
-    <p style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Wybierz osobe:</p>
-    <div id="askKadraList" style="display:grid;gap:8px;margin-bottom:16px"></div>
-    <p style="color:var(--muted);font-size:.78rem;text-align:center" id="askModalStatus"></p>
+    <h3 style="font-family:'Franklin Gothic Book','Franklin Gothic Medium',Arial Narrow,sans-serif;margin-bottom:4px;color:var(--f5)">&#128226; Popros o zdanie</h3>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:14px" id="askModalItemName"></p>
+
+    <!-- Krok 1: wybierz podpunkt -->
+    <div id="askStep1">
+      <p style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">1. Wybierz podpunkt:</p>
+      <div id="askTaskList" style="display:grid;gap:6px;margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Krok 2: wybierz osobę (ukryty na start) -->
+    <div id="askStep2" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <button onclick="backToTaskPick()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem">&#8592;</button>
+        <div>
+          <p style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0">2. Wybierz osobe:</p>
+          <p style="font-size:.8rem;color:var(--f4);margin:2px 0 0" id="askSelectedTask"></p>
+        </div>
+      </div>
+      <div id="askKadraList" style="display:grid;gap:8px;margin-bottom:14px"></div>
+    </div>
+
+    <p style="color:var(--muted);font-size:.78rem;text-align:center;margin:0" id="askModalStatus"></p>
   </div>
 </div>
 <!-- ══ SETTINGS MODAL ══ -->
@@ -930,6 +955,10 @@ async function renderAdminDashboard() {
         'podzastepowy': '&#128196; Panel Podzastepowego'
     }[role] || 'Panel';
 
+    // Pobierz prosby o sprawnosci
+    var rReq = await apiFetch('/requests/incoming');
+    var sprawRequests = (rReq.ok && Array.isArray(rReq.data)) ? rReq.data : [];
+
     var html = '<div class="welcome-header">'
         + '<h2>Czuwaj, ' + currentUser.name + '!</h2>'
         + '<p>' + panelTitle + '</p>'
@@ -954,6 +983,29 @@ async function renderAdminDashboard() {
                 + '<div style="display:flex;gap:6px">'
                 + '<button class="btn-sm btn-approve" onclick="approveUser(\'' + u._id + '\')">&#10003; Akceptuj</button>'
                 + '<button class="btn-sm btn-reject"  onclick="rejectUser(\'' + u._id + '\')">&#10007; Odrzuc</button>'
+                + '</div></div>';
+        });
+        html += '</div></div>';
+    }
+
+    // ── Prosby o sprawnosci ──
+    if (sprawRequests.length > 0) {
+        html += '<div class="home-card" style="border-left:4px solid #7c4dff">'
+            + '<h3 style="color:#7c4dff;margin-top:0">&#128226; Prosby o zdanie sprawnosci (' + sprawRequests.length + ')</h3>'
+            + '<div style="display:grid;gap:8px">';
+        sprawRequests.forEach(function(req) {
+            html += '<div class="member-row">'
+                + '<div>'
+                + '<strong>' + req.fromUserName + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82rem;margin-left:8px">prosi o zdanie:</span><br>'
+                + '<span style="font-size:.85rem;color:var(--text)">'
+                + (req.itemTitle ? '<em style="color:var(--muted)">' + req.itemTitle + '</em> — ' : '')
+                + req.taskText
+                + '</span>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px">'
+                + '<button class="btn-sm btn-approve" data-rid="' + req._id + '" data-ruid="' + req.fromUserId + '" data-rtask="' + req.taskId + '" onclick="respondRequest(this.dataset.rid,this.dataset.ruid,this.dataset.rtask,this.dataset.action,this)" data-action="approve">&#10003; Zdaj</button>'
+                + '<button class="btn-sm btn-reject" data-rid="' + req._id + '" data-action="reject" onclick="respondRequest(this.dataset.rid,\'\',\'\',this.dataset.action,this)">&#10007; Odrzuc</button>'
                 + '</div></div>';
         });
         html += '</div></div>';
@@ -1355,59 +1407,120 @@ function resetProgress()  { alert('Skontaktuj sie z administratorem.'); }
 async function renderZastepyPanel() {
     hideSidebarArea();
     bnavSetActive('book');
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie zastepow...</p></div>';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
 
     var [rZ, rM] = await Promise.all([apiFetch('/zastepy'), apiFetch('/team-members')]);
-    var zastepy = rZ.ok ? rZ.data : [];
-    var members = rM.ok ? rM.data.filter(function(u){ return u.status === 'active'; }) : [];
+    var zastepy  = rZ.ok ? rZ.data : [];
+    var members  = rM.ok ? rM.data.filter(function(u){ return u.status === 'active'; }) : [];
+
+    // Nieprzypisani - osobna "pula"
+    var unassigned = members.filter(function(u){ return !u.zastepId; });
 
     var html = '<div class="welcome-header"><h2>Zastepy</h2>'
-        + '<p>Zarzadzaj podzialem druzyny na zastepy</p>'
         + '<button onclick="renderAdminDashboard()" style="margin-top:8px;padding:8px 16px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.85rem;">&#8592; Wróc do panelu</button>'
         + '</div>';
 
-    // Dodaj nowy zastep
+    // Dodaj zastep
     html += '<div class="home-card">'
-        + '<h3>Dodaj nowy zastep</h3>'
+        + '<h3 style="margin-top:0">Dodaj nowy zastep</h3>'
         + '<div style="display:flex;gap:8px">'
         + '<input id="newZastepName" class="input-add" placeholder="Nazwa zastepu (np. Zastep Orla)">'
         + '<button class="btn-sm btn-approve" onclick="addZastep()">+ Dodaj</button>'
         + '</div></div>';
 
-    // Lista zastepów
-    html += '<div class="home-card"><h3>Zastepy (' + zastepy.length + ')</h3>';
+    // Pula nieprzypisanych
+    html += '<div class="home-card">'
+        + '<h3 style="margin-top:0;color:var(--muted)">&#128100; Nieprzypisani (' + unassigned.length + ')</h3>'
+        + '<div class="zastep-drop-zone" id="zone-unassigned" data-zid="" '
+        + 'ondragover="dragOver(event,this)" '
+        + 'ondragleave="dragLeave(this)" '
+        + 'ondrop="dropToZastep(event,this)">'
+        + unassigned.map(function(u){ return memberChip(u); }).join('')
+        + (unassigned.length === 0 ? '<span style="color:var(--muted);font-size:.82rem">Wszyscy przypisani</span>' : '')
+        + '</div></div>';
+
+    // Zastepy
+    html += '<div class="home-card"><h3 style="margin-top:0">Zastepy (' + zastepy.length + ')</h3>';
     if (!zastepy.length) {
-        html += '<p style="color:var(--muted)">Brak zastepow. Dodaj pierwszy zastep powyzej.</p>';
+        html += '<p style="color:var(--muted)">Brak zastepow.</p>';
     } else {
+        html += '<div style="display:grid;gap:12px">';
         zastepy.forEach(function(z) {
-            var inZastep = members.filter(function(u){ return u.zastepId === z.zastepId; });
-            var notInZastep = members.filter(function(u){ return !u.zastepId || u.zastepId !== z.zastepId; });
-            html += '<div style="background:var(--panel2);border-radius:var(--rs);padding:16px;margin-bottom:12px;border:1.5px solid var(--border)">'
-                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
-                + '<strong style="font-size:1rem">&#128101; ' + z.name + '</strong>'
+            var inZ = members.filter(function(u){ return u.zastepId === z.zastepId; });
+            html += '<div style="background:var(--panel2);border-radius:var(--rs);padding:14px;border:1.5px solid var(--border)">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+                + '<strong>&#128101; ' + z.name + ' <span style="color:var(--muted);font-weight:400;font-size:.82rem">(' + inZ.length + ')</span></strong>'
                 + '<button class="btn-sm btn-delete" data-zid="' + z.zastepId + '" onclick="deleteZastep(this.dataset.zid)">Usun</button>'
                 + '</div>'
-                // Członkowie zastepu
-                + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">'
-                + inZastep.map(function(u){
-                    return '<span style="background:var(--f4);color:#fff;padding:3px 10px;border-radius:20px;font-size:.78rem;cursor:pointer;display:flex;align-items:center;gap:4px">'
-                        + u.name
-                        + ' <span data-uid="' + u._id + '" onclick="removeFromZastep(this.dataset.uid)" style="opacity:.7;font-weight:700" title="Usun z zastepu">&#10005;</span></span>';
-                }).join('')
-                + (inZastep.length === 0 ? '<span style="color:var(--muted);font-size:.83rem">Brak czlonkow</span>' : '')
+                + '<div class="zastep-drop-zone" id="zone-' + z.zastepId + '" data-zid="' + z.zastepId + '" '
+                + 'ondragover="dragOver(event,this)" '
+                + 'ondragleave="dragLeave(this)" '
+                + 'ondrop="dropToZastep(event,this)">'
+                + inZ.map(function(u){ return memberChip(u); }).join('')
+                + (inZ.length === 0 ? '<span style="color:var(--muted);font-size:.82rem">Przeciagnij tu osoby</span>' : '')
                 + '</div>'
-                // Dropdown dodania osoby
-                + '<select class="btn-sm" style="background:var(--panel);border:1.5px solid var(--border);border-radius:var(--rs);padding:6px 10px;cursor:pointer;color:var(--text)" data-zid="\' + z.zastepId + \'" onchange="addToZastep(this.value,this.dataset.zid,this)">'
-                + '<option value="">+ Dodaj czlonka...</option>'
-                + notInZastep.map(function(u){
-                    return '<option value="' + u._id + '">' + u.name + ' (' + (ROLE_LABELS[u.role]||u.role) + ')</option>';
-                }).join('')
-                + '</select>'
                 + '</div>';
         });
+        html += '</div>';
     }
     html += '</div>';
+
     document.getElementById('contentArea').innerHTML = html;
+
+    // Inicjalizuj drag na chipach
+    document.querySelectorAll('.member-chip').forEach(function(chip) {
+        chip.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('userId', this.dataset.uid);
+            this.style.opacity = '0.5';
+        });
+        chip.addEventListener('dragend', function() {
+            this.style.opacity = '1';
+        });
+    });
+}
+
+function memberChip(u) {
+    var rColor = ROLE_COLORS[u.role] || '#546e7a';
+    return '<div class="member-chip" draggable="true" data-uid="' + u._id + '" '
+        + 'style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;'
+        + 'background:var(--panel);border:1.5px solid var(--border);border-radius:20px;'
+        + 'cursor:grab;font-size:.82rem;margin:3px">'
+        + '<span style="width:8px;height:8px;border-radius:50%;background:' + rColor + ';flex-shrink:0"></span>'
+        + u.name
+        + '</div>';
+}
+
+
+function dragOver(e, el) { e.preventDefault(); el.classList.add('drag-over'); }
+function dragLeave(el)   { el.classList.remove('drag-over'); }
+
+async function dropToZastep(event, zone) {
+    event.preventDefault();
+    if (typeof zone === 'object' && zone.classList) zone.classList.remove('drag-over');
+    var zastepId = zone && zone.dataset ? zone.dataset.zid : '';
+    var userId = event.dataTransfer.getData('userId');
+    if (!userId) return;
+    await apiFetch('/users/' + userId + '/zastep', {
+        method: 'POST',
+        body: JSON.stringify({ zastepId: zastepId || null })
+    });
+    renderZastepyPanel();
+}
+
+
+
+async function respondRequest(reqId, fromUserId, taskId, action, btn) {
+    btn.disabled = true;
+    var r = await apiFetch('/requests/' + reqId + '/respond', {
+        method: 'POST',
+        body: JSON.stringify({ action })
+    });
+    if (r.ok) {
+        renderAdminDashboard(); // odswież
+    } else {
+        btn.disabled = false;
+        alert(r.data.error || 'Blad');
+    }
 }
 
 async function addZastep() {
@@ -1750,50 +1863,104 @@ async function submitRegisterWithTeam() {
 // ══════════════════════════════════════════════════════
 // MODAL "POPROŚ O ZDANIE SPRAWNOŚCI"
 // ══════════════════════════════════════════════════════
-var _askItemId = null;
+var _askItemId    = null;
+var _askTaskId    = null;
+var _askTaskText  = null;
 
 async function openAskModal(itemId) {
-    _askItemId = itemId;
+    _askItemId   = itemId;
+    _askTaskId   = null;
+    _askTaskText = null;
+
     var item = db.find(function(x){ return x.id === itemId; });
     document.getElementById('askModalItemName').textContent = item ? item.title : itemId;
-    document.getElementById('askModalStatus').textContent = '';
-    document.getElementById('askKadraList').innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ladowanie...</p>';
+    document.getElementById('askModalStatus').textContent   = '';
+    document.getElementById('askStep1').style.display = 'block';
+    document.getElementById('askStep2').style.display = 'none';
     document.getElementById('askModal').style.display = 'flex';
+
+    // Wylistuj niezaliczone podpunkty
+    var taskList = document.getElementById('askTaskList');
+    if (!item) { taskList.innerHTML = '<p style="color:var(--muted)">Brak zadan.</p>'; return; }
+
+    var tasks = [];
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) {
+            var tid = itemId + '-' + gi + '-' + ti;
+            if (!cachedProgress[tid]) tasks.push({ tid, text: t.replace(/\*/g,'★'), group: g.name });
+        });
+    });
+
+    if (!tasks.length) {
+        taskList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Wszystkie podpunkty juz zaliczone!</p>';
+        return;
+    }
+
+    taskList.innerHTML = tasks.map(function(t) {
+        return '<div class="member-picker-item" data-tid="' + t.tid + '" data-ttext="' + t.text.replace(/"/g,'&quot;') + '" '
+            + 'onclick="pickTask(this.dataset.tid,this.dataset.ttext)" '
+            + 'style="padding:9px 12px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.83rem">'
+            + '<span style="color:var(--muted);font-size:.75rem">' + t.group + '</span><br>'
+            + t.text
+            + '</div>';
+    }).join('');
+}
+
+async function pickTask(taskId, taskText) {
+    _askTaskId   = taskId;
+    _askTaskText = taskText;
+    document.getElementById('askSelectedTask').textContent = taskText;
+    document.getElementById('askStep1').style.display = 'none';
+    document.getElementById('askStep2').style.display = 'block';
+    document.getElementById('askModalStatus').textContent = '';
+
+    var kadraList = document.getElementById('askKadraList');
+    kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ladowanie...</p>';
 
     var r = await apiFetch('/my-kadra');
     var kadra = r.ok ? r.data : [];
 
     if (!kadra.length) {
-        document.getElementById('askKadraList').innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w Twojej druzynie.</p>';
+        kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w druzynie.</p>';
         return;
     }
 
-    document.getElementById('askKadraList').innerHTML = kadra.map(function(k) {
-        var rLabel = ROLE_LABELS[k.role] || k.role;
+    kadraList.innerHTML = kadra.map(function(k) {
         var rColor = ROLE_COLORS[k.role] || '#546e7a';
-        return '<div data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
-            + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" '
-            + 'class="member-picker-item">'
+        return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
+            + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+            + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
             + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
-            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
             + '</div>';
     }).join('');
 }
 
-async function sendAskRequest(kadraId, kadraName) {
-    document.getElementById('askModalStatus').textContent = 'Wysylanie prosby do ' + kadraName + '...';
-    var r = await apiFetch('/requests', {
-        method: 'POST',
-        body: JSON.stringify({ targetUserId: kadraId, taskId: _askItemId, itemId: _askItemId })
-    });
-    if (r.ok) {
-        document.getElementById('askModalStatus').textContent = '✓ Prosba wyslana do ' + kadraName + '!';
-        setTimeout(closeAskModal, 1500);
-    } else {
-        document.getElementById('askModalStatus').textContent = 'Blad wysylania prosby.';
-    }
+function backToTaskPick() {
+    document.getElementById('askStep1').style.display = 'block';
+    document.getElementById('askStep2').style.display = 'none';
 }
 
+async function sendAskRequest(kadraId, kadraName) {
+    document.getElementById('askModalStatus').textContent = 'Wysylanie...';
+    var item = db.find(function(x){ return x.id === _askItemId; });
+    var r = await apiFetch('/requests', {
+        method: 'POST',
+        body: JSON.stringify({
+            toUserId:  kadraId,
+            itemId:    _askItemId,
+            itemTitle: item ? item.title : _askItemId,
+            taskId:    _askTaskId,
+            taskText:  _askTaskText
+        })
+    });
+    if (r.ok) {
+        document.getElementById('askModalStatus').textContent = '✓ Wyslano do ' + kadraName + '!';
+        setTimeout(closeAskModal, 1400);
+    } else {
+        document.getElementById('askModalStatus').textContent = 'Blad wysylania.';
+    }
+}
 function closeAskModal() {
     document.getElementById('askModal').style.display = 'none';
 }
