@@ -922,19 +922,33 @@ function initAppAfterLogin() {
         return;
     }
 
-    // Zawsze laduj progress (dla wszystkich rol - kadra tez ma swoje sprawnosci)
-    apiFetch('/progress/' + currentUser.id).then(function(r) {
-        cachedProgress = r.ok ? (r.data || {}) : {};
+    // Renderuj natychmiast z cachedProgress (juz zaladowanym z localStorage)
+    if (currentUser.role !== 'user') {
+        bnavSetActive('book');
+        showSidebarArea();
+        renderAdminDashboard();
+    } else {
+        bnavSetActive('book');
+        goHome();
+    }
+    renderSidebar(); // ikony od razu z localStorage cache
 
-        if (currentUser.role !== 'user') {
-            bnavSetActive('book');
-            showSidebarArea();
-            renderAdminDashboard();
-        } else {
-            bnavSetActive('book');
-            goHome();
+    // Potem zaktualizuj progress z serwera w tle
+    apiFetch('/progress/' + currentUser.id).then(function(r) {
+        if (!r.ok) return;
+        var fresh = r.data || {};
+        // Porownaj - jesli rozny to odswierz
+        if (JSON.stringify(fresh) !== JSON.stringify(cachedProgress)) {
+            cachedProgress = fresh;
+            try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+            updateUIStats();    // odswierz procenty i ikony w sidebarze
+            // Odswierz aktualnie otwarty content
+            var activeNav = document.querySelector('.nav-item.active');
+            if (activeNav) {
+                var activeId = activeNav.id.replace('nav-item-','');
+                if (activeId) loadContent(activeId);
+            }
         }
-        renderSidebar();
     });
 }
 
