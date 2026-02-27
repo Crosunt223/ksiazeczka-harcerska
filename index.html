@@ -688,8 +688,8 @@ input:checked+.slider:before{transform:translateX(21px);}
       <span class="bnav-label">Ksiazeczka</span>
     </button>
     <button class="bnav-btn" id="bnav-board" onclick="bnavClick('board')">
-      <div class="bnav-icon">&#11088;</div>
-      <span class="bnav-label">Tablica</span>
+      <div class="bnav-icon">🪡</div>
+      <span class="bnav-label">Mój Mundur</span>
     </button>
     <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
       <div class="bnav-icon">&#9881;</div>
@@ -1543,7 +1543,7 @@ function loadContent(id) {
             var s = getSprawDone(item, cachedProgress);
             return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
                 + '<div style="position:relative;flex-shrink:0">'
-                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" style="opacity:' + opacity + ';transition:opacity .4s">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
                 + (variant > 0 ? '<div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
                 + '</div>'
                 + '<div>'
@@ -2328,8 +2328,8 @@ async function showBoardTab() {
 function renderBoard() {
     var isOwn = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
     var html = '<div class="board-header">'
-        + '<h2 style="font-family:var(--ff-display)">Tablica Sprawnosci</h2>'
-        + (isOwn ? '<p style="color:var(--muted);font-size:.85rem">Kliknij pusty slot aby dodac sprawnosc</p>' : '')
+        + '<h2 style="font-family:var(--ff-display)">Rękaw Harcerza</h2>'
+        + (isOwn ? '<p style="color:var(--muted);font-size:.85rem">Kliknij pusty slot aby dodać sprawność na rękaw</p>' : '')
         + '</div>';
 
     html += '<div class="board-grid">';
