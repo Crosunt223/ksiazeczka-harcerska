@@ -1,6 +1,6 @@
 var sprawnosciData = [
     {
-        id: "historyk_historyczka",
+        id: "historyk_historyczka", circleVariants: 3,
         category: "Bielik",
         title: "Historyk/Historyczka",
         images: [],
@@ -17,7 +17,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wajdelota",
+        id: "wajdelota", circleVariants: 3,
         category: "Bielik",
         title: "Wajdelota",
         images: [],
@@ -32,7 +32,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "bedeker",
+        id: "bedeker", circleVariants: 4,
         category: "Bielik",
         title: "Bedeker",
         images: [],
@@ -49,7 +49,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "etnograf_etnografka",
+        id: "etnograf_etnografka", circleVariants: 4,
         category: "Bielik",
         title: "Etnograf/Etnografka",
         images: [],
@@ -66,7 +66,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "herbarz",
+        id: "herbarz", circleVariants: 3,
         category: "Bielik",
         title: "Herbarz",
         images: [],
@@ -82,7 +82,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "slowianin_slowianka",
+        id: "slowianin_slowianka", circleVariants: 3,
         category: "Bielik",
         title: "Słowianin/Słowianka",
         images: [],
@@ -98,7 +98,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "badacz_badaczka_dziejow_nazwa_miejscowosci",
+        id: "badacz_badaczka_dziejow_nazwa_miejscowosci", circleVariants: 4,
         category: "Bielik",
         title: "Badacz/Badaczka Dziejów (nazwa miejscowości)",
         images: [],
@@ -115,7 +115,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "lupa",
+        id: "lupa", circleVariants: 4,
         category: "Bielik",
         title: "Lupa",
         images: [],
@@ -132,7 +132,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kurator_kuratorka",
+        id: "kurator_kuratorka", circleVariants: 3,
         category: "Bielik",
         title: "Kurator/Kuratorka",
         images: [],
@@ -148,7 +148,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kartograf_kartografka",
+        id: "kartograf_kartografka", circleVariants: 3,
         category: "Bielik",
         title: "Kartograf/Kartografka",
         images: [],
@@ -164,7 +164,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "straznik_strazniczka_pamieci",
+        id: "straznik_strazniczka_pamieci", circleVariants: 3,
         category: "Bielik",
         title: "Strażnik/Strażniczka Pamięci",
         images: [],
@@ -181,7 +181,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "harcownik_harcowniczka",
+        id: "harcownik_harcowniczka", circleVariants: 3,
         category: "Bielik",
         title: "Harcownik/Harcowniczka",
         images: [],
@@ -196,7 +196,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "k6",
+        id: "k6", circleVariants: 2,
         category: "Bielik",
         title: "K6",
         images: [],
@@ -211,7 +211,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "postument",
+        id: "postument", circleVariants: 3,
         category: "Bielik",
         title: "Postument",
         images: [],
@@ -227,7 +227,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "woloszanski",
+        id: "woloszanski", circleVariants: 2,
         category: "Bielik",
         title: "Wołoszański",
         images: [],
@@ -241,7 +241,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "watchdog",
+        id: "watchdog", circleVariants: 3,
         category: "Bielik",
         title: "Watchdog",
         images: [],
@@ -258,7 +258,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "inicjator_inicjatorka",
+        id: "inicjator_inicjatorka", circleVariants: 4,
         category: "Bielik",
         title: "Inicjator/Inicjatorka",
         images: [],
@@ -275,7 +275,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "frycz_modrzewski",
+        id: "frycz_modrzewski", circleVariants: 4,
         category: "Bielik",
         title: "Frycz Modrzewski",
         images: [],
@@ -292,7 +292,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "otwarty_otwarta",
+        id: "otwarty_otwarta", circleVariants: 3,
         category: "Bielik",
         title: "Otwarty/Otwarta",
         images: [],
@@ -308,7 +308,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "procent",
+        id: "procent", circleVariants: 3,
         category: "Bielik",
         title: "Procent",
         images: [],
@@ -324,7 +324,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "infografik_infograficzka",
+        id: "infografik_infograficzka", circleVariants: 2,
         category: "Bielik",
         title: "Infografik/Infograficzka",
         images: [],
@@ -339,7 +339,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "korespondent_korespondentka",
+        id: "korespondent_korespondentka", circleVariants: 1,
         category: "Bielik",
         title: "Korespondent/Korespondentka",
         images: [],
@@ -353,7 +353,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wele_wetka",
+        id: "wele_wetka", circleVariants: 4,
         category: "Bielik",
         title: "Wele wetka",
         images: [],
@@ -370,7 +370,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "checz",
+        id: "checz", circleVariants: 4,
         category: "Bielik",
         title: "Chëcz",
         images: [],
@@ -387,7 +387,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wesziwoczka",
+        id: "wesziwoczka", circleVariants: 4,
         category: "Bielik",
         title: "Wësziwôczka",
         images: [],
@@ -404,7 +404,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "gryf",
+        id: "gryf", circleVariants: 4,
         category: "Bielik",
         title: "Gryf",
         images: [],
@@ -421,7 +421,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "badacz_badaczka_kaszub",
+        id: "badacz_badaczka_kaszub", circleVariants: 4,
         category: "Bielik",
         title: "Badacz/Badaczka Kaszub",
         images: [],
@@ -438,7 +438,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "necel",
+        id: "necel", circleVariants: 4,
         category: "Bielik",
         title: "Necel",
         images: [],
@@ -455,7 +455,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "szpajza",
+        id: "szpajza", circleVariants: 4,
         category: "Bielik",
         title: "Szpajza",
         images: [],
@@ -471,7 +471,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kosycarz",
+        id: "kosycarz", circleVariants: 3,
         category: "Bielik",
         title: "Kosycarz",
         images: [],
@@ -488,7 +488,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "badacz_badaczka_gdyni_gdanska_sopotu",
+        id: "badacz_badaczka_gdyni_gdanska_sopotu", circleVariants: 4,
         category: "Bielik",
         title: "Badacz/Badaczka Gdyni/Gdańska/Sopotu",
         images: [],
@@ -505,7 +505,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dzialacz_lokalny_dzialaczka_lokalna",
+        id: "dzialacz_lokalny_dzialaczka_lokalna", circleVariants: 4,
         category: "Bielik",
         title: "Działacz Lokalny/Działaczka Lokalna",
         images: [],
@@ -522,7 +522,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "znawca_znawczyni_lokalnej_kultury",
+        id: "znawca_znawczyni_lokalnej_kultury", circleVariants: 4,
         category: "Bielik",
         title: "Znawca/Znawczyni Lokalnej Kultury",
         images: [],
@@ -538,7 +538,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "obywatel_obywatelka",
+        id: "obywatel_obywatelka", circleVariants: 3,
         category: "Bielik",
         title: "Obywatel/Obywatelka",
         images: [],
@@ -555,7 +555,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "spolecznik_spoleczniczka",
+        id: "spolecznik_spoleczniczka", circleVariants: 4,
         category: "Bielik",
         title: "Społecznik/Społeczniczka",
         images: [],
@@ -571,7 +571,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "honorowy_krwiodawca_honorowa_krwiodawczyni",
+        id: "honorowy_krwiodawca_honorowa_krwiodawczyni", circleVariants: 3,
         category: "Bielik",
         title: "Honorowy Krwiodawca/Honorowa Krwiodawczyni",
         images: [],
@@ -588,7 +588,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "czujny_czujna",
+        id: "czujny_czujna", circleVariants: 4,
         category: "Bielik",
         title: "Czujny/Czujna",
         images: [],
@@ -605,7 +605,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "karski",
+        id: "karski", circleVariants: 4,
         category: "Bielik",
         title: "Karski",
         images: [],
@@ -622,7 +622,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "europejczyk_europejka",
+        id: "europejczyk_europejka", circleVariants: 4,
         category: "Bielik",
         title: "Europejczyk/Europejka",
         images: [],
@@ -639,7 +639,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "swiadomy_konsument_swiadoma_konsumentka",
+        id: "swiadomy_konsument_swiadoma_konsumentka", circleVariants: 4,
         category: "Bielik",
         title: "Świadomy Konsument/Świadoma Konsumentka",
         images: [],
@@ -655,7 +655,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "quo_vadis",
+        id: "quo_vadis", circleVariants: 3,
         category: "Bielik",
         title: "Quo Vadis",
         images: [],
@@ -672,7 +672,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "matejko",
+        id: "matejko", circleVariants: 4,
         category: "Bielik",
         title: "Matejko",
         images: [],
@@ -689,7 +689,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "mazurek",
+        id: "mazurek", circleVariants: 4,
         category: "Bielik",
         title: "Mazurek",
         images: [],
@@ -706,7 +706,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "skryba",
+        id: "skryba", circleVariants: 4,
         category: "Bielik",
         title: "Skryba",
         images: [],
@@ -723,7 +723,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "krasomowca_krasomowczyni",
+        id: "krasomowca_krasomowczyni", circleVariants: 3,
         category: "Bielik",
         title: "Krasomówca/Krasomówczyni",
         images: [],
@@ -739,7 +739,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "badacz_badaczka_historii_architektury",
+        id: "badacz_badaczka_historii_architektury", circleVariants: 4,
         category: "Bielik",
         title: "Badacz/Badaczka Historii Architektury",
         images: [],
@@ -756,7 +756,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kustosz_kustoszka",
+        id: "kustosz_kustoszka", circleVariants: 4,
         category: "Bielik",
         title: "Kustosz/Kustoszka",
         images: [],
@@ -773,7 +773,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kaligraf_kaligrafka",
+        id: "kaligraf_kaligrafka", circleVariants: 3,
         category: "Bielik",
         title: "Kaligraf/Kaligrafka",
         images: [],
@@ -789,7 +789,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dunikowski",
+        id: "dunikowski", circleVariants: 3,
         category: "Bielik",
         title: "Dunikowski",
         images: [],
@@ -805,7 +805,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "epos",
+        id: "epos", circleVariants: 4,
         category: "Bielik",
         title: "Epos",
         images: [],
@@ -821,7 +821,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "tales_z_miletu",
+        id: "tales_z_miletu", circleVariants: 3,
         category: "Bielik",
         title: "Tales z Miletu",
         images: [],
@@ -838,7 +838,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "meloman_melomanka",
+        id: "meloman_melomanka", circleVariants: 4,
         category: "Bielik",
         title: "Meloman/Melomanka",
         images: [],
@@ -854,7 +854,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "filmoznawca_filmoznawczyni",
+        id: "filmoznawca_filmoznawczyni", circleVariants: 3,
         category: "Bielik",
         title: "Filmoznawca/Filmoznawczyni",
         images: [],
@@ -871,7 +871,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ochotnik_ochotniczka",
+        id: "ochotnik_ochotniczka", circleVariants: 4,
         category: "Lilijka",
         title: "Ochotnik/Ochotniczka",
         images: [],
@@ -887,7 +887,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "filar",
+        id: "filar", circleVariants: 3,
         category: "Lilijka",
         title: "Filar",
         images: [],
@@ -904,7 +904,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "pomocna_dlon",
+        id: "pomocna_dlon", circleVariants: 3,
         category: "Lilijka",
         title: "Pomocna Dłoń",
         images: [],
@@ -920,7 +920,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "spiewak_spiewaczka",
+        id: "spiewak_spiewaczka", circleVariants: 3,
         category: "Lilijka",
         title: "Śpiewak/Śpiewaczka",
         images: [],
@@ -936,7 +936,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "jaskier",
+        id: "jaskier", circleVariants: 4,
         category: "Lilijka",
         title: "Jaskier",
         images: [],
@@ -953,7 +953,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "flagowy_flagowa",
+        id: "flagowy_flagowa", circleVariants: 4,
         category: "Lilijka",
         title: "Flagowy/Flagowa",
         images: [],
@@ -970,7 +970,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "znawca_znawczyni_musztry",
+        id: "znawca_znawczyni_musztry", circleVariants: 3,
         category: "Lilijka",
         title: "Znawca/Znawczyni Musztry",
         images: [],
@@ -986,7 +986,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kangurka",
+        id: "kangurka", circleVariants: 4,
         category: "Lilijka",
         title: "Kangurka",
         images: [],
@@ -1002,7 +1002,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "b_p",
+        id: "b_p", circleVariants: 2,
         category: "Lilijka",
         title: "B-P",
         images: [],
@@ -1019,7 +1019,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "skaut_skautka",
+        id: "skaut_skautka", circleVariants: 2,
         category: "Lilijka",
         title: "Skaut/Skautka",
         images: [],
@@ -1036,7 +1036,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zdobnik_zdobniczka",
+        id: "zdobnik_zdobniczka", circleVariants: 4,
         category: "Lilijka",
         title: "Zdobnik/Zdobniczka",
         images: [],
@@ -1053,7 +1053,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "czarna_stopa",
+        id: "czarna_stopa", circleVariants: 4,
         category: "Lilijka",
         title: "Czarna Stopa",
         images: [],
@@ -1070,7 +1070,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "czarny_wilk",
+        id: "czarny_wilk", circleVariants: 4,
         category: "Lilijka",
         title: "Czarny Wilk",
         images: [],
@@ -1087,7 +1087,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "krytyk_krytyczka_literatury_harcerskiej",
+        id: "krytyk_krytyczka_literatury_harcerskiej", circleVariants: 3,
         category: "Lilijka",
         title: "Krytyk/Krytyczka Literatury Harcerskiej",
         images: [],
@@ -1103,7 +1103,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "onc",
+        id: "onc", circleVariants: 3,
         category: "Lilijka",
         title: "ONC",
         images: [],
@@ -1119,7 +1119,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "secola",
+        id: "secola", circleVariants: 3,
         category: "Lilijka",
         title: "Secola",
         images: [],
@@ -1135,7 +1135,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "manitou",
+        id: "manitou", circleVariants: 4,
         category: "Lilijka",
         title: "Manitou",
         images: [],
@@ -1152,7 +1152,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "harcografik_harcograficzka",
+        id: "harcografik_harcograficzka", circleVariants: 4,
         category: "Lilijka",
         title: "Harcografik/Harcograficzka",
         images: [],
@@ -1169,7 +1169,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "reporter_reporterka",
+        id: "reporter_reporterka", circleVariants: 4,
         category: "Lilijka",
         title: "Reporter/Reporterka",
         images: [],
@@ -1186,7 +1186,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "bratnie_slowo",
+        id: "bratnie_slowo", circleVariants: 4,
         category: "Lilijka",
         title: "Bratnie Słowo",
         images: [],
@@ -1203,7 +1203,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zawisza_czarny",
+        id: "zawisza_czarny", circleVariants: 2,
         category: "Lilijka",
         title: "Zawisza Czarny",
         images: [],
@@ -1218,7 +1218,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "swiety_jerzy",
+        id: "swiety_jerzy", circleVariants: 2,
         category: "Lilijka",
         title: "Święty Jerzy",
         images: [],
@@ -1233,7 +1233,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "swietlik",
+        id: "swietlik", circleVariants: 2,
         category: "Lilijka",
         title: "Świetlik",
         images: [],
@@ -1247,7 +1247,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "drogowskaz",
+        id: "drogowskaz", circleVariants: 1,
         category: "Lilijka",
         title: "Drogowskaz",
         images: [],
@@ -1262,7 +1262,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kronikarz_kronikarka_zastepu_druzyny_lesnej_szkolki",
+        id: "kronikarz_kronikarka_zastepu_druzyny_lesnej_szkolki", circleVariants: 4,
         category: "Lilijka",
         title: "Kronikarz/Kronikarka Zastępu/Drużyny/„Leśnej Szkółki”",
         images: [],
@@ -1278,7 +1278,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "badacz_badaczka_dziejow_zastepu_druzyny_lesnej_szkolki",
+        id: "badacz_badaczka_dziejow_zastepu_druzyny_lesnej_szkolki", circleVariants: 3,
         category: "Lilijka",
         title: "Badacz/Badaczka Dziejów Zastępu/Drużyny/„Leśnej Szkółki”",
         images: [],
@@ -1295,7 +1295,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "przewodnik_przewodniczka_po_historii_zastepu_druzyny_lesnej_szkolki",
+        id: "przewodnik_przewodniczka_po_historii_zastepu_druzyny_lesnej_szkolki", circleVariants: 4,
         category: "Lilijka",
         title: "Przewodnik/Przewodniczka po Historii Zastępu/Drużyny/„Leśnej Szkółki”",
         images: [],
@@ -1312,7 +1312,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rzecznik_rzeczniczka_zastepu_druzyny_lesnej_szkolki",
+        id: "rzecznik_rzeczniczka_zastepu_druzyny_lesnej_szkolki", circleVariants: 4,
         category: "Lilijka",
         title: "Rzecznik/Rzeczniczka Zastępu/Drużyny/„Leśnej Szkółki”",
         images: [],
@@ -1329,7 +1329,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ambasador_ambasadorka_zastepu_druzyny_lesnej_szkolki",
+        id: "ambasador_ambasadorka_zastepu_druzyny_lesnej_szkolki", circleVariants: 4,
         category: "Lilijka",
         title: "Ambasador/Ambasadorka Zastępu/Drużyny/„Leśnej Szkółki”",
         images: [],
@@ -1346,7 +1346,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "genealog_genealozka",
+        id: "genealog_genealozka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Genealog/Genealożka",
         images: [],
@@ -1363,7 +1363,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "mediator_mediatorka",
+        id: "mediator_mediatorka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Mediator/Mediatorka",
         images: [],
@@ -1380,7 +1380,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "coach_coachka",
+        id: "coach_coachka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Coach/Coachka",
         images: [],
@@ -1397,7 +1397,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dyplomata_dyplomatka",
+        id: "dyplomata_dyplomatka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Dyplomata/Dyplomatka",
         images: [],
@@ -1414,7 +1414,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "altruista_altruistka",
+        id: "altruista_altruistka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Altruista/Altruistka",
         images: [],
@@ -1430,7 +1430,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "socjolog_socjolozka",
+        id: "socjolog_socjolozka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Socjolog/Socjolożka",
         images: [],
@@ -1446,7 +1446,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "milczek_szara_lilijka",
+        id: "milczek_szara_lilijka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Milczek/Szara Lilijka",
         images: [],
@@ -1460,7 +1460,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "mowca_mowczyni",
+        id: "mowca_mowczyni", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Mówca/Mówczyni",
         images: [],
@@ -1477,7 +1477,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dyskutant_dyskutantka",
+        id: "dyskutant_dyskutantka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Dyskutant/Dyskutantka",
         images: [],
@@ -1494,7 +1494,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kortyzol",
+        id: "kortyzol", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Kortyzol",
         images: [],
@@ -1511,7 +1511,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "marzyciel_marzycielka",
+        id: "marzyciel_marzycielka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Marzyciel/Marzycielka",
         images: [],
@@ -1528,7 +1528,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "planer",
+        id: "planer", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Planer",
         images: [],
@@ -1545,7 +1545,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "introspektor_introspektorka",
+        id: "introspektor_introspektorka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Introspektor/Introspektorka",
         images: [],
@@ -1560,7 +1560,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "malarz_malarka",
+        id: "malarz_malarka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Malarz/Malarka",
         images: [],
@@ -1576,7 +1576,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rzezbiarz_rzezbiarka",
+        id: "rzezbiarz_rzezbiarka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Rzeźbiarz/Rzeźbiarka",
         images: [],
@@ -1592,7 +1592,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rysownik_rysowniczka",
+        id: "rysownik_rysowniczka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Rysownik/Rysowniczka",
         images: [],
@@ -1608,7 +1608,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wideograf_wideografka",
+        id: "wideograf_wideografka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Wideograf/Wideografka",
         images: [],
@@ -1624,7 +1624,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "fotograf_fotografka",
+        id: "fotograf_fotografka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Fotograf/Fotografka",
         images: [],
@@ -1640,7 +1640,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "krawiec_krawcowa",
+        id: "krawiec_krawcowa", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Krawiec/Krawcowa",
         images: [],
@@ -1656,7 +1656,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "szydelko",
+        id: "szydelko", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Szydełko",
         images: [],
@@ -1672,7 +1672,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dziewiarz_dziewiarka",
+        id: "dziewiarz_dziewiarka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Dziewiarz/Dziewiarka",
         images: [],
@@ -1688,7 +1688,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "stylista_stylistka",
+        id: "stylista_stylistka", circleVariants: 2,
         category: "Róża Wiatrów",
         title: "Stylista/Stylistka",
         images: [],
@@ -1702,7 +1702,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "hafciarz_hafciarka",
+        id: "hafciarz_hafciarka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Hafciarz/Hafciarka",
         images: [],
@@ -1718,7 +1718,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "czytelnik_czytelniczka",
+        id: "czytelnik_czytelniczka", circleVariants: 2,
         category: "Róża Wiatrów",
         title: "Czytelnik/Czytelniczka",
         images: [],
@@ -1734,7 +1734,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "sluchacz_sluchaczka",
+        id: "sluchacz_sluchaczka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Słuchacz/Słuchaczka",
         images: [],
@@ -1750,7 +1750,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ceramik_ceramiczka",
+        id: "ceramik_ceramiczka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Ceramik/Ceramiczka",
         images: [],
@@ -1766,7 +1766,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "florysta_florystka",
+        id: "florysta_florystka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Florysta/Florystka",
         images: [],
@@ -1782,7 +1782,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "modelarz_modelarka",
+        id: "modelarz_modelarka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Modelarz/Modelarka",
         images: [],
@@ -1798,7 +1798,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "grafik_komputerowy_graficzka_komputerowa",
+        id: "grafik_komputerowy_graficzka_komputerowa", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Grafik Komputerowy/Graficzka Komputerowa",
         images: [],
@@ -1814,7 +1814,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "bajt",
+        id: "bajt", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Bajt",
         images: [],
@@ -1830,7 +1830,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "farmer_farmerka",
+        id: "farmer_farmerka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Farmer/Farmerka",
         images: [],
@@ -1846,7 +1846,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "gospodarz_gospodyni",
+        id: "gospodarz_gospodyni", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Gospodarz/Gospodyni",
         images: [],
@@ -1862,7 +1862,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rolnik_rolniczka",
+        id: "rolnik_rolniczka", circleVariants: 3,
         category: "Róża Wiatrów",
         title: "Rolnik/Rolniczka",
         images: [],
@@ -1878,7 +1878,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "antropocen",
+        id: "antropocen", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Antropocen",
         images: [],
@@ -1895,7 +1895,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "aktywista_aktywistka",
+        id: "aktywista_aktywistka", circleVariants: 4,
         category: "Róża Wiatrów",
         title: "Aktywista/Aktywistka",
         images: [],
@@ -1912,7 +1912,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "upcycling",
+        id: "upcycling", circleVariants: 2,
         category: "Róża Wiatrów",
         title: "Upcycling",
         images: [],
@@ -1927,7 +1927,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wartownik_wartowniczka",
+        id: "wartownik_wartowniczka", circleVariants: 4,
         category: "Robinson",
         title: "Wartownik/Wartowniczka",
         images: [],
@@ -1944,7 +1944,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "aprowizator_aprowizatorka",
+        id: "aprowizator_aprowizatorka", circleVariants: 4,
         category: "Robinson",
         title: "Aprowizator/Aprowizatorka",
         images: [],
@@ -1961,7 +1961,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wodnik",
+        id: "wodnik", circleVariants: 4,
         category: "Robinson",
         title: "Wodnik",
         images: [],
@@ -1977,7 +1977,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "polarnik_polarniczka",
+        id: "polarnik_polarniczka", circleVariants: 3,
         category: "Robinson",
         title: "Polarnik/Polarniczka",
         images: [],
@@ -1994,7 +1994,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "traper_traperka",
+        id: "traper_traperka", circleVariants: 2,
         category: "Robinson",
         title: "Traper/Traperka",
         images: [],
@@ -2011,7 +2011,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "strazak_strazaczka",
+        id: "strazak_strazaczka", circleVariants: 3,
         category: "Robinson",
         title: "Strażak/Strażaczka",
         images: [],
@@ -2026,7 +2026,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "trzy_piora",
+        id: "trzy_piora", circleVariants: 2,
         category: "Robinson",
         title: "Trzy Pióra",
         images: [],
@@ -2040,7 +2040,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zbrojmistrz_zbrojmistrzyni",
+        id: "zbrojmistrz_zbrojmistrzyni", circleVariants: 4,
         category: "Robinson",
         title: "Zbrojmistrz/Zbrojmistrzyni",
         images: [],
@@ -2057,7 +2057,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "muzykant_muzykantka",
+        id: "muzykant_muzykantka", circleVariants: 4,
         category: "Robinson",
         title: "Muzykant/Muzykantka",
         images: [],
@@ -2073,7 +2073,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "plecionkarz_plecionkarka",
+        id: "plecionkarz_plecionkarka", circleVariants: 3,
         category: "Robinson",
         title: "Plecionkarz/Plecionkarka",
         images: [],
@@ -2090,7 +2090,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "pionier_pionierka",
+        id: "pionier_pionierka", circleVariants: 4,
         category: "Robinson",
         title: "Pionier/Pionierka",
         images: [],
@@ -2107,7 +2107,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zdobnik_obozowy_zdobniczka_obozowa",
+        id: "zdobnik_obozowy_zdobniczka_obozowa", circleVariants: 4,
         category: "Robinson",
         title: "Zdobnik Obozowy/Zdobniczka Obozowa",
         images: [],
@@ -2124,7 +2124,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "tkacz_tkaczka",
+        id: "tkacz_tkaczka", circleVariants: 4,
         category: "Robinson",
         title: "Tkacz/Tkaczka",
         images: [],
@@ -2141,7 +2141,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ns",
+        id: "ns", circleVariants: 4,
         category: "Robinson",
         title: "NS",
         images: [],
@@ -2158,7 +2158,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wyblinka",
+        id: "wyblinka", circleVariants: 4,
         category: "Robinson",
         title: "Wyblinka",
         images: [],
@@ -2175,7 +2175,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zacios",
+        id: "zacios", circleVariants: 4,
         category: "Robinson",
         title: "Zacios",
         images: [],
@@ -2191,7 +2191,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kaletnik_kaletniczka",
+        id: "kaletnik_kaletniczka", circleVariants: 3,
         category: "Robinson",
         title: "Kaletnik/Kaletniczka",
         images: [],
@@ -2208,7 +2208,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "technik_obozowy_techniczka_obozowa",
+        id: "technik_obozowy_techniczka_obozowa", circleVariants: 4,
         category: "Robinson",
         title: "Technik Obozowy/Techniczka Obozowa",
         images: [],
@@ -2224,7 +2224,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "stolarz_stolarka",
+        id: "stolarz_stolarka", circleVariants: 3,
         category: "Robinson",
         title: "Stolarz/Stolarka",
         images: [],
@@ -2241,7 +2241,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "snycerz_snycerka",
+        id: "snycerz_snycerka", circleVariants: 4,
         category: "Robinson",
         title: "Snycerz/Snycerka",
         images: [],
@@ -2258,7 +2258,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "magazynier_magazynierka",
+        id: "magazynier_magazynierka", circleVariants: 4,
         category: "Robinson",
         title: "Magazynier/Magazynierka",
         images: [],
@@ -2275,7 +2275,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "enigma",
+        id: "enigma", circleVariants: 4,
         category: "Robinson",
         title: "Enigma",
         images: [],
@@ -2292,7 +2292,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zwiadowca_zwiadowczyni",
+        id: "zwiadowca_zwiadowczyni", circleVariants: 3,
         category: "Robinson",
         title: "Zwiadowca/Zwiadowczyni",
         images: [],
@@ -2309,7 +2309,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "sygnalista_sygnalistka",
+        id: "sygnalista_sygnalistka", circleVariants: 2,
         category: "Robinson",
         title: "Sygnalista/Sygnalistka",
         images: [],
@@ -2325,7 +2325,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "nawigator_nawigatorka",
+        id: "nawigator_nawigatorka", circleVariants: 2,
         category: "Robinson",
         title: "Nawigator/Nawigatorka",
         images: [],
@@ -2342,7 +2342,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kasjopeja",
+        id: "kasjopeja", circleVariants: 3,
         category: "Robinson",
         title: "Kasjopeja",
         images: [],
@@ -2359,7 +2359,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "jodelka",
+        id: "jodelka", circleVariants: 3,
         category: "Robinson",
         title: "Jodełka",
         images: [],
@@ -2375,7 +2375,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "topograf_topografka",
+        id: "topograf_topografka", circleVariants: 3,
         category: "Robinson",
         title: "Topograf/Topografka",
         images: [],
@@ -2391,7 +2391,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "bumerang",
+        id: "bumerang", circleVariants: 4,
         category: "Robinson",
         title: "Bumerang",
         images: [],
@@ -2408,7 +2408,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "azymut",
+        id: "azymut", circleVariants: 3,
         category: "Robinson",
         title: "Azymut",
         images: [],
@@ -2424,7 +2424,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "busola",
+        id: "busola", circleVariants: 3,
         category: "Robinson",
         title: "Busola",
         images: [],
@@ -2439,7 +2439,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "lampion",
+        id: "lampion", circleVariants: 3,
         category: "Robinson",
         title: "Lampion",
         images: [],
@@ -2456,7 +2456,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "sokole_oko",
+        id: "sokole_oko", circleVariants: 4,
         category: "Robinson",
         title: "Sokole Oko",
         images: [],
@@ -2472,7 +2472,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "podzialka",
+        id: "podzialka", circleVariants: 3,
         category: "Robinson",
         title: "Podziałka",
         images: [],
@@ -2489,7 +2489,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "synoptyk_synoptyczka",
+        id: "synoptyk_synoptyczka", circleVariants: 3,
         category: "Robinson",
         title: "Synoptyk/Synoptyczka",
         images: [],
@@ -2504,7 +2504,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "grotolaz_grotolazka",
+        id: "grotolaz_grotolazka", circleVariants: 4,
         category: "Robinson",
         title: "Grotołaz/Grotołazka",
         images: [],
@@ -2521,7 +2521,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "gorolaz_gorolazka",
+        id: "gorolaz_gorolazka", circleVariants: 3,
         category: "Robinson",
         title: "Górołaz/Górołazka",
         images: [],
@@ -2538,7 +2538,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "korona_gor_polski",
+        id: "korona_gor_polski", circleVariants: 2,
         category: "Robinson",
         title: "Korona Gór Polski",
         images: [],
@@ -2552,7 +2552,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "sniegolaz_sniegolazka",
+        id: "sniegolaz_sniegolazka", circleVariants: 3,
         category: "Robinson",
         title: "Śniegołaz/Śniegołazka",
         images: [],
@@ -2569,7 +2569,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zeglarz_zeglarka",
+        id: "zeglarz_zeglarka", circleVariants: 4,
         category: "Robinson",
         title: "Żeglarz/Żeglarka",
         images: [],
@@ -2586,7 +2586,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wspinacz_wspinaczka",
+        id: "wspinacz_wspinaczka", circleVariants: 4,
         category: "Robinson",
         title: "Wspinacz/Wspinaczka",
         images: [],
@@ -2603,7 +2603,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "plywak_plywaczka",
+        id: "plywak_plywaczka", circleVariants: 4,
         category: "Robinson",
         title: "Pływak/Pływaczka",
         images: [],
@@ -2619,7 +2619,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rowerzysta_rowerzystka",
+        id: "rowerzysta_rowerzystka", circleVariants: 3,
         category: "Robinson",
         title: "Rowerzysta/Rowerzystka",
         images: [],
@@ -2636,7 +2636,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rowerowa_piecdziesiatka_setka_dwusetka",
+        id: "rowerowa_piecdziesiatka_setka_dwusetka", circleVariants: 3,
         category: "Robinson",
         title: "Rowerowa Pięćdziesiątka/Setka/Dwusetka",
         images: [],
@@ -2652,7 +2652,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "piesza_trzydziestka_piecdziesiatka_setka",
+        id: "piesza_trzydziestka_piecdziesiatka_setka", circleVariants: 3,
         category: "Robinson",
         title: "Piesza Trzydziestka/Pięćdziesiątka/Setka",
         images: [],
@@ -2668,7 +2668,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "trzydziestka_szostka",
+        id: "trzydziestka_szostka", circleVariants: 2,
         category: "Robinson",
         title: "Trzydziestka Szóstka",
         images: [],
@@ -2682,7 +2682,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wloczykij",
+        id: "wloczykij", circleVariants: 2,
         category: "Robinson",
         title: "Włóczykij",
         images: [],
@@ -2699,7 +2699,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kukuczka",
+        id: "kukuczka", circleVariants: 2,
         category: "Robinson",
         title: "Kukuczka",
         images: [],
@@ -2713,7 +2713,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ognik",
+        id: "ognik", circleVariants: 2,
         category: "Robinson",
         title: "Ognik",
         images: [],
@@ -2730,7 +2730,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kuchcik",
+        id: "kuchcik", circleVariants: 3,
         category: "Robinson",
         title: "Kuchcik",
         images: [],
@@ -2747,7 +2747,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "campingaz",
+        id: "campingaz", circleVariants: 4,
         category: "Robinson",
         title: "Campingaz",
         images: [],
@@ -2763,7 +2763,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ognik_zimowy",
+        id: "ognik_zimowy", circleVariants: 2,
         category: "Robinson",
         title: "Ognik Zimowy",
         images: [],
@@ -2779,7 +2779,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "iskra",
+        id: "iskra", circleVariants: 2,
         category: "Robinson",
         title: "Iskra",
         images: [],
@@ -2795,7 +2795,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wedzarz_wedzarka",
+        id: "wedzarz_wedzarka", circleVariants: 3,
         category: "Robinson",
         title: "Wędzarz/Wędzarka",
         images: [],
@@ -2811,7 +2811,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "piekarz_piekarka",
+        id: "piekarz_piekarka", circleVariants: 3,
         category: "Robinson",
         title: "Piekarz/Piekarka",
         images: [],
@@ -2827,7 +2827,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "grzybiarz_grzybiarka",
+        id: "grzybiarz_grzybiarka", circleVariants: 4,
         category: "Las",
         title: "Grzybiarz/Grzybiarka",
         images: [],
@@ -2843,7 +2843,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "znachor_znachorka",
+        id: "znachor_znachorka", circleVariants: 3,
         category: "Las",
         title: "Znachor/Znachorka",
         images: [],
@@ -2860,7 +2860,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "zielarz_zielarka",
+        id: "zielarz_zielarka", circleVariants: 4,
         category: "Las",
         title: "Zielarz/Zielarka",
         images: [],
@@ -2877,7 +2877,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "obserwator_obserwatorka",
+        id: "obserwator_obserwatorka", circleVariants: 4,
         category: "Las",
         title: "Obserwator/Obserwatorka",
         images: [],
@@ -2894,7 +2894,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "tropiciel_tropicielka",
+        id: "tropiciel_tropicielka", circleVariants: 4,
         category: "Las",
         title: "Tropiciel/Tropicielka",
         images: [],
@@ -2911,7 +2911,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ornitolog_ornitolozka",
+        id: "ornitolog_ornitolozka", circleVariants: 4,
         category: "Las",
         title: "Ornitolog/Ornitolożka",
         images: [],
@@ -2928,7 +2928,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "wedkarz_wedkarka",
+        id: "wedkarz_wedkarka", circleVariants: 3,
         category: "Las",
         title: "Wędkarz/Wędkarka",
         images: [],
@@ -2944,7 +2944,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dziewanna",
+        id: "dziewanna", circleVariants: 4,
         category: "Las",
         title: "Dziewanna",
         images: [],
@@ -2960,7 +2960,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "przyjaciel_przyjaciolka_zwierzat",
+        id: "przyjaciel_przyjaciolka_zwierzat", circleVariants: 3,
         category: "Las",
         title: "Przyjaciel/Przyjaciółka Zwierząt",
         images: [],
@@ -2977,7 +2977,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "chrabaszcz",
+        id: "chrabaszcz", circleVariants: 3,
         category: "Las",
         title: "Chrabąszcz",
         images: [],
@@ -2993,7 +2993,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "skojka",
+        id: "skojka", circleVariants: 3,
         category: "Las",
         title: "Skójka",
         images: [],
@@ -3009,7 +3009,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "botanik_botaniczka",
+        id: "botanik_botaniczka", circleVariants: 4,
         category: "Las",
         title: "Botanik/Botaniczka",
         images: [],
@@ -3026,7 +3026,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dendrolog_dendrolozka",
+        id: "dendrolog_dendrolozka", circleVariants: 3,
         category: "Las",
         title: "Dendrolog/Dendrolożka",
         images: [],
@@ -3042,7 +3042,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "morszczyn",
+        id: "morszczyn", circleVariants: 2,
         category: "Las",
         title: "Morszczyn",
         images: [],
@@ -3059,7 +3059,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "geolog_geolozka",
+        id: "geolog_geolozka", circleVariants: 2,
         category: "Las",
         title: "Geolog/Geolożka",
         images: [],
@@ -3075,7 +3075,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "milosnik_milosniczka_parkow_narodowych",
+        id: "milosnik_milosniczka_parkow_narodowych", circleVariants: 4,
         category: "Las",
         title: "Miłośnik/Miłośniczka Parków Narodowych",
         images: [],
@@ -3092,7 +3092,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "sanitariusz_sanitariuszka",
+        id: "sanitariusz_sanitariuszka", circleVariants: 2,
         category: "Plaster",
         title: "Sanitariusz/Sanitariuszka",
         images: [],
@@ -3108,7 +3108,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "znawca_znawczyni_als",
+        id: "znawca_znawczyni_als", circleVariants: 3,
         category: "Plaster",
         title: "Znawca/Znawczyni ALS",
         images: [],
@@ -3123,7 +3123,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "opiekun_medyczny_opiekunka_medyczna",
+        id: "opiekun_medyczny_opiekunka_medyczna", circleVariants: 3,
         category: "Plaster",
         title: "Opiekun Medyczny/Opiekunka Medyczna",
         images: [],
@@ -3138,7 +3138,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "internista_internistka",
+        id: "internista_internistka", circleVariants: 2,
         category: "Plaster",
         title: "Internista/Internistka",
         images: [],
@@ -3153,7 +3153,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "ratownik_ratowniczka",
+        id: "ratownik_ratowniczka", circleVariants: 3,
         category: "Plaster",
         title: "Ratownik/Ratowniczka",
         images: [],
@@ -3170,7 +3170,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "higienista_higienistka",
+        id: "higienista_higienistka", circleVariants: 2,
         category: "Plaster",
         title: "Higienista/Higienistka",
         images: [],
@@ -3184,7 +3184,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "biegacz_biegaczka",
+        id: "biegacz_biegaczka", circleVariants: 3,
         category: "Plaster",
         title: "Biegacz/Biegaczka",
         images: [],
@@ -3201,7 +3201,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kolarz_kolarka",
+        id: "kolarz_kolarka", circleVariants: 4,
         category: "Plaster",
         title: "Kolarz/Kolarka",
         images: [],
@@ -3218,7 +3218,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "silacz_silaczka",
+        id: "silacz_silaczka", circleVariants: 3,
         category: "Plaster",
         title: "Siłacz/Siłaczka",
         images: [],
@@ -3234,7 +3234,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "tabata",
+        id: "tabata", circleVariants: 3,
         category: "Plaster",
         title: "Tabata",
         images: [],
@@ -3250,7 +3250,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "korzeniowski",
+        id: "korzeniowski", circleVariants: 3,
         category: "Plaster",
         title: "Korzeniowski",
         images: [],
@@ -3266,7 +3266,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "gracz_zespolowy",
+        id: "gracz_zespolowy", circleVariants: 4,
         category: "Plaster",
         title: "Gracz Zespołowy",
         images: [],
@@ -3283,7 +3283,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "jezdziec",
+        id: "jezdziec", circleVariants: 3,
         category: "Plaster",
         title: "Jeździec",
         images: [],
@@ -3299,7 +3299,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "rolkarz_rolkarka",
+        id: "rolkarz_rolkarka", circleVariants: 3,
         category: "Plaster",
         title: "Rolkarz/Rolkarka",
         images: [],
@@ -3315,7 +3315,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "lyzwiarz_lyzwiarka",
+        id: "lyzwiarz_lyzwiarka", circleVariants: 3,
         category: "Plaster",
         title: "Łyżwiarz/Łyżwiarka",
         images: [],
@@ -3331,7 +3331,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "tancerz_tancerka",
+        id: "tancerz_tancerka", circleVariants: 3,
         category: "Plaster",
         title: "Tancerz/Tancerka",
         images: [],
@@ -3348,7 +3348,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "mors",
+        id: "mors", circleVariants: 3,
         category: "Plaster",
         title: "Mors",
         images: [],
@@ -3362,7 +3362,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kucharz_domowy_kucharka_domowa",
+        id: "kucharz_domowy_kucharka_domowa", circleVariants: 3,
         category: "Plaster",
         title: "Kucharz Domowy/Kucharka Domowa",
         images: [],
@@ -3379,7 +3379,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "kucharz_polowy_kucharka_polowa",
+        id: "kucharz_polowy_kucharka_polowa", circleVariants: 4,
         category: "Plaster",
         title: "Kucharz Polowy/Kucharka Polowa",
         images: [],
@@ -3396,7 +3396,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "dietetyk_dietetyczka",
+        id: "dietetyk_dietetyczka", circleVariants: 4,
         category: "Plaster",
         title: "Dietetyk/Dietetyczka",
         images: [],
@@ -3413,7 +3413,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "cukiernik_cukierniczka",
+        id: "cukiernik_cukierniczka", circleVariants: 4,
         category: "Plaster",
         title: "Cukiernik/Cukierniczka",
         images: [],
@@ -3429,7 +3429,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "okrasa",
+        id: "okrasa", circleVariants: 3,
         category: "Plaster",
         title: "Okrasa",
         images: [],
@@ -3446,7 +3446,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "bourdain",
+        id: "bourdain", circleVariants: 3,
         category: "Plaster",
         title: "Bourdain",
         images: [],
@@ -3463,7 +3463,7 @@ var sprawnosciData = [
         ]
     },
     {
-        id: "analityk_zywieniowy_analityczka_zywieniowa",
+        id: "analityk_zywieniowy_analityczka_zywieniowa", circleVariants: 3,
         category: "Plaster",
         title: "Analityk Żywieniowy/Analityczka Żywieniowa",
         images: [],
