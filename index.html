@@ -1314,11 +1314,12 @@ function renderSidebar(filterText) {
         filtered.forEach(function(item) {
             var li = document.createElement('li');
             li.className = 'nav-item'; li.id = 'nav-item-' + item.id;
-            var level = getSprawLevel(item, cachedProgress);
-            var imgSrc = level > 0 ? getCircleImg(item, level) : null;
+            var opacity  = getSprawOpacity(item, cachedProgress);
+            var variant  = getSprawVariant(item, cachedProgress);
+            var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
             var circleHtml = imgSrc
-                ? '<img src="' + imgSrc + '" class="nav-circle-img" title="Poziom ' + level + '">'
-                : (item.circleVariants ? '<div class="nav-circle-empty"></div>' : '');
+                ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
+                : '';
             li.innerHTML = circleHtml
                 + '<span class="nav-item-title">' + item.title + '</span>'
                 + '<span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
@@ -1383,14 +1384,24 @@ function loadContent(id) {
         + askBtnHtml
         + '<span class="cat-badge">' + item.category + '</span>'
         + (function(){
-            var level = getSprawLevel(item, cachedProgress);
-            var imgSrc = level > 0 ? getCircleImg(item, level) : (item.circleVariants ? getCircleImg(item, 1) : null);
+            var opacity  = getSprawOpacity(item, cachedProgress);
+            var variant  = getSprawVariant(item, cachedProgress);
+            var level    = getSprawLevel(item, cachedProgress);
+            var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
             if (!imgSrc) return '<h2>' + item.title + '</h2>';
-            return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 2px">'
-                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" style="opacity:' + (level > 0 ? '1' : '0.25') + '">'
+            var s = getSprawDone(item, cachedProgress);
+            return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
+                + '<div style="position:relative;flex-shrink:0">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" style="opacity:' + opacity + ';transition:opacity .4s">'
+                + (variant > 0 ? '<div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
+                + '</div>'
                 + '<div>'
                 + '<h2 style="margin:0">' + item.title + '</h2>'
-                + (level > 0 ? '<div style="color:var(--amber);font-size:.9rem;letter-spacing:2px">' + '★'.repeat(level) + '<span style="color:var(--muted);font-size:.75rem"> poziom ' + level + '</span></div>' : '<div style="color:var(--muted);font-size:.78rem">Nie zdana</div>')
+                + '<div class="sprawnosc-header-info" style="font-size:.8rem;color:var(--muted);margin-top:2px">'
+                + (s.done > 0
+                    ? '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span> · zdjęcie <strong>#' + variant + '</strong> · opacity <strong>' + opacity + '</strong>'
+                    : 'Nie zdana — ' + s.total + ' zadań do zrobienia')
+                + '</div>'
                 + '</div>'
                 + '</div>';
           })()
@@ -2054,26 +2065,62 @@ function closeAskModal() {
 // TABLICA SPRAWNOŚCI — circles
 // ══════════════════════════════════════════════════════
 
+function getSprawDone(item, progress) {
+    // Ile zadań gwiazdkowych zdanych
+    var done = 0, total = 0;
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) {
+            if (!t.match(/^✶/)) return; // tylko gwiazdkowe
+            total++;
+            if (progress[item.id + '-' + gi + '-' + ti]) done++;
+        });
+    });
+    return { done: done, total: total };
+}
+
 function getSprawLevel(item, progress) {
-    // Znajdz najwyższy zaliczony level (gwiazdki)
+    // Najwyższy zaliczony poziom (gwiazdki) — stara kompatybilność
     var maxLevel = 0;
     item.groups.forEach(function(g, gi) {
         g.tasks.forEach(function(t, ti) {
-            var taskId = item.id + '-' + gi + '-' + ti;
-            if (!progress[taskId]) return;
-            // Policz gwiazdki na początku tasku
+            if (!progress[item.id + '-' + gi + '-' + ti]) return;
             var stars = (t.match(/^✶+/) || [''])[0].length;
             if (stars > maxLevel) maxLevel = stars;
         });
     });
-    return maxLevel; // 0 = nic, 1-4 = poziom
+    return maxLevel;
+}
+
+function getSprawVariant(item, progress) {
+    // Numer wariantu zdjęcia (1-based) wg logiki:
+    // variant = CEIL( done / total * variants )
+    if (!item.circleVariants) return 0;
+    var s = getSprawDone(item, progress);
+    if (s.total === 0 || s.done === 0) return 0;
+    return Math.ceil(s.done / s.total * item.circleVariants);
+}
+
+function getSprawOpacity(item, progress) {
+    // opacity = 0.15 + (done/total) * 0.85
+    // Minimum 0.15 (zawsze lekko widoczna), max 1.0
+    var s = getSprawDone(item, progress);
+    if (s.total === 0) return 0.15;
+    return Math.round((0.15 + (s.done / s.total) * 0.85) * 100) / 100;
 }
 
 function getCircleImg(item, level) {
-    if (!level || !item.circleVariants) return null;
-    // variant index = level - 1 (0-based), ale max circleVariants
-    var variantIdx = Math.min(level, item.circleVariants);
-    return 'circles/' + item.id + '_' + variantIdx + '.png';
+    // Stara kompatybilność — użyj variant zamiast level
+    var variant = getSprawVariant(item, cachedProgress);
+    if (!variant || !item.circleVariants) return null;
+    return 'circles/' + item.id + '_' + variant + '.png';
+}
+
+function getCircleImgForProgress(item, progress) {
+    var variant = getSprawVariant(item, progress);
+    if (!item.circleVariants) return null;
+    // Jeśli nic nie zdane — pokaż wariant 1 ale z niską opacity
+    var v = variant || 1;
+    return 'circles/' + item.id + '_' + v + '.png';
 }
 
 
