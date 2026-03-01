@@ -1038,8 +1038,20 @@ window.onload = function() {
         }
         // Pokaż aplikację natychmiast
         initAppAfterLogin();
+<<<<<<< HEAD
         // W tle tylko odśwież progress — NIE wylogowuj nigdy przy błędzie
         _backgroundRefreshProgress();
+=======
+        // W tle odśwież dane — NIE wylogowuj przy błędzie sieci/cold start
+        apiFetch('/progress/' + currentUser.id).then(function(r) {
+            if (r.ok && r.data && r.data.tasks) {
+                cachedProgress = r.data.tasks;
+                localStorage.setItem('hk_progress', JSON.stringify(cachedProgress));
+                updateUIStats();
+            }
+            // Nigdy nie wylogowuj tutaj — token sprawdzamy tylko przy akcjach użytkownika
+        }).catch(function(){});
+>>>>>>> 1adaf198fb7517337230fb72382490aa73c65f97
     } else {
         // Brak sesji — pokaż login
         loadTeams().then(function() { showPanel('login'); }).catch(function() { showPanel('login'); });
