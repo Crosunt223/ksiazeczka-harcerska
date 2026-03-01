@@ -649,13 +649,13 @@ input:checked+.slider:before{transform:translateX(21px);}
 }
 .msq-ghost .msq-lbl{color:rgba(255,255,255,.18);}
 .msq-open  .msq-lbl,.msq-done .msq-lbl{color:var(--sc);}
-.msq-catgrid{
-  width:100%;flex:1;display:grid;gap:1px;
-  align-items:center;justify-items:center;
-  grid-template-columns:repeat(2,1fr);
+.msq-mainimg{
+  width:calc(100% - 2px);
+  height:calc(100% - 14px);
+  object-fit:contain;
+  display:block;
+  margin:0 auto;
 }
-.msq-catgrid.cols3{grid-template-columns:repeat(3,1fr);}
-.msq-catimg{width:100%;height:100%;object-fit:contain;filter:invert(1) opacity(.9);min-width:0;}
 </style>
 </head>
 <body>
@@ -2612,16 +2612,13 @@ function renderBoard() {
             cls += ' msq-open';
 
         } else {
-            /* ── DONE ── kolorowy + siatka ikonek */
+            /* ── DONE ── jedno główne zdjęcie wypełnia cały kwadrat */
             cls += ' msq-done';
             if (e) {
-                var cols = (e.imgs <= 4) ? '' : ' cols3';
-                inner = '<div class="msq-catgrid' + cols + '">';
-                for (var ci = 0; ci < e.imgs; ci++) {
-                    inner += '<img src="stopnie/' + e.key + '_' + (ci+1) + '.png"'
-                           + ' class="msq-catimg" onerror="this.style.display=\'none\'">';
-                }
-                inner += '</div>';
+                var imgF2 = e.imgFilter || 'invert(1)';
+                inner = '<img src="stopnie/' + e.key + '_1.png"'
+                      + ' class="msq-mainimg" style="filter:' + imgF2 + '"'
+                      + ' onerror="this.style.display=\'none\'">';
             }
         }
 
