@@ -1030,17 +1030,15 @@ window.onload = async () => {
         }
         // Inicjalizuj od razu (nie czekaj na serwer - działa offline/cold start)
         initAppAfterLogin();
-        // W tle sprawdź token - tylko gdy serwer odpowie 401 to wyloguj
-        apiFetch('/my-team').then(function(pingRes) {
-            if (pingRes.status === 401 || pingRes.status === 403) {
-                authToken = null; currentUser = null;
-                localStorage.removeItem('hk_token');
-                localStorage.removeItem('hk_user');
-                localStorage.removeItem('hk_progress');
-                loadTeams().then(function() { showPanel('login'); });
+        // W tle odśwież dane — NIE wylogowuj przy błędzie sieci/cold start
+        apiFetch('/progress/' + currentUser.id).then(function(r) {
+            if (r.ok && r.data && r.data.tasks) {
+                cachedProgress = r.data.tasks;
+                localStorage.setItem('hk_progress', JSON.stringify(cachedProgress));
+                updateUIStats();
             }
-            // status 0 = serwer spi (Render cold start) - nie wylogowuj
-        });
+            // Nigdy nie wylogowuj tutaj — token sprawdzamy tylko przy akcjach użytkownika
+        }).catch(function(){});
     } else {
         await loadTeams();
         showPanel('login');
@@ -2690,9 +2688,8 @@ var _boardPickerPos = 0;
 function boardSlotClick(pos) {
     var slot = _boardSlots[pos];
     if (slot && slot.sprawnoscId) {
-        if (!confirm('Usunąć tę sprawność z munduru?')) return;
-        _boardSlots[pos] = null;
-        // Przesuń kolejne sloty żeby nie było dziur
+        // Wypełniony — pytaj o usunięcie
+        if (!confirm('Usunąć "' + slot.sprawnoscId + '" z munduru?')) return;
         for (var i = pos; i < 11; i++) {
             _boardSlots[i] = _boardSlots[i+1] || null;
         }
@@ -2700,10 +2697,7 @@ function boardSlotClick(pos) {
         boardSave();
         renderBoard();
     } else {
-        // Tylko slot bezpośrednio po ostatnim wypełnionym
-        var filled = 0;
-        for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
-        if (pos !== filled) return; // nie ten slot
+        // Pusty — otwórz picker
         openBoardPicker(pos);
     }
 }
@@ -2720,14 +2714,9 @@ function openBoardPicker(pos) {
     var available = db.filter(function(item) {
         if (item.id.startsWith('st_')) return false;
         if (usedIds.indexOf(item.id) !== -1) return false;
-        // Sprawdz czy ma chociaż jedno zadanie zdane
-        var hasDone = false;
-        item.groups.forEach(function(g, gi) {
-            g.tasks.forEach(function(t, ti) {
-                if (cachedProgress[item.id + '-' + gi + '-' + ti]) hasDone = true;
-            });
-        });
-        return hasDone;
+        // Tylko sprawności gdzie jest jakikolwiek postęp
+        var s = getSprawDone(item, cachedProgress);
+        return s.done > 0;
     });
 
     // Zbuduj listę
