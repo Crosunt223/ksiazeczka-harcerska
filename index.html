@@ -211,6 +211,15 @@ body.dark .login-box h2{color:var(--f2);}
   border:1.5px dashed rgba(255,255,255,.15);background:rgba(255,255,255,.03);
 }
 .nav-item-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nav-item-locked{cursor:default;}
+.nav-stopien-badge{
+  width:26px;height:26px;flex-shrink:0;margin-right:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;font-size:.8rem;
+}
+.nav-stopien-none{background:rgba(255,255,255,.05);color:var(--muted);font-size:.65rem;font-weight:700;}
+.nav-stopien-open{background:rgba(59,130,246,.15);}
+.nav-stopien-done{background:rgba(34,197,94,.15);}
 .nav-item{
   padding:9px 12px;border-radius:var(--rs);cursor:pointer;
   display:flex;align-items:center;gap:0;
@@ -375,6 +384,18 @@ body.dark .cat-badge{color:var(--f2);}
 .progress-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:5px;}
 .task-group{margin-bottom:22px;}
 .group-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:10px;padding-left:3px;}
+.stopien-group-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  padding:8px 10px;background:var(--panel2);border-radius:10px;
+  border:1px solid var(--border);
+}
+.stopien-group-img{
+  width:38px;height:38px;border-radius:50%;object-fit:contain;
+  flex-shrink:0;background:var(--panel);padding:2px;
+}
+.stopien-group-emoji{font-size:1.1rem;flex-shrink:0;line-height:1;}
+.group-pct{font-size:.72rem;font-weight:700;flex-shrink:0;}
+.group-pct-done{color:#4ade80;}
 .cb-container{
   display:flex;align-items:flex-start;gap:13px;background:var(--panel);
   padding:13px 16px;border-radius:var(--rs);margin-bottom:7px;
@@ -493,6 +514,27 @@ input:checked+.slider:before{transform:translateX(21px);}
 #modalImg.zoomed{transform:scale(1.8);cursor:zoom-out;}
 .close-modal{position:absolute;top:18px;right:26px;color:#fff;font-size:34px;cursor:pointer;}
 
+.stopien-status-bar{
+  display:flex;align-items:center;gap:10px;margin:8px 0 4px;flex-wrap:wrap;
+}
+.stopien-badge{
+  padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;
+}
+.stopien-badge-locked{background:rgba(255,255,255,.08);color:var(--muted);}
+.stopien-badge-open{background:rgba(59,130,246,.15);color:#60a5fa;}
+.stopien-badge-done{background:rgba(34,197,94,.15);color:#4ade80;}
+.stopien-btn{
+  padding:6px 14px;border-radius:10px;border:none;cursor:pointer;
+  font-size:.8rem;font-weight:600;transition:.15s;
+}
+.stopien-btn-open{background:rgba(59,130,246,.2);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.stopien-btn-open:hover{background:rgba(59,130,246,.35);}
+.stopien-btn-close{background:rgba(34,197,94,.2);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.stopien-btn-close:hover{background:rgba(34,197,94,.35);}
+.stopien-btn-ask{background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+.stopien-btn-ask:hover{background:rgba(168,85,247,.35);}
+.stopien-btn-info{font-size:.75rem;color:var(--muted);padding:6px 0;}
+.stopien-progress-info{font-size:.75rem;color:var(--muted);margin-top:4px;}
 .sprawnosc-circle-icon{
   width:72px;height:72px;border-radius:50%;object-fit:contain;
   flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2));
@@ -577,6 +619,43 @@ input:checked+.slider:before{transform:translateX(21px);}
 .board-picker-item:hover{border-color:var(--amber);background:rgba(255,180,0,.08);}
 .board-picker-item.on-board{opacity:.4;cursor:default;}
 
+
+/* ══ MSQ — Kwadraciki stopni w Mój Mundur ══ */
+.mundur-wrap{padding:10px 8px;max-width:420px;margin:0 auto;}
+.mundur-title{text-align:center;font-family:var(--ff-display);margin-bottom:14px;font-size:1.25rem;}
+.mundur-sub{text-align:center;color:var(--muted);font-size:.75rem;margin:6px 0;}
+.msq-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:18px;}
+.msq-box{
+  aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:2px 2px 13px;box-sizing:border-box;transition:all .3s;
+}
+.msq-ghost{background:rgba(255,255,255,.03);border:1.5px dashed rgba(255,255,255,.12);}
+.msq-open{
+  border:2px solid var(--sc);
+  background:rgba(0,0,0,.01);
+  box-shadow:0 0 8px var(--sc-a,rgba(100,100,255,.3));
+}
+.msq-done{
+  border:2.5px solid var(--sc);
+  background:rgba(0,0,0,.01);
+  box-shadow:0 0 14px var(--sc-a,rgba(100,100,255,.4));
+}
+.msq-lbl{
+  position:absolute;bottom:1px;left:0;right:0;
+  font-size:.36rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.3px;text-align:center;line-height:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px;
+}
+.msq-ghost .msq-lbl{color:rgba(255,255,255,.18);}
+.msq-open  .msq-lbl,.msq-done .msq-lbl{color:var(--sc);}
+.msq-catgrid{
+  width:100%;flex:1;display:grid;gap:1px;
+  align-items:center;justify-items:center;
+  grid-template-columns:repeat(2,1fr);
+}
+.msq-catgrid.cols3{grid-template-columns:repeat(3,1fr);}
+.msq-catimg{width:100%;height:100%;object-fit:contain;filter:invert(1) opacity(.9);min-width:0;}
 </style>
 </head>
 <body>
@@ -1501,17 +1580,28 @@ function renderSidebar(filterText) {
         head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
         filtered.forEach(function(item) {
             var li = document.createElement('li');
-            li.className = 'nav-item'; li.id = 'nav-item-' + item.id;
-            var opacity  = getSprawOpacity(item, cachedProgress);
-            var variant  = getSprawVariant(item, cachedProgress);
-            var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
-            var circleHtml = imgSrc
-                ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
-                : '';
-            li.innerHTML = circleHtml
-                + '<span class="nav-item-title">' + item.title + '</span>'
+            var locked = isStopienLocked(item);
+            li.className = 'nav-item' + (locked ? ' nav-item-locked' : '');
+            li.id = 'nav-item-' + item.id;
+
+            var leftHtml = '';
+            if (item.id && item.id.startsWith('st_')) {
+                // Stopień — pokaż badge statusu
+                leftHtml = getStopienNavBadge(item);
+            } else {
+                // Sprawność — pokaż kółko
+                var opacity = getSprawOpacity(item, cachedProgress);
+                var variant = getSprawVariant(item, cachedProgress);
+                var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+                leftHtml = imgSrc
+                    ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
+                    : '';
+            }
+
+            li.innerHTML = leftHtml
+                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + '</span>'
                 + '<span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
-            li.onclick = function() { loadContent(item.id); };
+            li.onclick = function() { if (!locked || canManageStopnie()) loadContent(item.id); };
             list.appendChild(li);
         });
     });
@@ -1532,6 +1622,8 @@ function loadContent(id) {
     var navEl = document.getElementById('nav-item-' + id);
     if (navEl) navEl.classList.add('active');
     if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+
+    var isStopien = item.id && item.id.startsWith('st_');
 
     var imagesHtml = '';
     if (item.images && item.images.length) {
@@ -1571,7 +1663,75 @@ function loadContent(id) {
         + memberBtnHtml
         + askBtnHtml
         + '<span class="cat-badge">' + item.category + '</span>'
+        + (isStopien ? (function() {
+            var st = _stopnieStatus[item.id];
+            var viewId = currentViewUserId || currentUser.id;
+            var isAdmin = canManageStopnie();
+            var isOwnView = (viewId === currentUser.id);
+
+            // Policz czy wszystkie zadania zdane
+            var totalT = 0, doneT = 0;
+            item.groups.forEach(function(g, gi) {
+                g.tasks.forEach(function(t, ti) {
+                    totalT++;
+                    if (cachedProgress[item.id + '-' + gi + '-' + ti]) doneT++;
+                });
+            });
+            var allDone = (totalT > 0 && doneT === totalT);
+
+            var badge = st
+                ? (st.status === 'open'
+                    ? '<span class="stopien-badge stopien-badge-open">📖 Otwarty</span>'
+                    : '<span class="stopien-badge stopien-badge-done">✅ Zaliczony</span>')
+                : '<span class="stopien-badge stopien-badge-locked">🔒 Nie otwarty</span>';
+
+            var btn = '';
+            if (isAdmin) {
+                if (!st && canOpenStopien(item.id)) {
+                    btn = '<button class="stopien-btn stopien-btn-open" onclick="openStopien(\''+viewId+'\',\''+item.id+'\')">'
+                        + '📖 Otwórz stopień</button>';
+                } else if (st && st.status === 'open') {
+                    if (allDone) {
+                        btn = '<button class="stopien-btn stopien-btn-close" onclick="closeStopien(\''+viewId+'\',\''+item.id+'\')">'
+                            + '✅ Zalicz stopień</button>';
+                    } else {
+                        btn = '<span class="stopien-btn-info">Brak ' + (totalT-doneT) + ' zadań do zaliczenia</span>';
+                    }
+                }
+            }
+
+            // Przycisk prośby dla harcerza (gdy stopien otwarty i nie zaliczony)
+            var askBtn = '';
+            if (!isAdmin && isOwnView && st && st.status === 'open') {
+                askBtn = '<button class="stopien-btn stopien-btn-ask" onclick="openAskModal(\''+item.id+'\')">'
+                    + '🙋 Poproś o zaliczenie</button>';
+            }
+
+            return '<div class="stopien-status-bar">' + badge + btn + askBtn + '</div>'
+                + (st && st.status === 'open' && !allDone && !isAdmin
+                    ? '<div class="stopien-progress-info">' + doneT + ' / ' + totalT + ' zadań wykonanych</div>'
+                    : '');
+          })() : '')
         + (function(){
+            if (isStopien) {
+                // Stopień — header z ikonami kategorii
+                var st = _stopnieStatus[item.id];
+                var statusLabel = !st ? 'Nie otwarty'
+                    : st.status === 'open' ? 'W trakcie'
+                    : 'Zaliczony';
+                var statusColor = !st ? 'var(--muted)'
+                    : st.status === 'open' ? '#60a5fa'
+                    : '#4ade80';
+                var catIcons = Object.values(STOPNIE_CATEGORY_ICONS).join(' ');
+                return '<div style="margin:4px 0 8px">'
+                    + '<h2 style="margin:0 0 4px">' + item.title + '</h2>'
+                    + '<div style="font-size:.82rem;color:' + statusColor + ';font-weight:600">'
+                    + (st ? (st.status==='open'?'📖':'✅') : '🔒') + ' ' + statusLabel
+                    + '</div>'
+                    + (item.desc ? '<div style="font-size:.78rem;color:var(--muted);margin-top:3px">' + item.desc + '</div>' : '')
+                    + '</div>';
+            }
+            // Sprawność — kółko z opacity
             var opacity  = getSprawOpacity(item, cachedProgress);
             var variant  = getSprawVariant(item, cachedProgress);
             var level    = getSprawLevel(item, cachedProgress);
@@ -1581,13 +1741,13 @@ function loadContent(id) {
             return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
                 + '<div style="position:relative;flex-shrink:0">'
                 + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
-                + (variant > 0 ? '<div style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
+                + (variant > 0 ? '<div class="sprawnosc-stars-badge" style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
                 + '</div>'
                 + '<div>'
                 + '<h2 style="margin:0">' + item.title + '</h2>'
                 + '<div class="sprawnosc-header-info" style="font-size:.8rem;color:var(--muted);margin-top:2px">'
                 + (s.done > 0
-                    ? '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span> · zdjęcie <strong>#' + variant + '</strong> · opacity <strong>' + opacity + '</strong>'
+                    ? '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span> · zdjęcie <strong>#' + variant + '</strong>'
                     : 'Nie zdana — ' + s.total + ' zadań do zrobienia')
                 + '</div>'
                 + '</div>'
@@ -1601,7 +1761,27 @@ function loadContent(id) {
         + '</div></div>';
 
     item.groups.forEach(function(g, gIdx) {
-        html += '<div class="task-group"><div class="group-title">' + g.name + '</div>';
+        // Procent ukończenia grupy
+        var gTotal = g.tasks.length, gDone = 0;
+        g.tasks.forEach(function(t2, ti2) { if (cachedProgress[id + '-' + gIdx + '-' + ti2]) gDone++; });
+        var gPct = gTotal ? Math.round(gDone/gTotal*100) : 0;
+
+        if (isStopien) {
+            // Zdjęcie kategorii stopnia (z folderu stopnie_X gdzie X = numer stopnia)
+                        var catImgSrc = getStopienCatImg(id, gIdx);
+            var catEmoji  = STOPNIE_CATEGORY_ICONS[g.name] || '';
+            var gPctColor = gPct === 100 ? '#4ade80' : gPct > 0 ? '#60a5fa' : 'var(--muted)';
+
+            html += '<div class="task-group">'
+                + '<div class="stopien-group-header">'
+                + (catImgSrc ? '<img src="' + catImgSrc + '" class="stopien-group-img" onerror="this.style.display=\'none\'">' : '')
+                + '<span class="stopien-group-emoji">' + catEmoji + '</span>'
+                + '<span class="group-title" style="margin:0;flex:1">' + g.name + '</span>'
+                + '<span class="group-pct" style="color:' + gPctColor + '">' + gDone + '/' + gTotal + '</span>'
+                + '</div>';
+        } else {
+            html += '<div class="task-group"><div class="group-title">' + g.name + '</div>';
+        }
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
@@ -1681,6 +1861,19 @@ function updateUIStats() {
     var prog = document.getElementById('total-progress');
     if (bar)  bar.style.width = pct + '%';
     if (prog) prog.textContent = pct + '%';
+
+    // Odśwież badge stopni w sidebarze
+    STOPNIE_ORDER.forEach(function(sid) {
+        var navEl = document.getElementById('nav-item-' + sid);
+        if (!navEl) return;
+        var badge = navEl.querySelector('.nav-stopien-badge');
+        if (badge) {
+            var st = _stopnieStatus[sid];
+            if (!st) { badge.textContent = '—'; badge.className = 'nav-stopien-badge nav-stopien-none'; }
+            else if (st.status === 'open')   { badge.textContent = '📖'; badge.className = 'nav-stopien-badge nav-stopien-open'; }
+            else if (st.status === 'closed') { badge.textContent = '✅'; badge.className = 'nav-stopien-badge nav-stopien-done'; }
+        }
+    });
 }
 
 // ================================================================
@@ -2216,34 +2409,36 @@ async function openAskModal(itemId) {
     }).join('');
 }
 
-async function pickTask(taskId, taskText) {
+async function loadKadraForAsk() {
+    var kadraList = document.getElementById('askKadraList');
+    if (!kadraList) return;
+    kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
+    apiFetch('/my-kadra').then(function(r) {
+        var kadra = r.ok ? r.data : [];
+        if (!kadra.length) {
+            kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w drużynie.</p>';
+            return;
+        }
+        kadraList.innerHTML = kadra.map(function(k) {
+            var rColor = ROLE_COLORS[k.role] || '#546e7a';
+            return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
+                + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+                + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
+                + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
+                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
+                + '</div>';
+        }).join('');
+    });
+}
+
+function pickTask(taskId, taskText) {
     _askTaskId   = taskId;
     _askTaskText = taskText;
     document.getElementById('askSelectedTask').textContent = taskText;
     document.getElementById('askStep1').style.display = 'none';
     document.getElementById('askStep2').style.display = 'block';
     document.getElementById('askModalStatus').textContent = '';
-
-    var kadraList = document.getElementById('askKadraList');
-    kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ladowanie...</p>';
-
-    var r = await apiFetch('/my-kadra');
-    var kadra = r.ok ? r.data : [];
-
-    if (!kadra.length) {
-        kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w druzynie.</p>';
-        return;
-    }
-
-    kadraList.innerHTML = kadra.map(function(k) {
-        var rColor = ROLE_COLORS[k.role] || '#546e7a';
-        return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
-            + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
-            + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
-            + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
-            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
-            + '</div>';
-    }).join('');
+    loadKadraForAsk();
 }
 
 function backToTaskPick() {
@@ -2343,7 +2538,8 @@ function getCircleImgForProgress(item, progress) {
 // TABLICA SPRAWNOŚCI (12 slotów)
 // ══════════════════════════════════════════════════════
 
-var _boardSlots = Array(12).fill(null); // { sprawnoscId, level, variantIdx }
+var _boardSlots = Array(12).fill(null);
+var _stopnieStatus = {}; // stopienId -> {status, openedAt, closedAt} // { sprawnoscId, level, variantIdx }
 var _boardLoaded = false;
 var _boardPickingSlot = null; // który slot wypełniamy
 
@@ -2365,108 +2561,100 @@ async function showBoardTab() {
 function renderBoard() {
     var isOwn = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
 
-    // Ile zapełnionych slotów
+    /* ── ile sprawności na mundurze ── */
     var filled = 0;
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
-
-    // Pokazuj filled + 1 slotów, min 1, max 12
-    // Ale zawsze pokazuj przynajmniej tyle ile jest zapełnionych + 1 (chyba że max)
+    var row2unlocked = (filled >= 6);
     var visible = Math.min(filled + 1, 12);
 
-    // Drugi rząd (sloty 6-11) odblokowany tylko gdy filled >= 6
-    var row2unlocked = (filled >= 6);
-
+    /* ── slot sprawności ── */
     function slotHtml(i) {
         var slot = _boardSlots[i];
-        var onclick = isOwn ? 'boardSlotClick(' + i + ')' : '';
+        var oc   = isOwn ? 'boardSlotClick(' + i + ')' : '';
         if (slot && slot.sprawnoscId) {
-            var item = db.find(function(x){ return x.id === slot.sprawnoscId; });
-            var imgSrc = item
-                ? getCircleImgForProgress(item, cachedProgress)
-                : 'circles/' + slot.sprawnoscId + '_' + (slot.variantIdx || 1) + '.png';
-            var level = item ? getSprawLevel(item, cachedProgress) : (slot.level || 0);
-            return '<div class="board-slot board-slot-filled" data-pos="' + i + '" onclick="' + onclick + '">'
-                + '<img src="' + imgSrc + '" class="board-slot-img">'
-                + (level > 0 ? '<div class="board-slot-stars">' + '★'.repeat(level) + '</div>' : '')
-                + '<div class="board-slot-name">' + (item ? item.title : slot.sprawnoscId) + '</div>'
-                + '</div>';
+            var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
+            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
+                              : 'circles/' + slot.sprawnoscId + '_' + (slot.variantIdx||1) + '.png';
+            var level  = item ? getSprawLevel(item, cachedProgress) : (slot.level||0);
+            return '<div class="board-slot board-slot-filled" data-pos="'+i+'" onclick="'+oc+'">'
+                 + '<img src="'+imgSrc+'" class="board-slot-img">'
+                 + (level > 0 ? '<div class="board-slot-stars">'+'★'.repeat(level)+'</div>' : '')
+                 + '<div class="board-slot-name">'+(item ? item.title : slot.sprawnoscId)+'</div>'
+                 + '</div>';
         }
-        return '<div class="board-slot board-slot-empty" data-pos="' + i + '" onclick="' + onclick + '">'
-            + '<div class="board-slot-plus">+</div>'
-            + '</div>';
+        return '<div class="board-slot board-slot-empty" data-pos="'+i+'" onclick="'+oc+'">'
+             + '<div class="board-slot-plus">+</div></div>';
     }
 
-    var html = '<div style="padding:8px">'
-        + '<h2 style="text-align:center;font-family:var(--ff-display);margin-bottom:4px">Rękaw Harcerza</h2>'
-        + (isOwn ? '<p style="text-align:center;color:var(--muted);font-size:.82rem;margin-bottom:16px">' + filled + ' / 12 sprawności</p>' : '')
-        + '<div class="board-grid">';
+    /* ══ 6 kwadracików stopni ══
+       ghost  = nie otwarty  → szary, przezroczysty, puste
+       open   = otwarty      → kolor stopnia, puste w środku
+       done   = zaliczony    → kolor stopnia + siatka ikonek w środku
+    */
+    var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+    var sqHtml = '<div class="msq-row">';
+
+    ORDER.forEach(function(sid) {
+        var e     = STOPNIE_IMG_MAP[sid];
+        var st    = _stopnieStatus[sid];
+        var color = e ? e.color : '#888';
+        var label = e ? e.label : sid;
+
+        var cls   = 'msq-box';
+        var inner = '';
+
+        if (!st) {
+            /* ── GHOST ── szary, nic w środku */
+            cls += ' msq-ghost';
+
+        } else if (st.status === 'open') {
+            /* ── OPEN ── kolorowy border, puste wnętrze */
+            cls += ' msq-open';
+
+        } else {
+            /* ── DONE ── kolorowy + siatka ikonek */
+            cls += ' msq-done';
+            if (e) {
+                var cols = (e.imgs <= 4) ? '' : ' cols3';
+                inner = '<div class="msq-catgrid' + cols + '">';
+                for (var ci = 0; ci < e.imgs; ci++) {
+                    inner += '<img src="stopnie/' + e.key + '_' + (ci+1) + '.png"'
+                           + ' class="msq-catimg" onerror="this.style.display=\'none\'">';
+                }
+                inner += '</div>';
+            }
+        }
+
+        sqHtml += '<div class="' + cls + '" style="--sc:' + color + '" title="' + label + '">'
+                + inner
+                + '<div class="msq-lbl">' + label + '</div>'
+                + '</div>';
+    });
+
+    sqHtml += '</div>';
+
+    /* ── składamy całość ── */
+    var html = '<div class="mundur-wrap">'
+             + '<h2 class="mundur-title">Rękaw Harcerza</h2>'
+             + sqHtml
+             + (isOwn ? '<p class="mundur-sub">Kliknij pusty slot aby dodać sprawność ('
+                        + filled + '/12)</p>' : '')
+             + '<div class="board-grid">';
 
     for (var i = 0; i < visible; i++) {
-        // Sloty 6-11 zablokowane dopóki filled < 6
         if (i >= 6 && !row2unlocked) {
-            html += '<div class="board-slot board-slot-locked"><span style="opacity:.25;font-size:1rem">🔒</span></div>';
+            html += '<div class="board-slot board-slot-locked"><span style="opacity:.2">🔒</span></div>';
         } else {
             html += slotHtml(i);
         }
     }
-
+    html += '</div>';
+    if (filled === 6 && isOwn)
+        html += '<p class="mundur-sub" style="color:var(--amber)">Odblokowano drugi rząd! 🎉</p>';
     html += '</div>';
 
-    if (filled === 6 && isOwn) {
-        html += '<p style="text-align:center;color:var(--amber);font-size:.75rem;margin-top:10px">Odblokowano drugi rząd! 🎉</p>';
-    } else if (filled < 6 && visible >= 6 && isOwn) {
-        html += '<p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:10px">Zapełnij pierwszy rząd aby odblokować kolejny (' + filled + '/6)</p>';
-    }
-
-    html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
-}function openBoardPicker() {
-    // Zbierz zdane sprawnosci z postępów
-    var zdane = db.filter(function(item) {
-        if (!item.circleVariants) return false;
-        var level = getSprawLevel(item, cachedProgress);
-        return level > 0;
-    });
-
-    if (!zdane.length) {
-        alert('Nie masz jeszcze zadnych zdanych sprawnosci!');
-        return;
-    }
-
-    var alreadyOnBoard = _boardSlots
-        .filter(Boolean)
-        .map(function(s){ return s.sprawnoscId; });
-
-    var html = '<div style="background:var(--panel);padding:24px;border-radius:20px;'
-        + 'max-width:380px;width:100%;max-height:75vh;overflow-y:auto;position:relative">'
-        + '<span onclick="closeBoardPicker()" style="position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;color:var(--muted)">&times;</span>'
-        + '<h3 style="font-family:var(--ff-display);margin-bottom:4px">Wybierz sprawnosc</h3>'
-        + '<p style="color:var(--muted);font-size:.82rem;margin-bottom:16px">Tylko zdane sprawnosci</p>'
-        + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
-
-    zdane.forEach(function(item) {
-        var level = getSprawLevel(item, cachedProgress);
-        var imgSrc = getCircleImg(item, level);
-        var onBoard = alreadyOnBoard.indexOf(item.id) >= 0;
-        html += '<div class="board-picker-item' + (onBoard ? ' on-board' : '') + '" '
-            + 'data-id="' + item.id + '" data-level="' + level + '" '
-            + 'onclick="' + (onBoard ? '' : 'pickBoardSprawnosc(this.dataset.id,parseInt(this.dataset.level))') + '" '
-            + 'title="' + item.title + (onBoard ? ' (już na tablicy)' : '') + '">'
-            + '<img src="' + imgSrc + '" style="width:100%;border-radius:50%">'
-            + '<div style="font-size:.6rem;text-align:center;margin-top:4px;color:' + (onBoard ? 'var(--muted)' : 'var(--text)') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
-            + item.title.split('/')[0].trim()
-            + '</div>'
-            + '<div style="text-align:center;font-size:.65rem;color:var(--amber)">' + '★'.repeat(level) + '</div>'
-            + '</div>';
-    });
-
-    html += '</div></div>';
-
-    var overlay = document.getElementById('boardPickerOverlay');
-    overlay.innerHTML = html;
-    overlay.style.display = 'flex';
 }
-
 function closeBoardPicker() {
     document.getElementById('boardPickerOverlay').style.display = 'none';
 }
@@ -2483,6 +2671,145 @@ async function saveBoardSlot(pos, data) {
         method: 'POST',
         body: JSON.stringify({ position: pos, slot: data })
     });
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// STOPNIE — ikony kategorii i statusy w sidebarze  
+// ══════════════════════════════════════════════════════
+
+
+
+
+var STOPNIE_IMG_MAP = {
+    'st_1': { key:'adept_adeptka',                    color:'rgba(255,255,255,.15)', imgFilter:'invert(1) opacity(.25)', imgs:4 , label:'Adept'       },
+    'st_2': { key:'mlodzik_ochotniczka',               color:'#e5e5e5',              imgFilter:'invert(1)',              imgs:7 , label:'Młodzik'      },
+    'st_3': { key:'wywiadowca_tropicielka',            color:'#34d399',              imgFilter:'invert(1) sepia(1) saturate(3) hue-rotate(100deg)', imgs:6 , label:'Wywiadowca'   },
+    'st_4': { key:'cwik_samarytanka',                  color:'#fbbf24',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(10deg)',  imgs:6 , label:'Ćwik'         },
+    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#f97316',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(340deg)', imgs:7 , label:'Harcerz Orli' },
+    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#f43f5e',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(300deg)', imgs:6 , label:'Harcerz RP'   },
+};
+
+function getStopienCatImg(stopienId, groupIndex) {
+    var e = STOPNIE_IMG_MAP[stopienId];
+    if (!e || groupIndex >= e.imgs) return null;
+    return 'stopnie/' + e.key + '_' + (groupIndex + 1) + '.png';
+}
+
+var STOPNIE_CATEGORY_ICONS = {
+    'Bielik':        '🦅',
+    'Lilijka':       '⚜️',
+    'Róża Wiatrów':  '🧭',
+    'Robinson':      '🏕️',
+    'Las':           '🌲',
+    'Plaster':       '🩹',
+};
+
+var STOPNIE_ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+
+function getStopienNavBadge(item) {
+    if (!item.id || !item.id.startsWith('st_')) return '';
+    var st = _stopnieStatus[item.id];
+    if (!st) return '<span class="nav-stopien-badge nav-stopien-none">—</span>';
+    if (st.status === 'open')   return '<span class="nav-stopien-badge nav-stopien-open">📖</span>';
+    if (st.status === 'closed') return '<span class="nav-stopien-badge nav-stopien-done">✅</span>';
+    return '';
+}
+
+function isStopienLocked(item) {
+    if (!item.id || !item.id.startsWith('st_')) return false;
+    var idx = STOPNIE_ORDER.indexOf(item.id);
+    if (idx === 0) return false; // pierwszy zawsze dostępny
+    var prev = _stopnieStatus[STOPNIE_ORDER[idx - 1]];
+    return !prev || prev.status !== 'closed';
+}
+
+// ══════════════════════════════════════════════════════
+// STOPNIE — otwieranie i zamykanie
+// ══════════════════════════════════════════════════════
+
+async function loadStopnieStatus(userId) {
+    var r = await apiFetch('/stopnie/' + userId);
+    _stopnieStatus = {};
+    if (r.ok && Array.isArray(r.data)) {
+        r.data.forEach(function(s) { _stopnieStatus[s.stopienId] = s; });
+    }
+}
+
+function getStopienStatus(stopienId) {
+    return _stopnieStatus[stopienId] || null;
+}
+
+function canManageStopnie() {
+    var role = currentUser.role;
+    return ['superadmin','ksis','instruktor','druzynowy'].indexOf(role) >= 0;
+}
+
+function canOpenStopien(stopienId) {
+    if (!canManageStopnie()) return false;
+    var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+    var idx = ORDER.indexOf(stopienId);
+    if (idx < 0) return false;
+    // Stopień już otwarty lub zamknięty
+    if (_stopnieStatus[stopienId]) return false;
+    // Pierwszy stopień zawsze można otworzyć
+    if (idx === 0) return true;
+    // Poprzedni musi być zamknięty
+    var prev = _stopnieStatus[ORDER[idx - 1]];
+    return prev && prev.status === 'closed';
+}
+
+async function openStopien(userId, stopienId) {
+    var r = await apiFetch('/stopnie/' + userId + '/open', {
+        method: 'POST',
+        body: JSON.stringify({ stopienId })
+    });
+    if (!r.ok) { alert('Błąd: ' + (r.data && r.data.error || 'Nieznany błąd')); return; }
+    _stopnieStatus[stopienId] = r.data;
+    // Odśwież aktualnie otwarty content
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+}
+
+async function closeStopien(userId, stopienId) {
+    var item = db.find(function(x){ return x.id === stopienId; });
+    if (item) {
+        var totalT = 0, doneT = 0;
+        item.groups.forEach(function(g, gi) {
+            g.tasks.forEach(function(t, ti) {
+                totalT++;
+                if (cachedProgress[stopienId + '-' + gi + '-' + ti]) doneT++;
+            });
+        });
+        if (doneT < totalT) {
+            alert('Nie można zaliczyć — brakuje ' + (totalT-doneT) + ' zadań!');
+            return;
+        }
+    }
+    if (!confirm('Zaliczyć stopień ' + (item ? item.title : stopienId) + '?\nHarcerz nie będzie mógł edytować jego zadań.')) return;
+    var r = await apiFetch('/stopnie/' + userId + '/close', {
+        method: 'POST',
+        body: JSON.stringify({ stopienId })
+    });
+    if (!r.ok) { alert('Błąd: ' + (r.data && r.data.error || 'Nieznany błąd')); return; }
+    _stopnieStatus[stopienId] = r.data;
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+}
+
+function stopienStatusBadge(stopienId) {
+    var s = _stopnieStatus[stopienId];
+    if (!s) return '<span class="stopien-badge stopien-badge-locked">🔒 Zamknięty</span>';
+    if (s.status === 'open')   return '<span class="stopien-badge stopien-badge-open">📖 Otwarty</span>';
+    if (s.status === 'closed') return '<span class="stopien-badge stopien-badge-done">✅ Zaliczony</span>';
+    return '';
 }
 
 // ══════════════════════════════════════════════════════
@@ -2568,10 +2895,11 @@ async function pickMember(userId, userName, userRole) {
         window._currentViewUserName = userName || '';
     }
 
-    // Załaduj progress wybranej osoby
+    // Załaduj progress i statusy stopni wybranej osoby
     var uid = userId || currentUser.id;
     var r = await apiFetch('/progress/' + uid);
     cachedProgress = (r.ok && r.data) ? r.data : {};
+    await loadStopnieStatus(uid);
 
     // Zapisz w localStorage jeśli to własny progress
     if (!userId || userId === currentUser.id) {
