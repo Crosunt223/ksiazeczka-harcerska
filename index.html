@@ -2710,16 +2710,31 @@ function boardSlotClick(pos) {
 
 function openBoardPicker(pos) {
     _boardPickerPos = pos;
+
+    // Tylko sprawności które ma już zdane (jakikolwiek postęp)
     var usedIds = [];
     for (var k = 0; k < 12; k++) {
         if (_boardSlots[k] && _boardSlots[k].sprawnoscId) usedIds.push(_boardSlots[k].sprawnoscId);
     }
-    var available = db.filter(function(item){
-        return !item.id.startsWith('st_') && usedIds.indexOf(item.id) === -1;
+
+    var available = db.filter(function(item) {
+        if (item.id.startsWith('st_')) return false;
+        if (usedIds.indexOf(item.id) !== -1) return false;
+        // Sprawdz czy ma chociaż jedno zadanie zdane
+        var hasDone = false;
+        item.groups.forEach(function(g, gi) {
+            g.tasks.forEach(function(t, ti) {
+                if (cachedProgress[item.id + '-' + gi + '-' + ti]) hasDone = true;
+            });
+        });
+        return hasDone;
     });
 
-    // Zbuduj listę jako string bezpiecznie
-    var listItems = '';
+    // Zbuduj listę
+    var listItems = available.length === 0
+        ? '<p style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1">Brak zdanych sprawności do dodania</p>'
+        : '';
+
     for (var i = 0; i < available.length; i++) {
         var item = available[i];
         var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : '';
@@ -2728,28 +2743,50 @@ function openBoardPicker(pos) {
         var imgHtml = imgSrc
             ? '<img src="' + imgSrc + '" class="bp-img">'
             : '<div class="bp-img bp-img-empty"></div>';
-        listItems += '<div class="bp-item" data-id="' + item.id + '" data-title="' + item.title.toLowerCase() + '" onclick="boardPickSelect(this.dataset.id)">'
+        listItems += '<div class="bp-item" data-id="' + item.id + '" data-title="' + item.title.toLowerCase().replace(/"/g,'') + '">'
             + imgHtml
             + '<div class="bp-name">' + item.title + '</div>'
             + stars
             + '</div>';
     }
 
-    var modal = document.createElement('div');
-    modal.id  = 'boardPickerOverlay';
-    modal.className = 'bp-overlay';
-    modal.innerHTML = '<div class="bp-modal" onclick="event.stopPropagation()">'
-        + '<div class="bp-header">'
-        + '<h3 class="bp-title">Wybierz sprawność</h3>'
-        + '<button class="bp-close" onclick="closeBoardPicker()">✕</button>'
-        + '</div>'
-        + '<input id="bpSearch" class="bp-search" placeholder="Szukaj..." oninput="filterBoardPicker(this.value)">'
-        + '<div class="bp-list" id="bpList">' + listItems + '</div>'
-        + '</div>';
+    // Usuń stary modal jeśli istnieje
+    var old = document.getElementById('boardPickerOverlay');
+    if (old) old.remove();
 
-    modal.addEventListener('click', function(e){ if (e.target === modal) closeBoardPicker(); });
-    document.body.appendChild(modal);
+    var overlay = document.createElement('div');
+    overlay.id = 'boardPickerOverlay';
+    overlay.className = 'bp-overlay';
+
+    var modal = document.createElement('div');
+    modal.className = 'bp-modal';
+    modal.innerHTML = '<div class="bp-header">'
+        + '<h3 class="bp-title">Wybierz sprawność</h3>'
+        + '<button class="bp-close" id="bpCloseBtn">✕</button>'
+        + '</div>'
+        + '<input id="bpSearch" class="bp-search" placeholder="Szukaj..." autocomplete="off">'
+        + '<div class="bp-list" id="bpList">' + listItems + '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Event listenery - nie inline onclick żeby uniknąć błędów
+    document.getElementById('bpCloseBtn').addEventListener('click', closeBoardPicker);
+    document.getElementById('bpSearch').addEventListener('input', function(){ filterBoardPicker(this.value); });
     document.getElementById('bpSearch').focus();
+
+    // Klik na overlay (nie modal) zamyka
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeBoardPicker();
+    });
+
+    // Klik na item
+    var items = document.querySelectorAll('.bp-item');
+    for (var j = 0; j < items.length; j++) {
+        items[j].addEventListener('click', function() {
+            boardPickSelect(this.dataset.id);
+        });
+    }
 }
 
 function filterBoardPicker(q) {
