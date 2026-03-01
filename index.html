@@ -499,11 +499,11 @@ input:checked+.slider:before{transform:translateX(21px);}
   border:2px solid var(--border);background:var(--panel2);padding:4px;
   transition:opacity .35s ease;
 }
-.board-wrap{padding:12px 8px;max-width:380px;margin:0 auto;}
+.board-wrap{padding:12px 8px;max-width:420px;margin:0 auto;}
 .board-header{text-align:center;padding:16px 0 8px;}
 .sleeve-bar{
-  background:var(--panel);border-radius:16px;padding:14px;
-  margin-bottom:16px;border:1.5px solid var(--border);
+  background:var(--panel);border-radius:16px;padding:12px 10px;
+  margin-bottom:14px;border:1.5px solid var(--border);
 }
 .sleeve-bar-2{ border-color:var(--amber);box-shadow:0 0 0 1px rgba(255,180,0,.12); }
 .sleeve-bar-locked{
@@ -527,16 +527,16 @@ input:checked+.slider:before{transform:translateX(21px);}
   margin-top:8px;opacity:.7;
 }
 .sleeve-grid{
-  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
 }
-.board-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:12px;padding:0 8px;max-width:340px;margin:0 auto;
+.sleeve-grid .board-slot{
+  width:100%;aspect-ratio:1;font-size:.45rem;
 }
-.board-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  gap:12px;padding:0 8px;max-width:340px;margin:0 auto;
-}
+.sleeve-grid .board-slot-img{width:90%;height:90%;}
+.sleeve-grid .board-slot-stars{font-size:.42rem;padding:1px 3px;}
+.sleeve-grid .board-slot-plus{font-size:1.1rem;}
+.board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 8px;max-width:340px;margin:0 auto;}
+.board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 8px;max-width:340px;margin:0 auto;}
 .board-slot{
   aspect-ratio:1;border-radius:50%;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -548,6 +548,10 @@ input:checked+.slider:before{transform:translateX(21px);}
 }
 .board-slot-empty:hover{border-color:var(--amber);background:rgba(255,180,0,.06);}
 .board-slot-plus{font-size:1.6rem;color:rgba(255,255,255,.2);}
+.board-slot-locked{
+  border:2px dashed rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);cursor:default;
+}
 .board-slot-filled{
   background:var(--panel2);border:2px solid var(--border);
   box-shadow:0 4px 16px rgba(0,0,0,.18);
@@ -2361,15 +2365,16 @@ async function showBoardTab() {
 function renderBoard() {
     var isOwn = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
 
-    var filled1 = 0;
-    for (var k = 0; k < 6; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled1++; }
-    var bar1Full = (filled1 === 6);
-    var filled2 = 0;
-    for (var k = 6; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled2++; }
+    // Ile zapełnionych slotów
+    var filled = 0;
+    for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
 
-    var showInBar1 = Math.min(filled1 + 1, 6);
-    var bar2Unlocked = bar1Full;
-    var showInBar2 = bar2Unlocked ? Math.min(filled2 + 1, 6) : 0;
+    // Pokazuj filled + 1 slotów, min 1, max 12
+    // Ale zawsze pokazuj przynajmniej tyle ile jest zapełnionych + 1 (chyba że max)
+    var visible = Math.min(filled + 1, 12);
+
+    // Drugi rząd (sloty 6-11) odblokowany tylko gdy filled >= 6
+    var row2unlocked = (filled >= 6);
 
     function slotHtml(i) {
         var slot = _boardSlots[i];
@@ -2391,51 +2396,31 @@ function renderBoard() {
             + '</div>';
     }
 
-    var html = '<div class="board-wrap">';
+    var html = '<div style="padding:8px">'
+        + '<h2 style="text-align:center;font-family:var(--ff-display);margin-bottom:4px">Rękaw Harcerza</h2>'
+        + (isOwn ? '<p style="text-align:center;color:var(--muted);font-size:.82rem;margin-bottom:16px">' + filled + ' / 12 sprawności</p>' : '')
+        + '<div class="board-grid">';
 
-    html += '<div class="sleeve-bar">'
-        + '<div class="sleeve-bar-label">Rękaw lewy'
-        + '<span class="sleeve-bar-count">' + filled1 + ' / 6</span></div>'
-        + '<div class="sleeve-grid">';
-    for (var i = 0; i < showInBar1; i++) html += slotHtml(i);
-    html += '</div>';
-    if (!bar1Full && isOwn) html += '<div class="sleeve-hint">Zapełnij rękaw aby odblokować drugi</div>';
+    for (var i = 0; i < visible; i++) {
+        // Sloty 6-11 zablokowane dopóki filled < 6
+        if (i >= 6 && !row2unlocked) {
+            html += '<div class="board-slot board-slot-locked"><span style="opacity:.25;font-size:1rem">🔒</span></div>';
+        } else {
+            html += slotHtml(i);
+        }
+    }
+
     html += '</div>';
 
-    if (bar2Unlocked) {
-        html += '<div class="sleeve-bar sleeve-bar-2">'
-            + '<div class="sleeve-bar-label">Rękaw prawy'
-            + '<span class="sleeve-bar-count">' + filled2 + ' / 6</span></div>'
-            + '<div class="sleeve-grid">';
-        for (var i = 6; i < 6 + showInBar2; i++) html += slotHtml(i);
-        html += '</div></div>';
-    } else {
-        html += '<div class="sleeve-bar sleeve-bar-locked">'
-            + '<span class="sleeve-lock-icon">🔒</span>'
-            + '<span class="sleeve-lock-text">Rękaw prawy — odblokuj zapełniając lewy (6/6)</span>'
-            + '</div>';
+    if (filled === 6 && isOwn) {
+        html += '<p style="text-align:center;color:var(--amber);font-size:.75rem;margin-top:10px">Odblokowano drugi rząd! 🎉</p>';
+    } else if (filled < 6 && visible >= 6 && isOwn) {
+        html += '<p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:10px">Zapełnij pierwszy rząd aby odblokować kolejny (' + filled + '/6)</p>';
     }
 
     html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
-}
-function boardSlotClick(pos) {
-    var slot = _boardSlots[pos];
-    if (slot && slot.sprawnoscId) {
-        // Slot zajęty — opcja usunięcia
-        if (confirm('Usunac ' + slot.sprawnoscId + ' z tablicy?')) {
-            _boardSlots[pos] = null;
-            saveBoardSlot(pos, null);
-            renderBoard();
-        }
-    } else {
-        // Pusty slot — otwórz picker sprawności
-        _boardPickingSlot = pos;
-        openBoardPicker();
-    }
-}
-
-function openBoardPicker() {
+}function openBoardPicker() {
     // Zbierz zdane sprawnosci z postępów
     var zdane = db.filter(function(item) {
         if (!item.circleVariants) return false;
