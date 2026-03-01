@@ -499,7 +499,40 @@ input:checked+.slider:before{transform:translateX(21px);}
   border:2px solid var(--border);background:var(--panel2);padding:4px;
   transition:opacity .35s ease;
 }
+.board-wrap{padding:12px 8px;max-width:380px;margin:0 auto;}
 .board-header{text-align:center;padding:16px 0 8px;}
+.sleeve-bar{
+  background:var(--panel);border-radius:16px;padding:14px;
+  margin-bottom:16px;border:1.5px solid var(--border);
+}
+.sleeve-bar-2{ border-color:var(--amber);box-shadow:0 0 0 1px rgba(255,180,0,.12); }
+.sleeve-bar-locked{
+  background:var(--panel);border-radius:16px;padding:20px;
+  margin-bottom:16px;border:1.5px dashed rgba(255,255,255,.1);
+  display:flex;align-items:center;gap:12px;opacity:.5;
+}
+.sleeve-lock-icon{font-size:1.4rem;}
+.sleeve-lock-text{color:var(--muted);font-size:.82rem;}
+.sleeve-bar-label{
+  font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.sleeve-bar-count{
+  background:var(--panel2);border-radius:8px;padding:2px 8px;
+  font-size:.7rem;color:var(--text);letter-spacing:0;font-weight:600;
+}
+.sleeve-hint{
+  font-size:.72rem;color:var(--muted);text-align:center;
+  margin-top:8px;opacity:.7;
+}
+.sleeve-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+}
+.board-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:12px;padding:0 8px;max-width:340px;margin:0 auto;
+}
 .board-grid{
   display:grid;grid-template-columns:repeat(3,1fr);
   gap:12px;padding:0 8px;max-width:340px;margin:0 auto;
@@ -2327,33 +2360,65 @@ async function showBoardTab() {
 
 function renderBoard() {
     var isOwn = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
-    var html = '<div class="board-header">'
-        + '<h2 style="font-family:var(--ff-display)">Rękaw Harcerza</h2>'
-        + (isOwn ? '<p style="color:var(--muted);font-size:.85rem">Kliknij pusty slot aby dodać sprawność na rękaw</p>' : '')
-        + '</div>';
 
-    html += '<div class="board-grid">';
-    for (var i = 0; i < 12; i++) {
+    var filled1 = 0;
+    for (var k = 0; k < 6; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled1++; }
+    var bar1Full = (filled1 === 6);
+    var filled2 = 0;
+    for (var k = 6; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled2++; }
+
+    var showInBar1 = Math.min(filled1 + 1, 6);
+    var bar2Unlocked = bar1Full;
+    var showInBar2 = bar2Unlocked ? Math.min(filled2 + 1, 6) : 0;
+
+    function slotHtml(i) {
         var slot = _boardSlots[i];
+        var onclick = isOwn ? 'boardSlotClick(' + i + ')' : '';
         if (slot && slot.sprawnoscId) {
             var item = db.find(function(x){ return x.id === slot.sprawnoscId; });
-            var imgSrc = getCircleImg(item || { id: slot.sprawnoscId, circleVariants: slot.level }, slot.level);
-            html += '<div class="board-slot board-slot-filled" data-pos="' + i + '" onclick="' + (isOwn ? 'boardSlotClick(' + i + ')' : '') + '">'
-                + '<img src="' + (imgSrc || '') + '" class="board-slot-img">'
-                + '<div class="board-slot-stars">' + '★'.repeat(slot.level) + '</div>'
+            var imgSrc = item
+                ? getCircleImgForProgress(item, cachedProgress)
+                : 'circles/' + slot.sprawnoscId + '_' + (slot.variantIdx || 1) + '.png';
+            var level = item ? getSprawLevel(item, cachedProgress) : (slot.level || 0);
+            return '<div class="board-slot board-slot-filled" data-pos="' + i + '" onclick="' + onclick + '">'
+                + '<img src="' + imgSrc + '" class="board-slot-img">'
+                + (level > 0 ? '<div class="board-slot-stars">' + '★'.repeat(level) + '</div>' : '')
                 + '<div class="board-slot-name">' + (item ? item.title : slot.sprawnoscId) + '</div>'
                 + '</div>';
-        } else {
-            html += '<div class="board-slot board-slot-empty" data-pos="' + i + '" onclick="' + (isOwn ? 'boardSlotClick(' + i + ')' : '') + '">'
-                + '<div class="board-slot-plus">+</div>'
-                + '</div>';
         }
+        return '<div class="board-slot board-slot-empty" data-pos="' + i + '" onclick="' + onclick + '">'
+            + '<div class="board-slot-plus">+</div>'
+            + '</div>';
     }
+
+    var html = '<div class="board-wrap">';
+
+    html += '<div class="sleeve-bar">'
+        + '<div class="sleeve-bar-label">Rękaw lewy'
+        + '<span class="sleeve-bar-count">' + filled1 + ' / 6</span></div>'
+        + '<div class="sleeve-grid">';
+    for (var i = 0; i < showInBar1; i++) html += slotHtml(i);
+    html += '</div>';
+    if (!bar1Full && isOwn) html += '<div class="sleeve-hint">Zapełnij rękaw aby odblokować drugi</div>';
     html += '</div>';
 
+    if (bar2Unlocked) {
+        html += '<div class="sleeve-bar sleeve-bar-2">'
+            + '<div class="sleeve-bar-label">Rękaw prawy'
+            + '<span class="sleeve-bar-count">' + filled2 + ' / 6</span></div>'
+            + '<div class="sleeve-grid">';
+        for (var i = 6; i < 6 + showInBar2; i++) html += slotHtml(i);
+        html += '</div></div>';
+    } else {
+        html += '<div class="sleeve-bar sleeve-bar-locked">'
+            + '<span class="sleeve-lock-icon">🔒</span>'
+            + '<span class="sleeve-lock-text">Rękaw prawy — odblokuj zapełniając lewy (6/6)</span>'
+            + '</div>';
+    }
+
+    html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
 }
-
 function boardSlotClick(pos) {
     var slot = _boardSlots[pos];
     if (slot && slot.sprawnoscId) {
