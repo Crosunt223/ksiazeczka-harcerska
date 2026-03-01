@@ -734,27 +734,50 @@ input:checked+.slider:before{transform:translateX(21px);}
   font-size:1rem;opacity:.3;cursor:default;
 }
 
-/* Board picker modal */
-.board-picker-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.7);
-  display:flex;align-items:flex-end;justify-content:center;z-index:999;
+
+/* ══ endmundur ══ */
+/* Board picker */
+.bp-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  display:flex;align-items:flex-end;justify-content:center;z-index:9999;
 }
-.board-picker-modal{
+.bp-modal{
   background:var(--panel);border-radius:20px 20px 0 0;
-  padding:20px 16px;width:100%;max-width:480px;
-  max-height:85vh;overflow-y:auto;
+  width:100%;max-width:480px;max-height:80vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding:0;
 }
-.board-pick-item{
+.bp-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 10px;flex-shrink:0;
+}
+.bp-title{margin:0;font-family:var(--ff-display);font-size:1.1rem;}
+.bp-close{
+  background:var(--panel2);border:none;color:var(--text);
+  width:32px;height:32px;border-radius:50%;cursor:pointer;
+  font-size:1rem;display:flex;align-items:center;justify-content:center;
+}
+.bp-search{
+  margin:0 16px 10px;padding:9px 13px;
   background:var(--panel2);border:1.5px solid var(--border);
-  border-radius:12px;padding:10px 8px;cursor:pointer;
+  border-radius:var(--rs);color:var(--text);font-size:.88rem;
+  flex-shrink:0;
+}
+.bp-list{
+  flex:1;overflow-y:auto;padding:0 16px 16px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.bp-item{
+  background:var(--panel2);border:1.5px solid var(--border);
+  border-radius:12px;padding:10px 6px 8px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:4px;
   transition:.15s;text-align:center;
 }
-.board-pick-item:active{transform:scale(.95);}
-.board-pick-img{width:52px;height:52px;border-radius:50%;object-fit:contain;}
-.board-pick-img-placeholder{width:52px;height:52px;border-radius:50%;background:var(--panel);border:1.5px dashed var(--border);}
-.board-pick-name{font-size:.72rem;font-weight:600;line-height:1.2;color:var(--text);}
-/* ══ endmundur ══ */
+.bp-item:active{transform:scale(.94);background:var(--f4);}
+.bp-img{width:50px;height:50px;border-radius:50%;object-fit:contain;flex-shrink:0;}
+.bp-img-empty{background:var(--panel);border:1.5px dashed var(--border);border-radius:50%;}
+.bp-name{font-size:.7rem;font-weight:600;line-height:1.2;color:var(--text);}
+.bp-stars{font-size:.6rem;color:var(--amber);}
 </style>
 </head>
 <body>
@@ -2662,66 +2685,90 @@ async function showBoardTab() {
 // BOARD — dodawanie/usuwanie sprawności
 // ══════════════════════════════════════════════════════
 
+var _boardPickerPos = 0;
+
 function boardSlotClick(pos) {
     var slot = _boardSlots[pos];
     if (slot && slot.sprawnoscId) {
-        // Zapełniony — kliknij żeby usunąć
         if (!confirm('Usunąć tę sprawność z munduru?')) return;
         _boardSlots[pos] = null;
+        // Przesuń kolejne sloty żeby nie było dziur
+        for (var i = pos; i < 11; i++) {
+            _boardSlots[i] = _boardSlots[i+1] || null;
+        }
+        _boardSlots[11] = null;
         boardSave();
         renderBoard();
     } else {
-        // Pusty — otwórz picker sprawności
+        // Tylko slot bezpośrednio po ostatnim wypełnionym
+        var filled = 0;
+        for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
+        if (pos !== filled) return; // nie ten slot
         openBoardPicker(pos);
     }
 }
 
 function openBoardPicker(pos) {
     _boardPickerPos = pos;
-    // Filtruj sprawności które już są na mundurze
-    var usedIds = _boardSlots.filter(Boolean).map(function(s){ return s.sprawnoscId; });
+    var usedIds = [];
+    for (var k = 0; k < 12; k++) {
+        if (_boardSlots[k] && _boardSlots[k].sprawnoscId) usedIds.push(_boardSlots[k].sprawnoscId);
+    }
     var available = db.filter(function(item){
-        return !item.id.startsWith('st_') && !usedIds.includes(item.id);
+        return !item.id.startsWith('st_') && usedIds.indexOf(item.id) === -1;
     });
 
-    var html = '<div class="board-picker-overlay" onclick="if(event.target===this)closeBoardPicker()">'
-             + '<div class="board-picker-modal">'
-             + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
-             + '<h3 style="margin:0;font-family:var(--ff-display)">Wybierz sprawność</h3>'
-             + '<button onclick="closeBoardPicker()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>'
-             + '</div>'
-             + '<input id="boardPickSearch" oninput="filterBoardPicker(this.value)" placeholder="Szukaj..." '
-             + 'style="width:100%;box-sizing:border-box;padding:8px 12px;background:var(--panel2);border:1.5px solid var(--border);'
-             + 'border-radius:var(--rs);color:var(--text);margin-bottom:10px;font-size:.88rem">'
-             + '<div id="boardPickList" style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-             + available.map(function(item){
-                 var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
-                 var level  = getSprawLevel(item, cachedProgress);
-                 return '<div class="board-pick-item" onclick="boardPickSelect(\'' + item.id + '\')">'
-             }).join('')
-             + '</div></div></div>';
+    // Zbuduj listę jako string bezpiecznie
+    var listItems = '';
+    for (var i = 0; i < available.length; i++) {
+        var item = available[i];
+        var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : '';
+        var level  = getSprawLevel(item, cachedProgress);
+        var stars  = level > 0 ? '<div class="bp-stars">' + '★'.repeat(level) + '</div>' : '';
+        var imgHtml = imgSrc
+            ? '<img src="' + imgSrc + '" class="bp-img">'
+            : '<div class="bp-img bp-img-empty"></div>';
+        listItems += '<div class="bp-item" data-id="' + item.id + '" data-title="' + item.title.toLowerCase() + '" onclick="boardPickSelect(this.dataset.id)">'
+            + imgHtml
+            + '<div class="bp-name">' + item.title + '</div>'
+            + stars
+            + '</div>';
+    }
 
-    document.body.insertAdjacentHTML('beforeend', html);
-    document.getElementById('boardPickSearch').focus();
+    var modal = document.createElement('div');
+    modal.id  = 'boardPickerOverlay';
+    modal.className = 'bp-overlay';
+    modal.innerHTML = '<div class="bp-modal" onclick="event.stopPropagation()">'
+        + '<div class="bp-header">'
+        + '<h3 class="bp-title">Wybierz sprawność</h3>'
+        + '<button class="bp-close" onclick="closeBoardPicker()">✕</button>'
+        + '</div>'
+        + '<input id="bpSearch" class="bp-search" placeholder="Szukaj..." oninput="filterBoardPicker(this.value)">'
+        + '<div class="bp-list" id="bpList">' + listItems + '</div>'
+        + '</div>';
+
+    modal.addEventListener('click', function(e){ if (e.target === modal) closeBoardPicker(); });
+    document.body.appendChild(modal);
+    document.getElementById('bpSearch').focus();
 }
 
 function filterBoardPicker(q) {
-    q = q.toLowerCase();
-    document.querySelectorAll('.board-pick-item').forEach(function(el){
-        el.style.display = el.dataset.id.toLowerCase().includes(q)
-            || el.querySelector('.board-pick-name').textContent.toLowerCase().includes(q)
-            ? '' : 'none';
-    });
+    q = q.toLowerCase().trim();
+    var items = document.querySelectorAll('.bp-item');
+    for (var i = 0; i < items.length; i++) {
+        var t = items[i].dataset.title || '';
+        items[i].style.display = (!q || t.indexOf(q) !== -1) ? '' : 'none';
+    }
 }
 
 function closeBoardPicker() {
-    var overlay = document.querySelector('.board-picker-overlay');
-    if (overlay) overlay.remove();
+    var el = document.getElementById('boardPickerOverlay');
+    if (el) el.remove();
 }
 
 function boardPickSelect(sprawnoscId) {
     closeBoardPicker();
-    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId, variantIdx: 1, level: 1 };
+    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId };
     boardSave();
     renderBoard();
 }
@@ -2734,14 +2781,14 @@ async function boardSave() {
     });
 }
 
-var _boardPickerPos = 0;
 
 function renderBoard() {
     var isOwn  = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
+
+    // Ile zajętych slotów
     var filled = 0;
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
-    var visible = Math.min(filled + 1, 12);
 
     /* ══ STOPNIE — 6 kwadratów 2×3 ══ */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
@@ -2754,51 +2801,61 @@ function renderBoard() {
         var imgF  = e ? (e.imgFilter || 'none') : 'none';
 
         if (!st) {
-            /* szary, pusty */
-            sqHtml += '<div class="msq-sq msq-sq-ghost" title="'+label+'">'
-                    + '<div class="msq-sq-lbl">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-ghost" title="' + label + '">'
+                    + '<div class="msq-sq-lbl">' + label + '</div>'
                     + '</div>';
         } else if (st.status === 'open') {
-            /* kolorowy border, BEZ ikonki */
-            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:'+color+'" title="'+label+'">'
-                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:' + color + '" title="' + label + '">'
+                    + '<div class="msq-sq-lbl" style="color:' + color + '">' + label + '</div>'
                     + '</div>';
         } else {
-            /* zaliczony — z ikonką */
-            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:'+color+'" title="'+label+'">'
-                    + '<img src="stopnie/'+e.key+'_1.png" class="msq-sq-img" style="filter:'+imgF+'">'
-                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:' + color + '" title="' + label + '">'
+                    + '<img src="stopnie/' + e.key + '_1.png" class="msq-sq-img" style="filter:' + imgF + '" onerror="this.style.display=\'none\'">'
+                    + '<div class="msq-sq-lbl" style="color:' + color + '">' + label + '</div>'
                     + '</div>';
         }
     });
     sqHtml += '</div>';
 
-    /* ══ SPRAWNOŚCI — kółka ══ */
+    /* ══ SPRAWNOŚCI — kółka, sekwencyjne odblokowanie ══ */
+    var maxVisible = Math.min(filled + 1, 12); // tylko 1 pusty slot na końcu
     var circHtml = '<div class="msq-circles">';
-    for (var i = 0; i < visible; i++) {
+
+    for (var i = 0; i < maxVisible; i++) {
+        var slot = _boardSlots[i];
+        var canClick = isOwn;
+
         if (i >= 6 && !row2unlocked) {
+            // rząd 2 zablokowany
             circHtml += '<div class="msq-circle msq-circle-locked">🔒</div>';
             continue;
         }
-        var slot = _boardSlots[i];
-        var oc   = isOwn ? 'onclick="boardSlotClick('+i+')"' : '';
+
         if (slot && slot.sprawnoscId) {
+            // Wypełniony slot
             var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
-            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
-                              : 'circles/'+slot.sprawnoscId+'_1.png';
+            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress) : null;
             var level  = item ? getSprawLevel(item, cachedProgress) : 0;
-            circHtml += '<div class="msq-circle msq-circle-filled" '+oc+'>'
-                      + '<img src="'+imgSrc+'" class="msq-circle-img">'
-                      + (level>0 ? '<div class="msq-circle-stars">'+'★'.repeat(level)+'</div>' : '')
-                      + '<div class="msq-circle-name">'+(item?item.title:slot.sprawnoscId)+'</div>'
+            var oc     = canClick ? ' onclick="boardSlotClick(' + i + ')"' : '';
+            circHtml += '<div class="msq-circle msq-circle-filled"' + oc + '>'
+                      + (imgSrc ? '<img src="' + imgSrc + '" class="msq-circle-img">' : '')
+                      + (level > 0 ? '<div class="msq-circle-stars">' + '★'.repeat(level) + '</div>' : '')
+                      + '<div class="msq-circle-name">' + (item ? item.title : slot.sprawnoscId) + '</div>'
                       + '</div>';
         } else {
-            circHtml += '<div class="msq-circle msq-circle-empty" '+oc+'>'
+            // Następny pusty slot do wypełnienia
+            var oc2 = canClick ? ' onclick="boardSlotClick(' + i + ')"' : '';
+            circHtml += '<div class="msq-circle msq-circle-empty"' + oc2 + '>'
                       + '<span class="msq-circle-plus">+</span>'
                       + '</div>';
         }
     }
     circHtml += '</div>';
+
+    if (filled < 6 && filled >= 1 && isOwn)
+        circHtml += '<p class="mundur-sub">Zapełnij rząd 1 aby odblokować rząd 2 (' + filled + '/6)</p>';
+    if (filled === 6 && isOwn)
+        circHtml += '<p class="mundur-sub" style="color:var(--amber)">Odblokowano drugi rząd! 🎉</p>';
 
     var html = '<div class="mundur-wrap">'
              + '<h2 class="mundur-title">Mój Mundur</h2>'
