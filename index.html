@@ -656,6 +656,105 @@ input:checked+.slider:before{transform:translateX(21px);}
   display:block;
   margin:0 auto;
 }
+/* ══ MUNDUR CSS ══ */
+.mundur-wrap{padding:16px 12px;max-width:380px;margin:0 auto;}
+.mundur-title{text-align:center;font-family:var(--ff-display);font-size:1.3rem;margin-bottom:18px;}
+
+/* 2×3 grid kwadratów stopni */
+.msq-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  margin-bottom:22px;
+}
+.msq-sq{
+  aspect-ratio:1;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding:4px 4px 18px;box-sizing:border-box;
+}
+.msq-sq-ghost{
+  background:rgba(255,255,255,.03);
+  border:2px dashed rgba(255,255,255,.12);
+}
+.msq-sq-open{
+  border:2.5px solid var(--sc);
+  background:color-mix(in srgb,var(--sc) 10%,transparent);
+  box-shadow:0 0 12px color-mix(in srgb,var(--sc) 25%,transparent);
+}
+.msq-sq-done{
+  border:2.5px solid var(--sc);
+  background:color-mix(in srgb,var(--sc) 15%,transparent);
+  box-shadow:0 0 16px color-mix(in srgb,var(--sc) 35%,transparent);
+}
+.msq-sq-img{
+  width:80%;height:80%;object-fit:contain;
+}
+.msq-sq-lbl{
+  position:absolute;bottom:3px;left:0;right:0;
+  font-size:.45rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;text-align:center;
+  color:rgba(255,255,255,.2);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;padding:0 3px;
+}
+.msq-sq-ghost .msq-sq-lbl{color:rgba(255,255,255,.18);}
+
+/* Kółka sprawności */
+.msq-circles{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.msq-circle{
+  aspect-ratio:1;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:.15s;
+}
+.msq-circle:active{transform:scale(.93);}
+.msq-circle-empty{
+  border:2.5px solid var(--amber);
+  background:rgba(255,180,0,.04);
+}
+.msq-circle-plus{
+  font-size:1.6rem;color:var(--amber);line-height:1;font-weight:300;
+}
+.msq-circle-filled{
+  border:2px solid var(--border);
+  background:var(--panel);
+}
+.msq-circle-img{width:80%;height:80%;object-fit:contain;border-radius:50%;}
+.msq-circle-name{
+  position:absolute;bottom:2px;left:0;right:0;
+  font-size:.38rem;text-align:center;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;
+}
+.msq-circle-stars{
+  position:absolute;top:2px;right:4px;
+  font-size:.5rem;color:var(--amber);
+}
+.msq-circle-locked{
+  border:2px dashed rgba(255,255,255,.1);
+  background:rgba(255,255,255,.02);
+  font-size:1rem;opacity:.3;cursor:default;
+}
+
+/* Board picker modal */
+.board-picker-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:flex;align-items:flex-end;justify-content:center;z-index:999;
+}
+.board-picker-modal{
+  background:var(--panel);border-radius:20px 20px 0 0;
+  padding:20px 16px;width:100%;max-width:480px;
+  max-height:85vh;overflow-y:auto;
+}
+.board-pick-item{
+  background:var(--panel2);border:1.5px solid var(--border);
+  border-radius:12px;padding:10px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:.15s;text-align:center;
+}
+.board-pick-item:active{transform:scale(.95);}
+.board-pick-img{width:52px;height:52px;border-radius:50%;object-fit:contain;}
+.board-pick-img-placeholder{width:52px;height:52px;border-radius:50%;background:var(--panel);border:1.5px dashed var(--border);}
+.board-pick-name{font-size:.72rem;font-weight:600;line-height:1.2;color:var(--text);}
+/* ══ endmundur ══ */
 </style>
 </head>
 <body>
@@ -2558,97 +2657,154 @@ async function showBoardTab() {
     renderBoard();
 }
 
-function renderBoard() {
-    var isOwn = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
 
-    /* ── ile sprawności na mundurze ── */
+// ══════════════════════════════════════════════════════
+// BOARD — dodawanie/usuwanie sprawności
+// ══════════════════════════════════════════════════════
+
+function boardSlotClick(pos) {
+    var slot = _boardSlots[pos];
+    if (slot && slot.sprawnoscId) {
+        // Zapełniony — kliknij żeby usunąć
+        if (!confirm('Usunąć tę sprawność z munduru?')) return;
+        _boardSlots[pos] = null;
+        boardSave();
+        renderBoard();
+    } else {
+        // Pusty — otwórz picker sprawności
+        openBoardPicker(pos);
+    }
+}
+
+function openBoardPicker(pos) {
+    _boardPickerPos = pos;
+    // Filtruj sprawności które już są na mundurze
+    var usedIds = _boardSlots.filter(Boolean).map(function(s){ return s.sprawnoscId; });
+    var available = db.filter(function(item){
+        return !item.id.startsWith('st_') && !usedIds.includes(item.id);
+    });
+
+    var html = '<div class="board-picker-overlay" onclick="if(event.target===this)closeBoardPicker()">'
+             + '<div class="board-picker-modal">'
+             + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+             + '<h3 style="margin:0;font-family:var(--ff-display)">Wybierz sprawność</h3>'
+             + '<button onclick="closeBoardPicker()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>'
+             + '</div>'
+             + '<input id="boardPickSearch" oninput="filterBoardPicker(this.value)" placeholder="Szukaj..." '
+             + 'style="width:100%;box-sizing:border-box;padding:8px 12px;background:var(--panel2);border:1.5px solid var(--border);'
+             + 'border-radius:var(--rs);color:var(--text);margin-bottom:10px;font-size:.88rem">'
+             + '<div id="boardPickList" style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+             + available.map(function(item){
+                 var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+                 var level  = getSprawLevel(item, cachedProgress);
+                 return '<div class="board-pick-item" onclick="boardPickSelect(\'' + item.id + '\')">'
+             }).join('')
+             + '</div></div></div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+    document.getElementById('boardPickSearch').focus();
+}
+
+function filterBoardPicker(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.board-pick-item').forEach(function(el){
+        el.style.display = el.dataset.id.toLowerCase().includes(q)
+            || el.querySelector('.board-pick-name').textContent.toLowerCase().includes(q)
+            ? '' : 'none';
+    });
+}
+
+function closeBoardPicker() {
+    var overlay = document.querySelector('.board-picker-overlay');
+    if (overlay) overlay.remove();
+}
+
+function boardPickSelect(sprawnoscId) {
+    closeBoardPicker();
+    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId, variantIdx: 1, level: 1 };
+    boardSave();
+    renderBoard();
+}
+
+async function boardSave() {
+    var uid = window._currentViewUserId || currentUser.id;
+    await apiFetch('/board/' + uid, {
+        method: 'POST',
+        body: JSON.stringify({ slots: _boardSlots })
+    });
+}
+
+var _boardPickerPos = 0;
+
+function renderBoard() {
+    var isOwn  = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
     var filled = 0;
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
     var visible = Math.min(filled + 1, 12);
 
-    /* ── slot sprawności ── */
-    function slotHtml(i) {
-        var slot = _boardSlots[i];
-        var oc   = isOwn ? 'boardSlotClick(' + i + ')' : '';
-        if (slot && slot.sprawnoscId) {
-            var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
-            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
-                              : 'circles/' + slot.sprawnoscId + '_' + (slot.variantIdx||1) + '.png';
-            var level  = item ? getSprawLevel(item, cachedProgress) : (slot.level||0);
-            return '<div class="board-slot board-slot-filled" data-pos="'+i+'" onclick="'+oc+'">'
-                 + '<img src="'+imgSrc+'" class="board-slot-img">'
-                 + (level > 0 ? '<div class="board-slot-stars">'+'★'.repeat(level)+'</div>' : '')
-                 + '<div class="board-slot-name">'+(item ? item.title : slot.sprawnoscId)+'</div>'
-                 + '</div>';
-        }
-        return '<div class="board-slot board-slot-empty" data-pos="'+i+'" onclick="'+oc+'">'
-             + '<div class="board-slot-plus">+</div></div>';
-    }
-
-    /* ══ 6 kwadracików stopni ══
-       ghost  = nie otwarty  → szary, przezroczysty, puste
-       open   = otwarty      → kolor stopnia, puste w środku
-       done   = zaliczony    → kolor stopnia + siatka ikonek w środku
-    */
+    /* ══ STOPNIE — 6 kwadratów 2×3 ══ */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
-    var sqHtml = '<div class="msq-row">';
-
+    var sqHtml = '<div class="msq-grid">';
     ORDER.forEach(function(sid) {
         var e     = STOPNIE_IMG_MAP[sid];
         var st    = _stopnieStatus[sid];
-        var color = e ? e.color : '#888';
         var label = e ? e.label : sid;
-
-        var cls   = 'msq-box';
-        var inner = '';
+        var color = e ? e.color : '#888';
+        var imgF  = e ? (e.imgFilter || 'none') : 'none';
 
         if (!st) {
-            /* ── GHOST ── szary, nic w środku */
-            cls += ' msq-ghost';
-
+            /* szary, pusty */
+            sqHtml += '<div class="msq-sq msq-sq-ghost" title="'+label+'">'
+                    + '<div class="msq-sq-lbl">'+label+'</div>'
+                    + '</div>';
         } else if (st.status === 'open') {
-            /* ── OPEN ── kolorowy border, puste wnętrze */
-            cls += ' msq-open';
-
+            /* kolorowy border, BEZ ikonki */
+            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:'+color+'" title="'+label+'">'
+                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+                    + '</div>';
         } else {
-            /* ── DONE ── jedno główne zdjęcie wypełnia cały kwadrat */
-            cls += ' msq-done';
-            if (e) {
-                var imgF2 = e.imgFilter || 'invert(1)';
-                inner = '<img src="stopnie/' + e.key + '_1.png"'
-                      + ' class="msq-mainimg" style="filter:' + imgF2 + '"'
-                      + ' onerror="this.style.display=\'none\'">';
-            }
+            /* zaliczony — z ikonką */
+            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:'+color+'" title="'+label+'">'
+                    + '<img src="stopnie/'+e.key+'_1.png" class="msq-sq-img" style="filter:'+imgF+'">'
+                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+                    + '</div>';
         }
-
-        sqHtml += '<div class="' + cls + '" style="--sc:' + color + '" title="' + label + '">'
-                + inner
-                + '<div class="msq-lbl">' + label + '</div>'
-                + '</div>';
     });
-
     sqHtml += '</div>';
 
-    /* ── składamy całość ── */
-    var html = '<div class="mundur-wrap">'
-             + '<h2 class="mundur-title">Rękaw Harcerza</h2>'
-             + sqHtml
-             + (isOwn ? '<p class="mundur-sub">Kliknij pusty slot aby dodać sprawność ('
-                        + filled + '/12)</p>' : '')
-             + '<div class="board-grid">';
-
+    /* ══ SPRAWNOŚCI — kółka ══ */
+    var circHtml = '<div class="msq-circles">';
     for (var i = 0; i < visible; i++) {
         if (i >= 6 && !row2unlocked) {
-            html += '<div class="board-slot board-slot-locked"><span style="opacity:.2">🔒</span></div>';
+            circHtml += '<div class="msq-circle msq-circle-locked">🔒</div>';
+            continue;
+        }
+        var slot = _boardSlots[i];
+        var oc   = isOwn ? 'onclick="boardSlotClick('+i+')"' : '';
+        if (slot && slot.sprawnoscId) {
+            var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
+            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
+                              : 'circles/'+slot.sprawnoscId+'_1.png';
+            var level  = item ? getSprawLevel(item, cachedProgress) : 0;
+            circHtml += '<div class="msq-circle msq-circle-filled" '+oc+'>'
+                      + '<img src="'+imgSrc+'" class="msq-circle-img">'
+                      + (level>0 ? '<div class="msq-circle-stars">'+'★'.repeat(level)+'</div>' : '')
+                      + '<div class="msq-circle-name">'+(item?item.title:slot.sprawnoscId)+'</div>'
+                      + '</div>';
         } else {
-            html += slotHtml(i);
+            circHtml += '<div class="msq-circle msq-circle-empty" '+oc+'>'
+                      + '<span class="msq-circle-plus">+</span>'
+                      + '</div>';
         }
     }
-    html += '</div>';
-    if (filled === 6 && isOwn)
-        html += '<p class="mundur-sub" style="color:var(--amber)">Odblokowano drugi rząd! 🎉</p>';
-    html += '</div>';
+    circHtml += '</div>';
+
+    var html = '<div class="mundur-wrap">'
+             + '<h2 class="mundur-title">Mój Mundur</h2>'
+             + sqHtml
+             + circHtml
+             + '</div>';
 
     document.getElementById('contentArea').innerHTML = html;
 }
@@ -2928,4 +3084,3095 @@ async function pickMember(userId, userName, userRole) {
 fetch('https://harcerze-backend.onrender.com/api/ping').catch(function(){});
 </script>
 </body>
-</html>
+                 return '<div class="board-pick-item" onclick="boardPickSelect(\'\' + item.id + \'\')">' 
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ksiazeczka Harcerska</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* Franklin Gothic Book - local install first, then system fallbacks */
+@font-face {
+    font-family: 'Franklin Gothic Book';
+    src: local('Franklin Gothic Book'),
+         local('FranklinGothic-Book'),
+         local('Franklin Gothic'),
+         local('ITC Franklin Gothic Std Book');
+    font-weight: normal;
+    font-style: normal;
+}
+</style>
+<style>
+:root{
+  --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
+  --f4:#4e8a2a;--f3:#6aaa3d;--f2:#a8d080;--f1:#d4eab8;--f0:#eef7e2;
+  --amber:#c97d1a;
+  --bg:#f5f7f0;--panel:#fff;--panel2:#eef2e8;
+  --text:#1a2e1d;--muted:#6b7c6e;--border:#dde8d0;
+  --shadow:0 2px 12px rgba(13,31,20,.07);--shadow-lg:0 8px 40px rgba(13,31,20,.14);
+  --r:14px;--rs:9px;
+  --nav-h:70px;--topbar-h:54px;
+  --primary:#2e7d32;--primary-dark:#1b3a28;--primary-light:#4caf50;
+  --accent:#ff6f00;--bg-body:#f7f9f5;--bg-panel:#fff;--bg-input:#f8fafc;
+  --text-main:#2c3e50;--text-muted:#7f8c8d;--border-color:#e2e8f0;
+}
+body.dark{
+  --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
+  --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
+  --bg-body:#121212;--bg-panel:#1e1e1e;--bg-input:#2c2c2c;
+  --text-main:#e0e0e0;--text-muted:#a0a0a0;--border-color:#333;
+}
+body.dark-mode{
+  --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
+  --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
+}
+body.large-text{font-size:20px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Barlow", sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* ══════════════════════════════════════════════
+   LOGIN OVERLAY
+══════════════════════════════════════════════ */
+#loginOverlay{
+  position:fixed;inset:0;
+  background:linear-gradient(155deg,var(--f9) 0%,var(--f7) 55%,var(--f5) 100%);
+  display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;
+}
+.login-box{
+  background:rgba(255,255,255,.97);border-radius:22px;padding:44px 36px;
+  width:100%;max-width:360px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 24px 64px rgba(0,0,0,.38);
+}
+body.dark .login-box{background:rgba(23,34,24,.97);}
+.login-box h2{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;color:var(--f8);
+  margin-bottom:24px;text-align:center;
+}
+body.dark .login-box h2{color:var(--f2);}
+.login-box input,.login-box select{
+  width:100%;padding:13px 15px;border:1.5px solid var(--border);
+  border-radius:var(--rs);background:var(--bg);color:var(--text);
+  font-family:"Barlow", sans-serif;font-size:.95rem;outline:none;
+  transition:.2s;margin-bottom:10px;display:block;
+}
+.login-box input:focus,.login-box select:focus{
+  border-color:var(--f4);box-shadow:0 0 0 3px rgba(78,138,42,.13);
+}
+.btn-main{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--f5),var(--f3));
+  border:none;border-radius:var(--rs);color:#fff;font-weight:600;
+  font-size:1rem;cursor:pointer;transition:.2s;margin-top:4px;
+  font-family:"Barlow", sans-serif;
+}
+.btn-main:hover{opacity:.9;transform:translateY(-1px);}
+.btn-link{
+  width:100%;padding:11px;background:transparent;
+  border:1.5px solid var(--border);border-radius:var(--rs);
+  color:var(--muted);font-size:.88rem;cursor:pointer;transition:.2s;
+  margin-top:8px;font-family:"Barlow", sans-serif;
+}
+.btn-link:hover{border-color:var(--f4);color:var(--f5);}
+.login-msg{font-size:.83em;padding:8px 12px;border-radius:var(--rs);margin-top:8px;display:none;}
+.login-msg.error  {background:#fee8e8;color:#c33;display:block;}
+.login-msg.success{background:#e8f5e9;color:#2e7d32;display:block;}
+.login-msg.info   {background:#e3f2fd;color:#1565c0;display:block;}
+
+/* ══════════════════════════════════════════════
+   WYBIERZ DRUŻYNĘ (krok 2 rejestracji)
+══════════════════════════════════════════════ */
+#teamPickOverlay{
+  position:fixed;inset:0;
+  background:linear-gradient(155deg,var(--f9) 0%,var(--f7) 55%,var(--f5) 100%);
+  display:none;align-items:center;justify-content:center;z-index:10000;padding:20px;
+}
+#teamPickOverlay.active{display:flex;}
+.team-pick-box{
+  background:var(--f8);border-radius:22px;padding:36px 28px;
+  width:100%;max-width:340px;text-align:center;
+  box-shadow:0 24px 64px rgba(0,0,0,.55);
+}
+.team-pick-title{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.3rem;font-weight:700;
+  color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;
+}
+.team-pick-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.team-pick-btn{
+  padding:14px 20px;border-radius:var(--rs);
+  border:2px solid rgba(168,208,128,.25);
+  background:rgba(255,255,255,.05);
+  color:var(--f1);font-size:.95rem;font-weight:500;
+  cursor:pointer;transition:.2s;font-family:"Barlow", sans-serif;
+}
+.team-pick-btn:hover{background:rgba(78,138,42,.2);border-color:var(--f3);}
+.team-pick-btn.sel{
+  background:var(--amber);border-color:var(--amber);color:#fff;font-weight:700;
+}
+.team-pick-confirm{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--f5),var(--f3));
+  border:none;border-radius:var(--rs);color:#fff;font-weight:700;
+  font-size:1rem;cursor:pointer;font-family:"Barlow", sans-serif;
+  display:none;transition:.2s;
+}
+.team-pick-confirm.show{display:block;}
+.team-pick-confirm:hover{opacity:.9;}
+.team-pick-back{
+  margin-top:14px;background:none;border:none;
+  color:rgba(168,208,128,.6);font-size:.83rem;cursor:pointer;
+  font-family:"Barlow", sans-serif;text-decoration:underline;
+}
+
+/* ══════════════════════════════════════════════
+   OCZEKIWANIE NA AKCEPTACJĘ
+══════════════════════════════════════════════ */
+#pendingScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:none;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:7999;padding:40px;text-align:center;
+}
+#pendingScreen.active{display:flex;}
+.pending-icon{font-size:3.5rem;margin-bottom:20px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+.pending-title{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.5rem;
+  color:var(--text);margin-bottom:12px;
+}
+.pending-sub{color:var(--muted);font-size:.92rem;line-height:1.65;max-width:280px;}
+.pending-logout{
+  margin-top:32px;padding:10px 22px;
+  background:transparent;border:1.5px solid var(--border);
+  border-radius:var(--rs);color:var(--muted);cursor:pointer;
+  font-size:.85rem;font-family:"Barlow", sans-serif;transition:.2s;
+}
+.pending-logout:hover{border-color:var(--f4);color:var(--f5);}
+
+/* ══════════════════════════════════════════════
+   APP SHELL
+══════════════════════════════════════════════ */
+#appShell{display:none;flex-direction:column;height:100vh;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{
+  height:var(--topbar-h);background:var(--f9);
+  display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
+}
+.topbar-brand{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1rem;
+  color:#e8f5d0;flex:1;cursor:pointer;line-height:1.2;
+}
+.topbar-brand small{display:block;font-size:.65rem;color:#6a9a6a;}
+
+/* BODY */
+.app-body{flex:1;display:flex;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;background:var(--f9);color:var(--f1);
+  display:flex;flex-direction:column;flex-shrink:0;
+  border-right:1px solid rgba(255,255,255,.05);overflow:hidden;
+}
+.sidebar-search{padding:12px 12px 6px;}
+.sidebar-search input{
+  width:100%;padding:9px 13px;border-radius:30px;border:none;
+  background:rgba(255,255,255,.08);color:var(--f1);
+  font-size:.86rem;outline:none;transition:.2s;
+  font-family:"Barlow", sans-serif;
+}
+.sidebar-search input::placeholder{color:#4a6a4a;}
+.sidebar-search input:focus{background:rgba(255,255,255,.14);}
+.nav-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px 20px;}
+.nav-list::-webkit-scrollbar{width:3px}
+.nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:#456645;font-weight:700;}
+.nav-circle-img{
+  width:28px;height:28px;border-radius:50%;object-fit:contain;
+  flex-shrink:0;margin-right:6px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.2));
+}
+.nav-circle-empty{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-right:6px;
+  border:1.5px dashed rgba(255,255,255,.15);background:rgba(255,255,255,.03);
+}
+.nav-item-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nav-item-locked{cursor:default;}
+.nav-stopien-badge{
+  width:26px;height:26px;flex-shrink:0;margin-right:6px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;font-size:.8rem;
+}
+.nav-stopien-none{background:rgba(255,255,255,.05);color:var(--muted);font-size:.65rem;font-weight:700;}
+.nav-stopien-open{background:rgba(59,130,246,.15);}
+.nav-stopien-done{background:rgba(34,197,94,.15);}
+.nav-item{
+  padding:9px 12px;border-radius:var(--rs);cursor:pointer;
+  display:flex;align-items:center;gap:0;
+  color:#88b078;font-size:.87rem;transition:.15s;margin-bottom:2px;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);color:var(--f1);}
+.nav-item.active{background:linear-gradient(90deg,var(--f4),var(--f3));color:#fff;font-weight:600;}
+.nav-progress{font-size:.67rem;font-weight:700;background:rgba(0,0,0,.25);padding:2px 7px;border-radius:20px;}
+.nav-item.active .nav-progress{background:rgba(255,255,255,.2);}
+
+/* SIDEBAR OVERLAY (mobile) */
+.sidebar-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.5);z-index:200;backdrop-filter:blur(2px);
+}
+.sidebar-overlay.active{display:block;}
+
+/* CONTENT */
+.content-scroll{flex:1;overflow-y:auto;padding:24px 24px 90px;}
+.content-wrap{max-width:780px;margin:0 auto;}
+
+/* ══════════════════════════════════════════════
+   BOTTOM NAV — jak na screenshocie
+══════════════════════════════════════════════ */
+.bottom-nav{
+  height:var(--nav-h);
+  background:var(--f8);
+  border-top:1px solid rgba(255,255,255,.07);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:0 8px;flex-shrink:0;
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  cursor:pointer;padding:6px 4px;border-radius:var(--rs);
+  transition:.18s;color:#4a6a4a;border:none;background:none;
+  font-family:"Barlow", sans-serif;
+}
+.bnav-btn:hover{color:var(--f2);}
+.bnav-btn.active{color:var(--f1);}
+.bnav-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.35rem;transition:.18s;
+}
+.bnav-btn.active .bnav-icon{
+  background:rgba(106,170,61,.2);
+}
+.bnav-label{font-size:.59rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+
+/* Placeholder kafelki */
+.zastep-drop-zone{
+  min-height:44px;padding:6px;border-radius:var(--rs);
+  border:2px dashed transparent;transition:.2s;display:flex;flex-wrap:wrap;gap:4px;align-items:center;
+}
+.zastep-drop-zone.drag-over{
+  border-color:var(--amber);background:rgba(255,180,0,.07);
+}
+.member-chip:active{cursor:grabbing;}
+.member-picker-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);font-size:.88rem;display:flex;align-items:center;gap:8px;}
+.member-picker-item:hover{background:var(--panel2);}
+.team-edit-panel{
+  background:var(--panel);border-radius:var(--r);border:1px solid var(--border);
+  padding:20px;margin-top:16px;display:flex;flex-direction:column;gap:14px;
+  max-width:420px;margin-left:auto;margin-right:auto;
+}
+.team-edit-row{display:flex;flex-direction:column;gap:6px;}
+.team-edit-label{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+.team-profile-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;text-align:center;
+}
+.team-profile-img{
+  width:160px;height:160px;border-radius:24px;object-fit:cover;
+  border:3px solid var(--f4);box-shadow:0 8px 32px rgba(13,31,20,.18);
+  margin-bottom:20px;background:var(--panel2);
+}
+.team-profile-name{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.6rem;
+  color:var(--text);font-weight:700;
+}
+.profile-card{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:32px 24px 24px;margin-bottom:16px;border:1px solid var(--border);
+  text-align:center;
+}
+.profile-avatar-wrap{position:relative;display:inline-block;margin-bottom:16px;}
+.profile-avatar{
+  width:100px;height:100px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--f4);box-shadow:0 4px 16px rgba(13,31,20,.15);
+  background:var(--panel2);
+}
+.profile-avatar-edit{
+  position:absolute;bottom:2px;right:2px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--amber);border:none;color:#fff;
+  font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.profile-name{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.5rem;
+  color:var(--text);margin-bottom:6px;font-weight:700;
+}
+.profile-edit-name-btn{
+  background:none;border:none;color:var(--muted);font-size:.82rem;
+  cursor:pointer;text-decoration:underline;margin-bottom:10px;
+  font-family:"Barlow", sans-serif;
+}
+.profile-role-badge{
+  display:inline-block;padding:4px 14px;border-radius:20px;
+  background:var(--panel2);color:var(--f4);font-size:.78rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;
+}
+.profile-team{
+  color:var(--muted);font-size:.9rem;margin-top:4px;
+}
+.profile-edit-form{
+  background:var(--panel2);border-radius:var(--rs);
+  padding:16px;margin-top:12px;text-align:left;
+  border:1px solid var(--border);
+}
+.placeholder-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:60vh;color:var(--muted);
+}
+.placeholder-screen .ph-icon{font-size:4rem;margin-bottom:16px;opacity:.35;}
+.placeholder-screen p{font-size:.95rem;opacity:.5;}
+
+/* MOBILE */
+@media(max-width:900px){
+  .sidebar{
+    position:fixed;top:var(--topbar-h);left:0;
+    bottom:var(--nav-h);width:82%;max-width:300px;
+    z-index:300;transform:translateX(-110%);
+    transition:transform .28s;
+    box-shadow:8px 0 32px rgba(0,0,0,.35);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .content-scroll{padding:20px 16px 88px;}
+}
+
+/* CONTENT CARDS */
+.header-section{
+  background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:24px 24px 20px;margin-bottom:20px;border-left:4px solid var(--amber);
+}
+.cat-badge{
+  display:inline-block;background:var(--panel2);color:var(--f5);
+  padding:3px 11px;border-radius:20px;font-size:.7rem;font-weight:600;
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;
+}
+body.dark .cat-badge{color:var(--f2);}
+.header-section h2{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.75rem;
+  color:var(--text);margin:6px 0 16px;
+}
+.big-progress-wrapper{background:var(--panel2);height:7px;border-radius:4px;overflow:hidden;}
+.big-progress-fill{
+  height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--f5),var(--f3));
+  transition:width .8s cubic-bezier(.34,1.56,.64,1);width:0%;
+}
+.progress-label{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-bottom:5px;}
+.task-group{margin-bottom:22px;}
+.group-title{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:10px;padding-left:3px;}
+.stopien-group-header{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+  padding:8px 10px;background:var(--panel2);border-radius:10px;
+  border:1px solid var(--border);
+}
+.stopien-group-img{
+  width:38px;height:38px;border-radius:50%;object-fit:contain;
+  flex-shrink:0;background:var(--panel);padding:2px;
+}
+.stopien-group-emoji{font-size:1.1rem;flex-shrink:0;line-height:1;}
+.group-pct{font-size:.72rem;font-weight:700;flex-shrink:0;}
+.group-pct-done{color:#4ade80;}
+.cb-container{
+  display:flex;align-items:flex-start;gap:13px;background:var(--panel);
+  padding:13px 16px;border-radius:var(--rs);margin-bottom:7px;
+  border:1.5px solid var(--border);cursor:pointer;transition:.16s;
+}
+.cb-container:hover{border-color:var(--f3);box-shadow:var(--shadow);}
+.cb-container input{display:none;}
+.checkmark{
+  width:22px;height:22px;min-width:22px;border-radius:6px;
+  border:2px solid var(--border);background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;transition:.16s;
+}
+.cb-container input:checked~.checkmark{background:var(--f4);border-color:var(--f4);}
+.checkmark:after{
+  content:"";display:none;width:5px;height:10px;
+  border:solid #fff;border-width:0 2px 2px 0;
+  transform:rotate(45deg) translateY(-1px);
+}
+.cb-container input:checked~.checkmark:after{display:block;}
+.task-text{font-size:.9rem;color:var(--text);line-height:1.5;padding-top:2px;}
+.cb-container input:checked~.task-text{color:var(--muted);text-decoration:line-through;}
+
+.welcome-header{text-align:center;padding:36px 20px 28px;}
+.welcome-header h2{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;
+  color:var(--f5);margin-bottom:6px;
+}
+body.dark .welcome-header h2{color:var(--f2);}
+.welcome-header p{color:var(--muted);}
+
+.home-card{
+  background:var(--panel);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:24px;
+  margin-bottom:18px;border:1px solid var(--border);
+}
+.home-card h3{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.05rem;
+  margin-bottom:14px;color:var(--text);
+}
+.image-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
+.gallery-img{width:100%;height:130px;object-fit:cover;border-radius:var(--rs);cursor:pointer;transition:.22s;border:2px solid var(--border);}
+.gallery-img:hover{transform:scale(1.05);}
+
+/* ADMIN */
+.member-row{
+  padding:12px 14px;background:var(--panel2);
+  border:1.5px solid var(--border);border-radius:var(--rs);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+.btn-sm{
+  padding:7px 13px;border:none;border-radius:var(--rs);
+  font-weight:600;cursor:pointer;font-size:.79rem;transition:.16s;
+  font-family:"Barlow", sans-serif;
+}
+.btn-approve{background:var(--f4);color:#fff;}.btn-approve:hover{background:var(--f5);}
+.btn-reject{background:#fee8e8;color:#c33;}.btn-reject:hover{background:#fdd;}
+.btn-delete{background:#fee8e8;color:#c33;}.btn-delete:hover{background:#fdd;}
+.btn-view{background:var(--panel);color:var(--f5);border:1.5px solid var(--border)!important;}
+.btn-view:hover{border-color:var(--f4)!important;}
+.btn-teams{background:var(--panel);color:var(--text);border:1.5px solid var(--border)!important;}
+.status-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.status-active  {background:#e8f5e9;color:#2e7d32;}
+.status-pending {background:#fff3e0;color:#e65100;}
+.status-rejected{background:#ffebee;color:#c62828;}
+.input-add{
+  flex:1;padding:10px 13px;border:1.5px solid var(--border);
+  border-radius:var(--rs);background:var(--panel2);color:var(--text);
+  font-size:.9rem;outline:none;font-family:"Barlow", sans-serif;
+}
+.input-add:focus{border-color:var(--f4);}
+
+/* SETTINGS MODAL */
+.settings-modal{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:5000;
+  justify-content:center;align-items:center;backdrop-filter:blur(4px);
+}
+.settings-content{
+  background:var(--panel);padding:30px;border-radius:20px;
+  width:290px;box-shadow:var(--shadow-lg);position:relative;color:var(--text);
+}
+.settings-content h3{
+  font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.15rem;
+  margin-bottom:18px;color:var(--f5);
+}
+.close-settings{position:absolute;top:13px;right:16px;font-size:20px;cursor:pointer;color:var(--muted);}
+.settings-option{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--border);
+}
+.settings-option span{font-weight:500;font-size:.88rem;}
+.switch{position:relative;display:inline-block;width:44px;height:23px;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#ccc;border-radius:34px;cursor:pointer;transition:.3s;}
+.slider:before{
+  position:absolute;content:"";height:15px;width:15px;
+  left:4px;bottom:4px;background:#fff;border-radius:50%;transition:.3s;
+}
+input:checked+.slider{background:var(--f4);}
+input:checked+.slider:before{transform:translateX(21px);}
+.settings-btn-action{
+  width:100%;padding:11px;margin-top:10px;border:none;border-radius:var(--rs);
+  font-weight:600;cursor:pointer;transition:.2s;font-size:.88rem;font-family:"Barlow", sans-serif;
+}
+.btn-reset {background:#fee8e8;color:#c33;}
+.btn-logout{background:var(--f5);color:#fff;margin-top:6px;}
+
+/* PHOTO MODAL */
+#photoModal{
+  display:none;position:fixed;inset:0;z-index:6000;
+  background:rgba(0,0,0,.92);justify-content:center;align-items:center;
+  backdrop-filter:blur(6px);
+}
+#modalImg{max-width:90%;max-height:90%;border-radius:var(--rs);}
+#modalImg.zoomed{transform:scale(1.8);cursor:zoom-out;}
+.close-modal{position:absolute;top:18px;right:26px;color:#fff;font-size:34px;cursor:pointer;}
+
+.stopien-status-bar{
+  display:flex;align-items:center;gap:10px;margin:8px 0 4px;flex-wrap:wrap;
+}
+.stopien-badge{
+  padding:4px 12px;border-radius:20px;font-size:.78rem;font-weight:600;
+}
+.stopien-badge-locked{background:rgba(255,255,255,.08);color:var(--muted);}
+.stopien-badge-open{background:rgba(59,130,246,.15);color:#60a5fa;}
+.stopien-badge-done{background:rgba(34,197,94,.15);color:#4ade80;}
+.stopien-btn{
+  padding:6px 14px;border-radius:10px;border:none;cursor:pointer;
+  font-size:.8rem;font-weight:600;transition:.15s;
+}
+.stopien-btn-open{background:rgba(59,130,246,.2);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.stopien-btn-open:hover{background:rgba(59,130,246,.35);}
+.stopien-btn-close{background:rgba(34,197,94,.2);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.stopien-btn-close:hover{background:rgba(34,197,94,.35);}
+.stopien-btn-ask{background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+.stopien-btn-ask:hover{background:rgba(168,85,247,.35);}
+.stopien-btn-info{font-size:.75rem;color:var(--muted);padding:6px 0;}
+.stopien-progress-info{font-size:.75rem;color:var(--muted);margin-top:4px;}
+.sprawnosc-circle-icon{
+  width:72px;height:72px;border-radius:50%;object-fit:contain;
+  flex-shrink:0;filter:drop-shadow(0 2px 8px rgba(0,0,0,.2));
+  border:2px solid var(--border);background:var(--panel2);padding:4px;
+  transition:opacity .35s ease;
+}
+.board-wrap{padding:12px 8px;max-width:420px;margin:0 auto;}
+.board-header{text-align:center;padding:16px 0 8px;}
+.sleeve-bar{
+  background:var(--panel);border-radius:16px;padding:12px 10px;
+  margin-bottom:14px;border:1.5px solid var(--border);
+}
+.sleeve-bar-2{ border-color:var(--amber);box-shadow:0 0 0 1px rgba(255,180,0,.12); }
+.sleeve-bar-locked{
+  background:var(--panel);border-radius:16px;padding:20px;
+  margin-bottom:16px;border:1.5px dashed rgba(255,255,255,.1);
+  display:flex;align-items:center;gap:12px;opacity:.5;
+}
+.sleeve-lock-icon{font-size:1.4rem;}
+.sleeve-lock-text{color:var(--muted);font-size:.82rem;}
+.sleeve-bar-label{
+  font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--muted);margin-bottom:10px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.sleeve-bar-count{
+  background:var(--panel2);border-radius:8px;padding:2px 8px;
+  font-size:.7rem;color:var(--text);letter-spacing:0;font-weight:600;
+}
+.sleeve-hint{
+  font-size:.72rem;color:var(--muted);text-align:center;
+  margin-top:8px;opacity:.7;
+}
+.sleeve-grid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:8px;
+}
+.sleeve-grid .board-slot{
+  width:100%;aspect-ratio:1;font-size:.45rem;
+}
+.sleeve-grid .board-slot-img{width:90%;height:90%;}
+.sleeve-grid .board-slot-stars{font-size:.42rem;padding:1px 3px;}
+.sleeve-grid .board-slot-plus{font-size:1.1rem;}
+.board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 8px;max-width:340px;margin:0 auto;}
+.board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 8px;max-width:340px;margin:0 auto;}
+.board-slot{
+  aspect-ratio:1;border-radius:50%;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:.2s;position:relative;overflow:hidden;
+}
+.board-slot-empty{
+  border:2.5px dashed rgba(255,255,255,.15);
+  background:rgba(255,255,255,.03);
+}
+.board-slot-empty:hover{border-color:var(--amber);background:rgba(255,180,0,.06);}
+.board-slot-plus{font-size:1.6rem;color:rgba(255,255,255,.2);}
+.board-slot-locked{
+  border:2px dashed rgba(255,255,255,.08);
+  background:rgba(255,255,255,.02);cursor:default;
+}
+.board-slot-filled{
+  background:var(--panel2);border:2px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.18);
+}
+.board-slot-filled:hover{transform:scale(1.05);box-shadow:0 6px 20px rgba(0,0,0,.25);}
+.board-slot-img{width:88%;height:88%;object-fit:contain;border-radius:50%;}
+.board-slot-stars{
+  position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+  font-size:.5rem;color:var(--amber);letter-spacing:1px;
+  background:rgba(0,0,0,.45);padding:1px 5px;border-radius:8px;
+}
+.board-slot-name{
+  display:none;position:absolute;inset:0;background:rgba(0,0,0,.7);
+  font-size:.55rem;color:#fff;text-align:center;padding:4px;
+  align-items:center;justify-content:center;border-radius:50%;
+}
+.board-slot-filled:hover .board-slot-name{display:flex;}
+.board-picker-item{
+  cursor:pointer;padding:6px;border-radius:10px;
+  border:1.5px solid var(--border);background:var(--panel2);
+  transition:.15s;
+}
+.board-picker-item:hover{border-color:var(--amber);background:rgba(255,180,0,.08);}
+.board-picker-item.on-board{opacity:.4;cursor:default;}
+
+
+/* ══ MSQ — Kwadraciki stopni w Mój Mundur ══ */
+.mundur-wrap{padding:10px 8px;max-width:420px;margin:0 auto;}
+.mundur-title{text-align:center;font-family:var(--ff-display);margin-bottom:14px;font-size:1.25rem;}
+.mundur-sub{text-align:center;color:var(--muted);font-size:.75rem;margin:6px 0;}
+.msq-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:18px;}
+.msq-box{
+  aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  padding:2px 2px 13px;box-sizing:border-box;transition:all .3s;
+}
+.msq-ghost{background:rgba(255,255,255,.03);border:1.5px dashed rgba(255,255,255,.12);}
+.msq-open{
+  border:2px solid var(--sc);
+  background:rgba(0,0,0,.01);
+  box-shadow:0 0 8px var(--sc-a,rgba(100,100,255,.3));
+}
+.msq-done{
+  border:2.5px solid var(--sc);
+  background:rgba(0,0,0,.01);
+  box-shadow:0 0 14px var(--sc-a,rgba(100,100,255,.4));
+}
+.msq-lbl{
+  position:absolute;bottom:1px;left:0;right:0;
+  font-size:.36rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.3px;text-align:center;line-height:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px;
+}
+.msq-ghost .msq-lbl{color:rgba(255,255,255,.18);}
+.msq-open  .msq-lbl,.msq-done .msq-lbl{color:var(--sc);}
+.msq-mainimg{
+  width:calc(100% - 2px);
+  height:calc(100% - 14px);
+  object-fit:contain;
+  display:block;
+  margin:0 auto;
+}
+/* ══ MUNDUR CSS ══ */
+.mundur-wrap{padding:16px 12px;max-width:380px;margin:0 auto;}
+.mundur-title{text-align:center;font-family:var(--ff-display);font-size:1.3rem;margin-bottom:18px;}
+
+/* 2×3 grid kwadratów stopni */
+.msq-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  margin-bottom:22px;
+}
+.msq-sq{
+  aspect-ratio:1;border-radius:12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding:4px 4px 18px;box-sizing:border-box;
+}
+.msq-sq-ghost{
+  background:rgba(255,255,255,.03);
+  border:2px dashed rgba(255,255,255,.12);
+}
+.msq-sq-open{
+  border:2.5px solid var(--sc);
+  background:color-mix(in srgb,var(--sc) 10%,transparent);
+  box-shadow:0 0 12px color-mix(in srgb,var(--sc) 25%,transparent);
+}
+.msq-sq-done{
+  border:2.5px solid var(--sc);
+  background:color-mix(in srgb,var(--sc) 15%,transparent);
+  box-shadow:0 0 16px color-mix(in srgb,var(--sc) 35%,transparent);
+}
+.msq-sq-img{
+  width:80%;height:80%;object-fit:contain;
+}
+.msq-sq-lbl{
+  position:absolute;bottom:3px;left:0;right:0;
+  font-size:.45rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.5px;text-align:center;
+  color:rgba(255,255,255,.2);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;padding:0 3px;
+}
+.msq-sq-ghost .msq-sq-lbl{color:rgba(255,255,255,.18);}
+
+/* Kółka sprawności */
+.msq-circles{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+}
+.msq-circle{
+  aspect-ratio:1;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:.15s;
+}
+.msq-circle:active{transform:scale(.93);}
+.msq-circle-empty{
+  border:2.5px solid var(--amber);
+  background:rgba(255,180,0,.04);
+}
+.msq-circle-plus{
+  font-size:1.6rem;color:var(--amber);line-height:1;font-weight:300;
+}
+.msq-circle-filled{
+  border:2px solid var(--border);
+  background:var(--panel);
+}
+.msq-circle-img{width:80%;height:80%;object-fit:contain;border-radius:50%;}
+.msq-circle-name{
+  position:absolute;bottom:2px;left:0;right:0;
+  font-size:.38rem;text-align:center;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 3px;
+}
+.msq-circle-stars{
+  position:absolute;top:2px;right:4px;
+  font-size:.5rem;color:var(--amber);
+}
+.msq-circle-locked{
+  border:2px dashed rgba(255,255,255,.1);
+  background:rgba(255,255,255,.02);
+  font-size:1rem;opacity:.3;cursor:default;
+}
+
+/* Board picker modal */
+.board-picker-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  display:flex;align-items:flex-end;justify-content:center;z-index:999;
+}
+.board-picker-modal{
+  background:var(--panel);border-radius:20px 20px 0 0;
+  padding:20px 16px;width:100%;max-width:480px;
+  max-height:85vh;overflow-y:auto;
+}
+.board-pick-item{
+  background:var(--panel2);border:1.5px solid var(--border);
+  border-radius:12px;padding:10px 8px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:.15s;text-align:center;
+}
+.board-pick-item:active{transform:scale(.95);}
+.board-pick-img{width:52px;height:52px;border-radius:50%;object-fit:contain;}
+.board-pick-img-placeholder{width:52px;height:52px;border-radius:50%;background:var(--panel);border:1.5px dashed var(--border);}
+.board-pick-name{font-size:.72rem;font-weight:600;line-height:1.2;color:var(--text);}
+/* ══ endmundur ══ */
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginOverlay">
+  <div class="login-box" id="panelLogin">
+    <h2>Czuwaj!</h2>
+    <input type="text" id="loginUsername" placeholder="Login" onkeydown="if(event.key==='Enter')handleLogin()">
+    <input type="password" id="loginPassword" placeholder="Haslo" onkeydown="if(event.key==='Enter')handleLogin()">
+    <button class="btn-main" onclick="handleLogin()">Zaloguj sie</button>
+    <button class="btn-link" onclick="showPanel('register')">Nie masz konta? Zarejestruj sie</button>
+    <p class="login-msg" id="loginMsg"></p>
+  </div>
+  <div class="login-box" id="panelRegister" style="display:none">
+    <h2>Dolacz!</h2>
+    <input type="text"     id="regUsername"  placeholder="Login (min. 3 znaki)">
+    <input type="text"     id="regName"      placeholder="Pseudonim / Imie">
+    <input type="password" id="regPassword"  placeholder="Haslo (min. 6 znakow)">
+    <input type="password" id="regPassword2" placeholder="Powtorz haslo">
+    <select id="regTeam" style="display:none"><option value="">-- Wybierz druzyne --</option></select>
+    <button class="btn-main" onclick="goToTeamPick()">Dalej &#8594;</button>
+    <button class="btn-link" onclick="showPanel('login')">Masz konto? Zaloguj sie</button>
+    <p class="login-msg" id="registerMsg"></p>
+  </div>
+</div>
+
+<!-- ══ WYBIERZ JEDNOSTKĘ ══ -->
+<div id="teamPickOverlay">
+  <div class="team-pick-box">
+    <div class="team-pick-title">Wybierz<br>Jednostkę</div>
+    <div class="team-pick-list" id="teamPickList">
+      <!-- generowane przez JS -->
+    </div>
+    <button class="team-pick-confirm" id="teamPickConfirm" onclick="submitRegisterWithTeam()">
+      Zarejestruj sie &#10003;
+    </button>
+    <br>
+    <button class="team-pick-back" onclick="backFromTeamPick()">&#8592; Wróć</button>
+  </div>
+</div>
+
+<!-- ══ OCZEKIWANIE ══ -->
+<div id="pendingScreen">
+  <div class="pending-icon">&#129777;</div>
+  <div class="pending-title">Poczekaj na zatwierdzenie<br>przez drużynowego</div>
+  <div class="pending-sub">Twoje konto zostało wysłane do weryfikacji. Drużynowy musi je zatwierdzić.</div>
+  <button class="pending-logout" onclick="handleLogout()">Wyloguj sie</button>
+</div>
+
+
+<!-- ══ BOARD PICKER OVERLAY ══ -->
+<div id="boardPickerOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5500;
+  justify-content:center;align-items:center;backdrop-filter:blur(4px);padding:16px">
+</div>
+
+<!-- ══ MODAL: POPROŚ O SPRAWNOŚĆ ══ -->
+<div id="askModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5500;justify-content:center;align-items:center;backdrop-filter:blur(4px);">
+  <div style="background:var(--panel);padding:24px;border-radius:20px;width:340px;max-height:85vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;">
+    <span onclick="closeAskModal()" style="position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;color:var(--muted)">&times;</span>
+    <h3 style="font-family:'Franklin Gothic Book','Franklin Gothic Medium',Arial Narrow,sans-serif;margin-bottom:4px;color:var(--f5)">&#128226; Popros o zdanie</h3>
+    <p style="color:var(--muted);font-size:.83rem;margin-bottom:14px" id="askModalItemName"></p>
+
+    <!-- Krok 1: wybierz podpunkt -->
+    <div id="askStep1">
+      <p style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">1. Wybierz podpunkt:</p>
+      <div id="askTaskList" style="display:grid;gap:6px;margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Krok 2: wybierz osobę (ukryty na start) -->
+    <div id="askStep2" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <button onclick="backToTaskPick()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem">&#8592;</button>
+        <div>
+          <p style="font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:0">2. Wybierz osobe:</p>
+          <p style="font-size:.8rem;color:var(--f4);margin:2px 0 0" id="askSelectedTask"></p>
+        </div>
+      </div>
+      <div id="askKadraList" style="display:grid;gap:8px;margin-bottom:14px"></div>
+    </div>
+
+    <p style="color:var(--muted);font-size:.78rem;text-align:center;margin:0" id="askModalStatus"></p>
+  </div>
+</div>
+<!-- ══ SETTINGS MODAL ══ -->
+<div id="settingsModal" class="settings-modal" onclick="closeSettings(event)">
+  <div class="settings-content">
+    <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
+    <h3>Ustawienia</h3>
+    <div class="settings-option">
+      <span>Tryb ciemny</span>
+      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
+    </div>
+    <div class="settings-option">
+      <span>Duzy tekst</span>
+      <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
+    </div>
+    <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
+    <button class="settings-btn-action btn-reset"  onclick="resetProgress()">&#9888; Zresetuj progres</button>
+    <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
+  </div>
+</div>
+
+<!-- ══ PHOTO MODAL ══ -->
+<div id="photoModal" onclick="closeModal()">
+  <span class="close-modal">&times;</span>
+  <img id="modalImg" src="" alt="" onclick="toggleZoom(event)">
+</div>
+
+<!-- ══ SIDEBAR OVERLAY ══ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="appShell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand" onclick="bnavClick('book')">
+      LESNA SZKOLKA
+      <small>Ksiazeczka Harcerska</small>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="app-body">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-search">
+        <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
+      </div>
+      <ul class="nav-list" id="navList"></ul>
+    </nav>
+
+    <!-- CONTENT -->
+    <div class="content-scroll">
+      <div class="content-wrap" id="contentArea"></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV — 4 przyciski jak na screenshocie -->
+  <nav class="bottom-nav">
+    <button class="bnav-btn" id="bnav-book" onclick="bnavClick('book')">
+      <div class="bnav-icon">&#128214;</div>
+      <span class="bnav-label">Ksiazeczka</span>
+    </button>
+    <button class="bnav-btn" id="bnav-board" onclick="bnavClick('board')">
+      <div class="bnav-icon">🪡</div>
+      <span class="bnav-label">Mój Mundur</span>
+    </button>
+    <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
+      <div class="bnav-icon">&#9881;</div>
+      <span class="bnav-label">Ustawienia</span>
+    </button>
+  </nav>
+
+</div>
+
+<script src="stopnie.js"></script>
+<script src="sprawnosci.js"></script>
+<script>
+// Patch: dodaj circleVariants do db po załadowaniu sprawnosci.js
+var _circleVariants = {"aktywista_aktywistka": 4, "altruista_altruistka": 3, "ambasador_ambasadorka_zastepu_druzyny_lesnej_szkolki": 4, "analityk_zywieniowy_analityczka_zywieniowa": 3, "antropocen": 4, "aprowizator_aprowizatorka": 4, "azymut": 3, "b_p": 2, "badacz_badaczka_dziejow_nazwa_miejscowosci": 4, "badacz_badaczka_dziejow_zastepu_druzyny_lesnej_szkolki": 3, "badacz_badaczka_gdyni_gdanska_sopotu": 4, "badacz_badaczka_historii_architektury": 4, "badacz_badaczka_kaszub": 4, "bajt": 3, "bedeker": 4, "biegacz_biegaczka": 3, "botanik_botaniczka": 4, "bourdain": 3, "bratnie_slowo": 4, "bumerang": 4, "busola": 3, "campingaz": 4, "ceramik_ceramiczka": 3, "checz": 4, "chrabaszcz": 3, "coach_coachka": 4, "cukiernik_cukierniczka": 4, "czarna_stopa": 4, "czarny_wilk": 4, "czujny_czujna": 4, "czytelnik_czytelniczka": 2, "dendrolog_dendrolozka": 3, "dietetyk_dietetyczka": 4, "drogowskaz": 1, "dunikowski": 3, "dyplomata_dyplomatka": 4, "dyskutant_dyskutantka": 3, "dzialacz_lokalny_dzialaczka_lokalna": 4, "dziewanna": 4, "dziewiarz_dziewiarka": 3, "enigma": 4, "epos": 4, "etnograf_etnografka": 4, "europejczyk_europejka": 4, "farmer_farmerka": 3, "filar": 3, "filmoznawca_filmoznawczyni": 3, "flagowy_flagowa": 4, "florysta_florystka": 3, "fotograf_fotografka": 3, "frycz_modrzewski": 4, "genealog_genealozka": 4, "geolog_geolozka": 2, "gorolaz_gorolazka": 3, "gospodarz_gospodyni": 3, "gracz_zespolowy": 4, "grafik_komputerowy_graficzka_komputerowa": 3, "grotolaz_grotolazka": 4, "gryf": 4, "grzybiarz_grzybiarka": 4, "hafciarz_hafciarka": 3, "harcografik_harcograficzka": 4, "harcownik_harcowniczka": 3, "herbarz": 3, "higienista_higienistka": 2, "historyk_historyczka": 3, "honorowy_krwiodawca_honorowa_krwiodawczyni": 3, "infografik_infograficzka": 2, "inicjator_inicjatorka": 4, "internista_internistka": 2, "introspektor_introspektorka": 3, "iskra": 2, "jaskier": 4, "jezdziec": 3, "jodelka": 3, "k6": 2, "kaletnik_kaletniczka": 3, "kaligraf_kaligrafka": 3, "kangurka": 4, "karski": 4, "kartograf_kartografka": 3, "kasjopeja": 3, "kolarz_kolarka": 4, "korespondent_korespondentka": 1, "korona_gor_polski": 2, "kortyzol": 4, "korzeniowski": 3, "kosycarz": 3, "krasomowca_krasomowczyni": 3, "krawiec_krawcowa": 3, "kronikarz_kronikarka_zastepu_druzyny_lesnej_szkolki": 4, "krytyk_krytyczka_literatury_harcerskiej": 3, "kucharz_domowy_kucharka_domowa": 3, "kucharz_polowy_kucharka_polowa": 4, "kuchcik": 3, "kukuczka": 2, "kurator_kuratorka": 3, "kustosz_kustoszka": 4, "lampion": 3, "lupa": 4, "lyzwiarz_lyzwiarka": 3, "magazynier_magazynierka": 4, "malarz_malarka": 3, "manitou": 4, "marzyciel_marzycielka": 4, "matejko": 4, "mazurek": 4, "mediator_mediatorka": 4, "meloman_melomanka": 4, "milczek_szara_lilijka": 3, "milosnik_milosniczka_parkow_narodowych": 4, "modelarz_modelarka": 3, "mors": 3, "morszczyn": 2, "mowca_mowczyni": 3, "muzykant_muzykantka": 4, "nawigator_nawigatorka": 2, "necel": 4, "ns": 4, "obserwator_obserwatorka": 4, "obywatel_obywatelka": 3, "ochotnik_ochotniczka": 4, "ognik": 2, "ognik_zimowy": 2, "okrasa": 3, "onc": 3, "opiekun_medyczny_opiekunka_medyczna": 3, "ornitolog_ornitolozka": 4, "otwarty_otwarta": 3, "piekarz_piekarka": 3, "piesza_trzydziestka_piecdziesiatka_setka": 3, "pionier_pionierka": 4, "planer": 3, "plecionkarz_plecionkarka": 3, "plywak_plywaczka": 4, "podzialka": 3, "polarnik_polarniczka": 3, "pomocna_dlon": 3, "postument": 3, "procent": 3, "przewodnik_przewodniczka_po_historii_zastepu_druzyny_lesnej_szkolki": 4, "przyjaciel_przyjaciolka_zwierzat": 3, "quo_vadis": 3, "ratownik_ratowniczka": 3, "reporter_reporterka": 4, "rolkarz_rolkarka": 3, "rolnik_rolniczka": 3, "rowerowa_piecdziesiatka_setka_dwusetka": 3, "rowerzysta_rowerzystka": 3, "rysownik_rysowniczka": 3, "rzecznik_rzeczniczka_zastepu_druzyny_lesnej_szkolki": 4, "rzezbiarz_rzezbiarka": 3, "sanitariusz_sanitariuszka": 2, "secola": 3, "silacz_silaczka": 3, "skaut_skautka": 2, "skojka": 3, "skryba": 4, "slowianin_slowianka": 3, "sluchacz_sluchaczka": 3, "sniegolaz_sniegolazka": 3, "snycerz_snycerka": 4, "socjolog_socjolozka": 3, "sokole_oko": 4, "spiewak_spiewaczka": 3, "spolecznik_spoleczniczka": 4, "stolarz_stolarka": 3, "strazak_strazaczka": 3, "straznik_strazniczka_pamieci": 3, "stylista_stylistka": 2, "swiadomy_konsument_swiadoma_konsumentka": 4, "swietlik": 2, "swiety_jerzy": 2, "sygnalista_sygnalistka": 2, "synoptyk_synoptyczka": 3, "szpajza": 4, "szydelko": 3, "tabata": 3, "tales_z_miletu": 3, "tancerz_tancerka": 3, "technik_obozowy_techniczka_obozowa": 4, "tkacz_tkaczka": 4, "topograf_topografka": 3, "traper_traperka": 2, "tropiciel_tropicielka": 4, "trzy_piora": 2, "trzydziestka_szostka": 2, "upcycling": 2, "wajdelota": 3, "wartownik_wartowniczka": 4, "watchdog": 3, "wedkarz_wedkarka": 3, "wedzarz_wedzarka": 3, "wele_wetka": 4, "wesziwoczka": 4, "wideograf_wideografka": 3, "wloczykij": 2, "wodnik": 4, "woloszanski": 2, "wspinacz_wspinaczka": 4, "wyblinka": 4, "zacios": 4, "zawisza_czarny": 2, "zbrojmistrz_zbrojmistrzyni": 4, "zdobnik_obozowy_zdobniczka_obozowa": 4, "zdobnik_zdobniczka": 4, "zeglarz_zeglarka": 4, "zielarz_zielarka": 4, "znachor_znachorka": 3, "znawca_znawczyni_als": 3, "znawca_znawczyni_lokalnej_kultury": 4, "znawca_znawczyni_musztry": 3, "zwiadowca_zwiadowczyni": 3};
+document.addEventListener('DOMContentLoaded', function() {
+    // Będzie wywołane po window.onload przez db initialization
+});
+// Funkcja do patchowania - wywołana w window.onload po zbudowaniu db
+function patchDbCircleVariants() {
+    if (typeof db === 'undefined') return;
+    db.forEach(function(item) {
+        if (_circleVariants[item.id]) {
+            item.circleVariants = _circleVariants[item.id];
+        }
+    });
+}
+</script>
+<script>
+// ================================================================
+// KONFIGURACJA
+// ================================================================
+const API = 'https://harcerze-backend.onrender.com/api';
+
+// ================================================================
+// HIERARCHIA RAN
+// ================================================================
+var HIERARCHY = ['superadmin','ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy','user'];
+var ROLE_LABELS = {
+    'superadmin':  '&#128081; Super Admin',
+    'ksis':        '&#11088; Ksis',
+    'instruktor':  '&#127775; Instruktor',
+    'druzynowy':   '&#128210; Druzynowy',
+    'zastepowy':   '&#128203; Zastepowy',
+    'podzastepowy':'&#128196; Podzastepowy',
+    'user':        '&#128100; Harcerz'
+};
+var ROLE_COLORS = {
+    'superadmin': '#7b1fa2',
+    'ksis':       '#c62828',
+    'instruktor': '#e65100',
+    'druzynowy':  '#1565c0',
+    'zastepowy':    '#2e7d32',
+    'podzastepowy': '#558b2f',
+    'user':         '#546e7a'
+};
+function rankIndex(role) {
+    var i = HIERARCHY.indexOf(role);
+    return i === -1 ? 999 : i;
+}
+function canManage(myRole, targetRole) {
+    return myRole === 'superadmin' || rankIndex(myRole) < rankIndex(targetRole);
+}
+function availableRoles(myRole) {
+    if (myRole === 'superadmin')  return ['ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy','user'];
+    if (myRole === 'druzynowy')   return ['przyboczny','zastepowy','podzastepowy','user'];
+    if (myRole === 'przyboczny')  return ['zastepowy','podzastepowy','user'];
+    return [];
+}
+
+// ================================================================
+// ZMIENNE GLOBALNE
+// ================================================================
+let db = [];
+let currentUser       = null;
+let authToken         = null;
+let currentViewUserId = null;
+let cachedProgress    = {};
+
+// ================================================================
+// INICJALIZACJA
+// ================================================================
+window.onload = async () => {
+    loadSettings();
+    db = [
+        ...(typeof stopnieData    !== 'undefined' ? stopnieData    : []),
+        ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
+    ];
+
+    patchDbCircleVariants(); // dodaj circleVariants do każdej sprawności
+    const savedToken    = localStorage.getItem('hk_token');
+    const savedUser     = localStorage.getItem('hk_user');
+    const savedProgress = localStorage.getItem('hk_progress');
+
+    if (savedToken && savedUser) {
+        authToken   = savedToken;
+        currentUser = JSON.parse(savedUser);
+        // Zaladuj cache progress od razu z localStorage
+        if (savedProgress) {
+            try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
+        }
+        // Inicjalizuj od razu (nie czekaj na serwer - działa offline/cold start)
+        initAppAfterLogin();
+        // W tle sprawdź token - tylko gdy serwer odpowie 401 to wyloguj
+        apiFetch('/my-team').then(function(pingRes) {
+            if (pingRes.status === 401 || pingRes.status === 403) {
+                authToken = null; currentUser = null;
+                localStorage.removeItem('hk_token');
+                localStorage.removeItem('hk_user');
+                localStorage.removeItem('hk_progress');
+                loadTeams().then(function() { showPanel('login'); });
+            }
+            // status 0 = serwer spi (Render cold start) - nie wylogowuj
+        });
+    } else {
+        await loadTeams();
+        showPanel('login');
+    }
+};
+
+// ================================================================
+// PANELE LOGOWANIA
+// ================================================================
+function showPanel(name) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('panelLogin').style.display    = name === 'login'    ? 'block' : 'none';
+    document.getElementById('panelRegister').style.display = name === 'register' ? 'block' : 'none';
+    clearMsg('loginMsg');
+    clearMsg('registerMsg');
+}
+function showMsg(id, text, type) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'login-msg ' + (type || 'error');
+}
+function clearMsg(id) {
+    var el = document.getElementById(id);
+    if (el) { el.textContent = ''; el.className = 'login-msg'; }
+}
+
+// ================================================================
+// FETCH Z TOKENEM JWT
+// ================================================================
+async function apiFetch(url, options) {
+    options = options || {};
+    var headers = { 'Content-Type': 'application/json' };
+    if (options.headers) Object.assign(headers, options.headers);
+    if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+    try {
+        var res  = await fetch(API + url, Object.assign({}, options, { headers: headers }));
+        var data = await res.json();
+        // Jesli 401 - token wygasl, odswierz token lub wyloguj
+        if (res.status === 401) {
+            console.warn('apiFetch 401 na:', url);
+        }
+        return { ok: res.ok, status: res.status, data: data };
+    } catch (e) {
+        console.warn('apiFetch error:', url, e.message);
+        return { ok: false, status: 0, data: { error: 'Blad polaczenia z serwerem' } };
+    }
+}
+
+// ================================================================
+// LADOWANIE DRUZYN DO SELECTA
+// ================================================================
+async function loadTeams() {
+    var result = await apiFetch('/teams');
+    if (!result.ok) return;
+    var select = document.getElementById('regTeam');
+    select.innerHTML = '<option value="">-- Wybierz druzyne --</option>';
+    result.data.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t.teamId;
+        opt.textContent = t.name;
+        select.appendChild(opt);
+    });
+}
+
+// ================================================================
+// LOGOWANIE
+// ================================================================
+async function handleLogin() {
+    var username = document.getElementById('loginUsername').value.trim();
+    var password = document.getElementById('loginPassword').value;
+    clearMsg('loginMsg');
+    if (!username || !password) { showMsg('loginMsg', 'Podaj login i haslo.'); return; }
+    showMsg('loginMsg', '&#128337; Laczenie z serwerem...', 'info');
+
+    var result = await apiFetch('/login', { method: 'POST', body: JSON.stringify({ username: username, password: password }) });
+    if (!result.ok) { showMsg('loginMsg', result.data.message || 'Blad logowania.'); return; }
+
+    authToken   = result.data.token;
+    currentUser = result.data.user;
+    localStorage.setItem('hk_token', authToken);
+    localStorage.setItem('hk_user', JSON.stringify(currentUser));
+    document.getElementById('loginOverlay').style.display = 'none';
+    initAppAfterLogin();
+}
+
+// ================================================================
+// REJESTRACJA
+// ================================================================
+async function handleRegister() {
+    // Przekieruj do nowego flow z wyborem druzyny
+    goToTeamPick();
+    return;
+}
+async function _handleRegisterOriginal() {
+    var username  = document.getElementById('regUsername').value.trim().toLowerCase();
+    var name      = document.getElementById('regName').value.trim();
+    var password  = document.getElementById('regPassword').value;
+    var password2 = document.getElementById('regPassword2').value;
+    var teamId    = document.getElementById('regTeam').value;
+    clearMsg('registerMsg');
+
+    if (username.length < 3)              { showMsg('registerMsg', 'Login min. 3 znaki.'); return; }
+    if (!/^[a-z0-9_]+$/.test(username))  { showMsg('registerMsg', 'Login: tylko litery, cyfry, _'); return; }
+    if (!name)                            { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
+    if (password.length < 6)             { showMsg('registerMsg', 'Haslo min. 6 znakow.'); return; }
+    if (password !== password2)           { showMsg('registerMsg', 'Hasla nie sa identyczne.'); return; }
+    if (!teamId)                          { showMsg('registerMsg', 'Wybierz druzyne.'); return; }
+
+    var result = await apiFetch('/register', { method: 'POST', body: JSON.stringify({ username: username, password: password, name: name, teamId: teamId }) });
+    if (!result.ok) { showMsg('registerMsg', result.data.message || 'Blad rejestracji.'); return; }
+
+    ['regUsername','regName','regPassword','regPassword2'].forEach(function(id) { document.getElementById(id).value = ''; });
+    document.getElementById('regTeam').value = '';
+    showMsg('registerMsg', result.data.message, 'success');
+}
+
+// ================================================================
+// WYLOGOWANIE
+// ================================================================
+function handleLogout() {
+    try { localStorage.removeItem('hk_progress'); } catch(e) {}
+    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen();
+    localStorage.removeItem('hk_token');
+    localStorage.removeItem('hk_user');
+    toggleSettingsModal(false);
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '';
+    loadTeams().then(function() { showPanel('login'); });
+}
+
+// ================================================================
+// INICJALIZACJA PO ZALOGOWANIU
+// ================================================================
+function initAppAfterLogin() {
+    currentViewUserId = currentUser.id;
+    window._currentViewUserRole = currentUser.role;
+    window._currentViewUserName = currentUser.name;
+    // Panele dla zastepowy/podzastepowy — traktuj jak admin (maja panel)
+    if (!currentUser._originalRole) currentUser._originalRole = currentUser.role;
+    document.getElementById('appShell').style.display = 'flex';
+
+    // Pobierz dane druzyny dla kazdego uzytkownika
+    apiFetch('/my-team').then(function(r) {
+        if (r.ok && r.data) {
+            if (r.data.teamName) currentUser.teamName = r.data.teamName;
+            if (r.data.teamId)   currentUser.teamId   = r.data.teamId;
+            if (r.data._id)      currentUser.teamId   = r.data._id;
+        }
+        updateBnavTeam();
+    });
+
+    if (currentUser.status === 'pending' || currentUser.status === 'rejected') {
+        showPendingScreen();
+        return;
+    }
+
+    // Renderuj natychmiast z cachedProgress (juz zaladowanym z localStorage)
+    if (currentUser.role !== 'user') {
+        bnavSetActive('book');
+        showSidebarArea();
+        renderAdminDashboard();
+    } else {
+        bnavSetActive('book');
+        goHome();
+    }
+    renderSidebar(); // ikony od razu z localStorage cache
+
+    // Potem zaktualizuj progress z serwera w tle
+    apiFetch('/progress/' + currentUser.id).then(function(r) {
+        if (!r.ok) return;
+        var fresh = r.data || {};
+        cachedProgress = fresh;
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+        updateUIStats(); // odswierz procenty i ikony
+        // Odswierz aktualnie otwarty content
+        var activeNav = document.querySelector('.nav-item.active');
+        if (activeNav) {
+            var activeId = activeNav.id.replace('nav-item-','');
+            if (activeId) loadContent(activeId);
+        }
+    });
+}
+
+// ================================================================
+// TOGGLE ZADANIA
+// ================================================================
+
+function refreshCircleIcon(itemId) {
+    var item = db.find(function(x){ return x.id === itemId; });
+    if (!item) return;
+
+    // Upewnij sie ze item ma circleVariants (patch jesli brak)
+    if (!item.circleVariants && _circleVariants && _circleVariants[item.id]) {
+        item.circleVariants = _circleVariants[item.id];
+    }
+    if (!item.circleVariants) return;
+
+    var opacity = getSprawOpacity(item, cachedProgress);
+    var variant = getSprawVariant(item, cachedProgress);
+    var imgSrc  = getCircleImgForProgress(item, cachedProgress);
+    var level   = getSprawLevel(item, cachedProgress);
+    var s       = getSprawDone(item, cachedProgress);
+
+    // ── Sidebar ──
+    var navEl = document.getElementById('nav-item-' + itemId);
+    if (navEl) {
+        var navImg   = navEl.querySelector('.nav-circle-img');
+        var navEmpty = navEl.querySelector('.nav-circle-empty');
+        if (navImg) {
+            navImg.style.transition = 'opacity .3s';
+            navImg.style.opacity    = String(opacity);
+            if (navImg.getAttribute('data-src') !== imgSrc) {
+                navImg.setAttribute('data-src', imgSrc);
+                navImg.src = imgSrc;
+            }
+        } else if (navEmpty) {
+            var img2 = document.createElement('img');
+            img2.className = 'nav-circle-img';
+            img2.src = imgSrc;
+            img2.setAttribute('data-src', imgSrc);
+            img2.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s;width:28px;height:28px;border-radius:50%;object-fit:contain;margin-right:6px;flex-shrink:0;';
+            navEmpty.parentNode.replaceChild(img2, navEmpty);
+        }
+    }
+
+    // ── Header ikona ──
+    var headerImg = document.querySelector('.sprawnosc-circle-icon[data-item="' + itemId + '"]');
+    if (headerImg) {
+        var newSrc = imgSrc;
+        if (headerImg.getAttribute('data-src') !== newSrc) {
+            headerImg.style.transition = 'opacity .15s';
+            headerImg.style.opacity = '0.05';
+            headerImg.setAttribute('data-src', newSrc);
+            setTimeout(function() {
+                headerImg.src = newSrc;
+                headerImg.style.transition = 'opacity .35s';
+                headerImg.style.opacity = String(opacity);
+            }, 150);
+        } else {
+            headerImg.style.transition = 'opacity .35s';
+            headerImg.style.opacity = String(opacity);
+        }
+    }
+
+    // ── Info pod tytułem ──
+    var infoEl = document.querySelector('.sprawnosc-header-info');
+    if (infoEl) {
+        if (s.done > 0) {
+            infoEl.innerHTML = '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span>'
+                + ' · zdjęcie <strong>#' + variant + '</strong>'
+                + ' · <span style="color:var(--amber)">' + '★'.repeat(level) + '</span>';
+        } else {
+            infoEl.textContent = 'Nie zdana — ' + s.total + ' zadań do zrobienia';
+        }
+    }
+
+    // ── Gwiazdki badge ──
+    var badge = document.querySelector('.sprawnosc-stars-badge');
+    if (badge) {
+        badge.textContent   = level > 0 ? '★'.repeat(level) : '';
+        badge.style.display = level > 0 ? '' : 'none';
+    }
+}
+
+async function toggleTask(taskId, itemId) {
+    // Kto ogląda czyje sprawnosci?
+    var viewingOwnId  = (currentViewUserId === currentUser.id);
+    var myRole        = currentUser.role;
+    var myRank        = rankIndex(myRole);
+    var targetRole    = window._currentViewUserRole || (viewingOwnId ? myRole : 'user');
+    var targetRank    = rankIndex(targetRole);
+
+    // Zasady:
+    // 1. Zwykły 'user' nigdy nie może zaznaczać — tylko podgląd
+    // 2. Kadra może zaznaczać TYLKO osobom NIŻEJ w hierarchii (nie sobie, nie wyżej)
+    // 3. Superadmin może wszystkim
+    // Kto moze co:
+    // superadmin     - wszystko
+    // ksis/instruktor/druzynowy - mogą sobie zdawać I osobom niżej
+    // zastepowy/podzastepowy - TYLKO osobom niżej (nie sobie)
+    // user           - nic
+    var SELF_ALLOWED = ['superadmin','ksis','instruktor','druzynowy'];
+    var canToggle = false;
+    if (myRole === 'superadmin') {
+        canToggle = true;
+    } else if (viewingOwnId && SELF_ALLOWED.includes(myRole)) {
+        canToggle = true;
+    } else if (!viewingOwnId && myRole !== 'user' && myRank < targetRank) {
+        canToggle = true;
+    }
+
+    if (!canToggle) {
+        // Przywróć checkbox do poprzedniego stanu
+        document.querySelectorAll('.cb-container input').forEach(function(inp) {
+            if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
+        });
+        return;
+    }
+
+    var isChecked = !cachedProgress[taskId];
+    if (isChecked) cachedProgress[taskId] = true;
+    else           delete cachedProgress[taskId];
+    updateItemProgress(itemId);
+    updateUIStats();
+    refreshCircleIcon(itemId); // odswież ikone w czasie rzeczywistym
+
+    // Zapisz do localStorage od razu (cache na wypadek odswiezenia)
+    try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+
+    var result = await apiFetch('/progress', {
+        method: 'POST',
+        body: JSON.stringify({ userId: currentViewUserId, taskId: taskId, status: isChecked })
+    });
+    if (!result.ok) {
+        // Cofnij zmiany jesli serwer zwrocil blad
+        if (isChecked) delete cachedProgress[taskId];
+        else           cachedProgress[taskId] = true;
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+        updateItemProgress(itemId);
+        refreshCircleIcon(itemId);
+        alert('Blad zapisu!');
+    } else {
+        // Aktualizuj cache po potwierdzeniu serwera
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+    }
+}
+
+// ================================================================
+// PANEL ADMINA — lista harcerzy
+// ================================================================
+async function renderAdminDashboard() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+
+    var result = await apiFetch('/team-members');
+    if (!result.ok) {
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#c33">Blad polaczenia z serwerem.</p></div>';
+        return;
+    }
+
+    var allMembers = result.data;
+    // Druzynowy widzi tylko swoją drużynę
+    var members = (currentUser.role === 'druzynowy' && currentUser.teamId)
+        ? allMembers.filter(function(u){ return String(u.teamId) === String(currentUser.teamId); })
+        : allMembers;
+    var pending  = members.filter(function(u){ return u.status==='pending'; });
+    var active   = members.filter(function(u){ return u.status==='active'; });
+    var rejected = members.filter(function(u){ return u.status==='rejected'; });
+
+    var role   = currentUser.role;
+    var myRank = rankIndex(role);
+
+    // Tytuł panelu
+    var panelTitle = {
+        'superadmin':   '&#128081; Super Administrator',
+        'ksis':         '&#11088; Panel Ksis',
+        'instruktor':   '&#127775; Panel Instruktora',
+        'druzynowy':    '&#128210; Panel Druzynowego',
+        'przyboczny':   '&#127859; Panel Przybocznego',
+        'zastepowy':    '&#128203; Panel Zastepowego',
+        'podzastepowy': '&#128196; Panel Podzastepowego'
+    }[role] || 'Panel';
+
+    // Pobierz prosby o sprawnosci
+    var rReq = await apiFetch('/requests/incoming');
+    var sprawRequests = (rReq.ok && Array.isArray(rReq.data)) ? rReq.data : [];
+
+    var html = '<div class="welcome-header">'
+        + '<h2>Czuwaj, ' + currentUser.name + '!</h2>'
+        + '<p>' + panelTitle + '</p>'
+        + (role === 'superadmin'
+            ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
+            : '')
+        + (['druzynowy','przyboczny','superadmin'].includes(role)
+            ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
+            : '')
+        + '</div>';
+
+    // ── Oczekujące — tylko superadmin i druzynowy ──
+    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
+    if (canApprove && pending.length > 0) {
+        html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
+            + '<h3 style="color:var(--amber)">&#8987; Oczekujace (' + pending.length + ')</h3>'
+            + '<div style="display:grid;gap:8px">';
+        pending.forEach(function(u) {
+            html += '<div class="member-row">'
+                + '<div><strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + u.username + '</span></div>'
+                + '<div style="display:flex;gap:6px">'
+                + '<button class="btn-sm btn-approve" onclick="approveUser(\'' + u._id + '\')">&#10003; Akceptuj</button>'
+                + '<button class="btn-sm btn-reject"  onclick="rejectUser(\'' + u._id + '\')">&#10007; Odrzuc</button>'
+                + '</div></div>';
+        });
+        html += '</div></div>';
+    }
+
+    // ── Prosby o sprawnosci ──
+    if (sprawRequests.length > 0) {
+        html += '<div class="home-card" style="border-left:4px solid #7c4dff">'
+            + '<h3 style="color:#7c4dff;margin-top:0">&#128226; Prosby o zdanie sprawnosci (' + sprawRequests.length + ')</h3>'
+            + '<div style="display:grid;gap:8px">';
+        sprawRequests.forEach(function(req) {
+            html += '<div class="member-row">'
+                + '<div>'
+                + '<strong>' + req.fromUserName + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82rem;margin-left:8px">prosi o zdanie:</span><br>'
+                + '<span style="font-size:.85rem;color:var(--text)">'
+                + (req.itemTitle ? '<em style="color:var(--muted)">' + req.itemTitle + '</em> — ' : '')
+                + req.taskText
+                + '</span>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px">'
+                + '<button class="btn-sm btn-approve" data-rid="' + req._id + '" data-ruid="' + req.fromUserId + '" data-rtask="' + req.taskId + '" onclick="respondRequest(this.dataset.rid,this.dataset.ruid,this.dataset.rtask,this.dataset.action,this)" data-action="approve">&#10003; Zdaj</button>'
+                + '<button class="btn-sm btn-reject" data-rid="' + req._id + '" data-action="reject" onclick="respondRequest(this.dataset.rid,\'\',\'\',this.dataset.action,this)">&#10007; Odrzuc</button>'
+                + '</div></div>';
+        });
+        html += '</div></div>';
+    }
+
+    // ── Aktywni ──
+    html += '<div class="home-card"><h3>Aktywni harcerze (' + active.length + ')</h3><div style="display:grid;gap:8px">';
+    if (!active.length) {
+        html += '<p style="color:var(--muted);text-align:center">Brak aktywnych.</p>';
+    } else {
+        active.forEach(function(u) {
+            var esc    = u.name.replace(/'/g, "\'");
+            var uRank  = rankIndex(u.role);
+            var isLower = (role === 'superadmin') || (myRank < uRank);
+            var rLabel  = ROLE_LABELS[u.role] || u.role;
+            var rColor  = ROLE_COLORS[u.role] || '#546e7a';
+
+            // Uprawnienia według roli
+            // Sprawnosci: kazdy moze zdawac osobom NIZEJ w hierarchii
+            var canSpraw  = isLower;
+            // Usuwanie: superadmin i druzynowy (tylko nizszych)
+            var canDelete = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
+            // Zmiana rangi: superadmin wszystkie, druzynowy tylko zastepowy/podzastepowy/user
+            var canRole   = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
+
+            var dropdown = '';
+            if (canRole) {
+                var av   = availableRoles(role);
+                var opts = '<option value="">-- Zmien range --</option>';
+                av.forEach(function(r) {
+                    opts += '<option value="' + r + '"' + (r === u.role ? ' selected' : '') + '>'
+                         + (ROLE_LABELS[r] || r) + '</option>';
+                });
+                dropdown = '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:var(--rs);padding:6px 10px;font-weight:600;cursor:pointer;" data-uid="' + u._id + '" data-uname="' + esc + '" onchange="promoteUser(this.dataset.uid,this.dataset.uname,this.value,this)">' + opts + '</select>';
+            }
+
+            html += '<div class="member-row">'
+                + '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+                + '<strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em">@' + u.username + '</span>'
+                + '<span class="status-badge status-active">aktywny</span>'
+            + (u.teamName  ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#127956; '+u.teamName+'</span>' : '')
+            + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; '+u.zastepName+'</span>' : '')
+                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
+                + dropdown
+                + (canSpraw  ? '<button class="btn-sm btn-view" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
+                + (canDelete ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
+                + '</div></div>';
+        });
+    }
+    html += '</div></div>';
+
+    // ── Odrzuceni — tylko superadmin ──
+    if (role === 'superadmin' && rejected.length > 0) {
+        html += '<div class="home-card" style="opacity:.7"><h3 style="color:var(--muted)">Odrzucone (' + rejected.length + ')</h3><div style="display:grid;gap:8px">';
+        rejected.forEach(function(u) {
+            var esc = u.name.replace(/'/g, "\'");
+            html += '<div class="member-row">'
+                + '<div><strong>' + u.name + '</strong>'
+                + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + u.username + '</span>'
+                + '<span class="status-badge status-rejected" style="margin-left:6px">odrzucony</span></div>'
+                + '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>'
+                + '</div>';
+        });
+        html += '</div></div>';
+    }
+
+    document.getElementById('contentArea').innerHTML = html;
+}
+
+// ================================================================
+// PANEL DRUZYN (tylko superadmin)
+// ================================================================
+async function renderTeamsPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p>Ladowanie...</p></div>';
+
+    var result = await apiFetch('/teams');
+    if (!result.ok) { document.getElementById('contentArea').innerHTML = '<p style="color:red">Blad.</p>'; return; }
+
+    var teams = result.data;
+    var html = '<div class="welcome-header"><h2>Druzyny</h2><p>Zarzadzaj listą druzyn</p>'
+        + '<button onclick="renderAdminDashboard()" style="background:var(--primary);border:none;color:white;padding:8px 18px;border-radius:8px;cursor:pointer;font-size:0.9rem;margin-top:8px;">&#8592; Wróc do harcerzy</button>'
+        + '</div>';
+
+    // FORMULARZ DODAWANIA
+    html += '<div class="home-card">'
+        + '<h3 style="margin-top:0;">Dodaj nowa druzyne</h3>'
+        + '<div style="display:flex;gap:10px;">'
+        + '<input type="text" id="newTeamName" class="input-add" placeholder="Nazwa druzyny (np. 6 Druzyna Harcerska)" onkeydown="if(event.key===\'Enter\')addTeam()">'
+        + '<button class="btn-sm btn-approve" onclick="addTeam()" style="white-space:nowrap;">+ Dodaj</button>'
+        + '</div>'
+        + '<p id="teamMsg" style="margin:8px 0 0;font-size:0.88em;display:none;"></p>'
+        + '</div>';
+
+    // LISTA DRUZYN
+    html += '<div class="home-card"><h3 style="margin-top:0;">Istniejace druzyny (' + teams.length + ')</h3><div style="display:grid;gap:10px;">';
+    teams.forEach(function(t) {
+        var escName = t.name.replace(/'/g, "\\'");
+        var escId   = t.teamId.replace(/'/g, "\\'");
+        html += '<div class="member-row">'
+            + '<div>'
+            + '<strong>' + t.name + '</strong>'
+            + '<span style="color:var(--text-muted);font-size:0.8em;margin-left:8px;">ID: ' + t.teamId + '</span>'
+            + '</div>'
+            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usun</button>'
+            + '</div>';
+    });
+    if (teams.length === 0) html += '<p style="color:var(--text-muted);text-align:center;">Brak druzyn.</p>';
+    html += '</div></div>';
+
+    document.getElementById('contentArea').innerHTML = html;
+}
+
+async function addTeam() {
+    var name = document.getElementById('newTeamName').value.trim();
+    var msg  = document.getElementById('teamMsg');
+    if (!name) { showTeamMsg('Wpisz nazwe druzyny.', 'error'); return; }
+
+    var result = await apiFetch('/teams', { method: 'POST', body: JSON.stringify({ name: name }) });
+    if (result.ok) {
+        document.getElementById('newTeamName').value = '';
+        renderTeamsPanel();
+    } else {
+        showTeamMsg(result.data.message || 'Blad.', 'error');
+    }
+}
+
+function showTeamMsg(text, type) {
+    var el = document.getElementById('teamMsg');
+    if (!el) return;
+    el.textContent = text;
+    el.style.color  = type === 'error' ? '#d32f2f' : '#2e7d32';
+    el.style.display = 'block';
+}
+
+async function deleteTeam(teamId, teamName) {
+    if (!confirm('Usunac druzyne "' + teamName + '"?\nUSUNIE TEZ wszystkich jej czlonkow i postepy!')) return;
+    var result = await apiFetch('/teams/' + teamId, { method: 'DELETE' });
+    result.ok ? renderTeamsPanel() : alert(result.data.error || 'Blad.');
+}
+
+// ================================================================
+// AKCJE NA UZYTKOWNIKACH
+// ================================================================
+async function approveUser(id) {
+    var r = await apiFetch('/users/' + id + '/approve', { method: 'POST' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+async function rejectUser(id) {
+    var r = await apiFetch('/users/' + id + '/reject', { method: 'POST' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+async function deleteUser(id, name) {
+    if (!confirm('Usunac konto "' + name + '"? Tej operacji nie mozna cofnac.')) return;
+    var r = await apiFetch('/users/' + id, { method: 'DELETE' });
+    r.ok ? renderAdminDashboard() : alert(r.data.error || 'Blad.');
+}
+
+function buildRoleSelector(userId, currentRole, userName) {
+    var roles = availableRoles(currentUser.role);
+    if (roles.length === 0) return '';
+    var myRank = rankIndex(currentUser.role);
+    var targetRank = rankIndex(currentRole);
+    // Moge zmienic tylko jesli mam wyzsza range
+    if (currentUser.role !== 'superadmin' && myRank >= targetRank) return '';
+
+    var opts = '<option value="">-- Zmien range --</option>';
+    roles.forEach(function(r) {
+        opts += '<option value="' + r + '"' + (r === currentRole ? ' selected' : '') + '>' + r.charAt(0).toUpperCase() + r.slice(1) + '</option>';
+    });
+    return '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;cursor:pointer;" data-uid="' + userId + '" data-uname="' + userName + '" onchange="promoteUser(this.dataset.uid,this.dataset.uname,this.value,this)">' + opts + '</select>';
+}
+
+async function promoteUser(id, name, newRole, selectEl) {
+    if (!newRole) return;
+    if (!confirm('Zmienic range uzytkownika "' + name + '" na: ' + newRole + '?')) {
+        selectEl.value = '';
+        return;
+    }
+    var r = await apiFetch('/users/' + id + '/promote', { method: 'POST', body: JSON.stringify({ newRole: newRole }) });
+    if (r.ok) {
+        renderAdminDashboard();
+    } else {
+        alert(r.data.error || 'Blad.');
+        selectEl.value = '';
+    }
+}
+
+async function switchToUser(userId, userName, userRole) {
+    currentViewUserId = userId;
+    window._currentViewUserRole = userRole || 'user';
+    cachedProgress    = {};
+    var r = await apiFetch('/progress/' + userId);
+    cachedProgress = r.ok ? r.data : {};
+    goHome();
+    renderSidebar();
+    setTimeout(function() {
+        var p = document.querySelector('.welcome-header p');
+        if (p) p.innerHTML = 'Edytujesz: <strong style="color:var(--primary)">' + userName + '</strong>'
+            + ' &nbsp;<a href="#" onclick="renderAdminDashboard();return false;" style="font-size:0.8em;color:var(--text-muted)">[Wróc]</a>';
+    }, 30);
+}
+
+// ================================================================
+// UI CORE
+// ================================================================
+function goHome() {
+    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    var isAdmin = currentUser.role !== 'user';
+    document.getElementById('contentArea').innerHTML =
+        '<div class="welcome-header">'
+        + '<h2>Czuwaj!</h2>'
+        + '<p>' + (isAdmin ? 'Tryb edycji podopiecznego' : 'Ksiazeczka Harcerska') + '</p>'
+        + '<p id="user-team-info" style="color:var(--primary);font-weight:600;font-size:0.95em;margin-top:4px;"></p>'
+        + (isAdmin ? '<button onclick="renderAdminDashboard()" style="background:var(--accent);border:none;color:white;padding:8px 16px;border-radius:8px;cursor:pointer;margin-top:10px;font-size:0.9rem;">&#8592; Wróc do druzyny</button>' : '')
+        + '</div>'
+        + '<div class="home-card">'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">'
+        + '<h3 style="margin:0;color:var(--text-main);">Postep zdobytych sprawnosci</h3>'
+        + '<span id="total-progress" style="font-weight:bold;color:var(--primary);font-size:1.2em;">0%</span>'
+        + '</div>'
+        + '<div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>'
+        + '</div>';
+    updateUIStats();
+}
+
+function renderSidebar(filterText) {
+    patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
+    filterText = filterText || '';
+    var list = document.getElementById('navList');
+    list.innerHTML = '';
+    var grouped = {};
+    db.forEach(function(item) {
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+    });
+    Object.keys(grouped).forEach(function(cat) {
+        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
+        if (!filtered.length) return;
+        var head = document.createElement('li');
+        head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
+        filtered.forEach(function(item) {
+            var li = document.createElement('li');
+            var locked = isStopienLocked(item);
+            li.className = 'nav-item' + (locked ? ' nav-item-locked' : '');
+            li.id = 'nav-item-' + item.id;
+
+            var leftHtml = '';
+            if (item.id && item.id.startsWith('st_')) {
+                // Stopień — pokaż badge statusu
+                leftHtml = getStopienNavBadge(item);
+            } else {
+                // Sprawność — pokaż kółko
+                var opacity = getSprawOpacity(item, cachedProgress);
+                var variant = getSprawVariant(item, cachedProgress);
+                var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+                leftHtml = imgSrc
+                    ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
+                    : '';
+            }
+
+            li.innerHTML = leftHtml
+                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + '</span>'
+                + '<span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
+            li.onclick = function() { if (!locked || canManageStopnie()) loadContent(item.id); };
+            list.appendChild(li);
+        });
+    });
+    updateUIStats();
+    // Pokaz druzyne zalogowanego usera
+    if (currentUser && currentUser.teamId) {
+        apiFetch('/my-team').then(function(r) {
+            var el = document.getElementById('user-team-info');
+            if (el && r.ok && r.data.teamName) el.textContent = '&#128210; ' + r.data.teamName;
+        });
+    }
+}
+
+function loadContent(id) {
+    var item = db.find(function(x) { return x.id === id; });
+    if (!item) return;
+    document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
+    var navEl = document.getElementById('nav-item-' + id);
+    if (navEl) navEl.classList.add('active');
+    if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+
+    var isStopien = item.id && item.id.startsWith('st_');
+
+    var imagesHtml = '';
+    if (item.images && item.images.length) {
+        imagesHtml = '<div class="image-gallery">';
+        item.images.forEach(function(img) {
+            imagesHtml += '<img src="' + img + '" class="gallery-img" onclick="openPhoto(\'' + img + '\')" onerror="this.style.display=\'none\'">';
+        });
+        imagesHtml += '</div>';
+    }
+
+    // Przycisk wyboru osoby (dla kadry)
+    var isAdmin = currentUser.role !== 'user';
+    var memberBtnHtml = '';
+    if (isAdmin) {
+        var viewingName = window._currentViewUserName || currentUser.name;
+        memberBtnHtml = '<button id="memberPickBtn" onclick="toggleMemberPicker()" '
+            + 'style="position:absolute;top:16px;right:16px;background:var(--panel2);border:1.5px solid var(--border);'
+            + 'border-radius:var(--rs);padding:7px 12px;cursor:pointer;font-size:.82rem;font-weight:600;'
+            + 'color:var(--text);display:flex;align-items:center;gap:6px;z-index:10;">'
+            + '&#128101; ' + viewingName
+            + '<span style="font-size:.7rem;color:var(--muted)">&#9660;</span></button>'
+            + '<div id="memberPickerDropdown" style="display:none;position:absolute;top:56px;right:16px;'
+            + 'background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);'
+            + 'box-shadow:var(--shadow-lg);z-index:100;min-width:200px;max-height:300px;overflow-y:auto;" id="memberPickerDropdown">'
+            + '</div>';
+    }
+
+    // Przycisk "Poproś o sprawność" dla zwykłego usera
+    var askBtnHtml = '';
+    if (currentUser.role === 'user') {
+        askBtnHtml = '<button onclick="openAskModal(\'' + id + '\')" '
+            + 'style="position:absolute;bottom:16px;right:16px;background:var(--f4);border:none;'
+            + 'border-radius:var(--rs);padding:7px 13px;cursor:pointer;font-size:.82rem;font-weight:600;color:#fff;">'
+            + '&#128226; Popros o zdanie</button>';
+    }
+    var html = '<div class="header-section" style="position:relative">'
+        + memberBtnHtml
+        + askBtnHtml
+        + '<span class="cat-badge">' + item.category + '</span>'
+        + (isStopien ? (function() {
+            var st = _stopnieStatus[item.id];
+            var viewId = currentViewUserId || currentUser.id;
+            var isAdmin = canManageStopnie();
+            var isOwnView = (viewId === currentUser.id);
+
+            // Policz czy wszystkie zadania zdane
+            var totalT = 0, doneT = 0;
+            item.groups.forEach(function(g, gi) {
+                g.tasks.forEach(function(t, ti) {
+                    totalT++;
+                    if (cachedProgress[item.id + '-' + gi + '-' + ti]) doneT++;
+                });
+            });
+            var allDone = (totalT > 0 && doneT === totalT);
+
+            var badge = st
+                ? (st.status === 'open'
+                    ? '<span class="stopien-badge stopien-badge-open">📖 Otwarty</span>'
+                    : '<span class="stopien-badge stopien-badge-done">✅ Zaliczony</span>')
+                : '<span class="stopien-badge stopien-badge-locked">🔒 Nie otwarty</span>';
+
+            var btn = '';
+            if (isAdmin) {
+                if (!st && canOpenStopien(item.id)) {
+                    btn = '<button class="stopien-btn stopien-btn-open" onclick="openStopien(\''+viewId+'\',\''+item.id+'\')">'
+                        + '📖 Otwórz stopień</button>';
+                } else if (st && st.status === 'open') {
+                    if (allDone) {
+                        btn = '<button class="stopien-btn stopien-btn-close" onclick="closeStopien(\''+viewId+'\',\''+item.id+'\')">'
+                            + '✅ Zalicz stopień</button>';
+                    } else {
+                        btn = '<span class="stopien-btn-info">Brak ' + (totalT-doneT) + ' zadań do zaliczenia</span>';
+                    }
+                }
+            }
+
+            // Przycisk prośby dla harcerza (gdy stopien otwarty i nie zaliczony)
+            var askBtn = '';
+            if (!isAdmin && isOwnView && st && st.status === 'open') {
+                askBtn = '<button class="stopien-btn stopien-btn-ask" onclick="openAskModal(\''+item.id+'\')">'
+                    + '🙋 Poproś o zaliczenie</button>';
+            }
+
+            return '<div class="stopien-status-bar">' + badge + btn + askBtn + '</div>'
+                + (st && st.status === 'open' && !allDone && !isAdmin
+                    ? '<div class="stopien-progress-info">' + doneT + ' / ' + totalT + ' zadań wykonanych</div>'
+                    : '');
+          })() : '')
+        + (function(){
+            if (isStopien) {
+                // Stopień — header z ikonami kategorii
+                var st = _stopnieStatus[item.id];
+                var statusLabel = !st ? 'Nie otwarty'
+                    : st.status === 'open' ? 'W trakcie'
+                    : 'Zaliczony';
+                var statusColor = !st ? 'var(--muted)'
+                    : st.status === 'open' ? '#60a5fa'
+                    : '#4ade80';
+                var catIcons = Object.values(STOPNIE_CATEGORY_ICONS).join(' ');
+                return '<div style="margin:4px 0 8px">'
+                    + '<h2 style="margin:0 0 4px">' + item.title + '</h2>'
+                    + '<div style="font-size:.82rem;color:' + statusColor + ';font-weight:600">'
+                    + (st ? (st.status==='open'?'📖':'✅') : '🔒') + ' ' + statusLabel
+                    + '</div>'
+                    + (item.desc ? '<div style="font-size:.78rem;color:var(--muted);margin-top:3px">' + item.desc + '</div>' : '')
+                    + '</div>';
+            }
+            // Sprawność — kółko z opacity
+            var opacity  = getSprawOpacity(item, cachedProgress);
+            var variant  = getSprawVariant(item, cachedProgress);
+            var level    = getSprawLevel(item, cachedProgress);
+            var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+            if (!imgSrc) return '<h2>' + item.title + '</h2>';
+            var s = getSprawDone(item, cachedProgress);
+            return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
+                + '<div style="position:relative;flex-shrink:0">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
+                + (variant > 0 ? '<div class="sprawnosc-stars-badge" style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
+                + '</div>'
+                + '<div>'
+                + '<h2 style="margin:0">' + item.title + '</h2>'
+                + '<div class="sprawnosc-header-info" style="font-size:.8rem;color:var(--muted);margin-top:2px">'
+                + (s.done > 0
+                    ? '<span style="color:var(--amber)">' + s.done + '/' + s.total + ' zadań</span> · zdjęcie <strong>#' + variant + '</strong>'
+                    : 'Nie zdana — ' + s.total + ' zadań do zrobienia')
+                + '</div>'
+                + '</div>'
+                + '</div>';
+          })()
+        + imagesHtml
+        + '<div style="margin-top:25px;">'
+        + '<div style="display:flex;justify-content:space-between;margin-bottom:5px;font-weight:600;color:var(--text-muted);font-size:0.9em;">'
+        + '<span>Postep</span><span id="detail-prog-val">0%</span></div>'
+        + '<div class="big-progress-wrapper"><div class="big-progress-fill" id="detail-bar"></div></div>'
+        + '</div></div>';
+
+    item.groups.forEach(function(g, gIdx) {
+        // Procent ukończenia grupy
+        var gTotal = g.tasks.length, gDone = 0;
+        g.tasks.forEach(function(t2, ti2) { if (cachedProgress[id + '-' + gIdx + '-' + ti2]) gDone++; });
+        var gPct = gTotal ? Math.round(gDone/gTotal*100) : 0;
+
+        if (isStopien) {
+            // Zdjęcie kategorii stopnia (z folderu stopnie_X gdzie X = numer stopnia)
+                        var catImgSrc = getStopienCatImg(id, gIdx);
+            var catEmoji  = STOPNIE_CATEGORY_ICONS[g.name] || '';
+            var gPctColor = gPct === 100 ? '#4ade80' : gPct > 0 ? '#60a5fa' : 'var(--muted)';
+
+            html += '<div class="task-group">'
+                + '<div class="stopien-group-header">'
+                + (catImgSrc ? '<img src="' + catImgSrc + '" class="stopien-group-img" onerror="this.style.display=\'none\'">' : '')
+                + '<span class="stopien-group-emoji">' + catEmoji + '</span>'
+                + '<span class="group-title" style="margin:0;flex:1">' + g.name + '</span>'
+                + '<span class="group-pct" style="color:' + gPctColor + '">' + gDone + '/' + gTotal + '</span>'
+                + '</div>';
+        } else {
+            html += '<div class="task-group"><div class="group-title">' + g.name + '</div>';
+        }
+        g.tasks.forEach(function(t, tIdx) {
+            var tId   = id + '-' + gIdx + '-' + tIdx;
+            var isDone = !!cachedProgress[tId];
+                    var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
+            html += '<label class="cb-container" style="' + (cbReadOnly ? 'cursor:default' : '') + '">'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (cbReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+                + '<div class="checkmark"></div>'
+                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
+                + '</label>';
+        });
+        html += '</div>';
+    });
+
+    document.getElementById('contentArea').innerHTML = html;
+    updateItemProgress(id);
+    var _main = document.getElementById('contentArea'); if (_main) _main.scrollTop = 0;
+}
+
+function updateItemProgress(itemId) {
+    var item = db.find(function(x) { return x.id === itemId; });
+    if (!item) return;
+    var total = 0, done = 0;
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) { total++; if (cachedProgress[itemId + '-' + gi + '-' + ti]) done++; });
+    });
+    var pct = total ? Math.round(done / total * 100) : 0;
+    var bar = document.getElementById('detail-bar');
+    var val = document.getElementById('detail-prog-val');
+    if (bar) bar.style.width = pct + '%';
+    if (val) val.textContent = pct + '%';
+    var nav = document.getElementById('nav-prog-' + itemId);
+    if (nav) nav.textContent = pct + '%';
+}
+
+function updateUIStats() {
+    var total = 0, done = 0;
+    db.forEach(function(item) {
+        var iTotal = 0, iDone = 0;
+        item.groups.forEach(function(g, gi) {
+            g.tasks.forEach(function(t, ti) {
+                total++; iTotal++;
+                if (cachedProgress[item.id + '-' + gi + '-' + ti]) { done++; iDone++; }
+            });
+        });
+        // Zaktualizuj procent w sidebarze
+        var nav = document.getElementById('nav-prog-' + item.id);
+        if (nav) nav.textContent = (iTotal ? Math.round(iDone / iTotal * 100) : 0) + '%';
+
+        // Zaktualizuj ikonę w sidebarze
+        if (item.circleVariants) {
+            var opacity = getSprawOpacity(item, cachedProgress);
+            var variant = getSprawVariant(item, cachedProgress);
+            var imgSrc  = getCircleImgForProgress(item, cachedProgress);
+            var navEl   = document.getElementById('nav-item-' + item.id);
+            if (!navEl) return;
+            var navImg  = navEl.querySelector('.nav-circle-img');
+            var navEmpty = navEl.querySelector('.nav-circle-empty');
+            if (navImg) {
+                navImg.style.transition = 'opacity .3s';
+                navImg.style.opacity    = opacity;
+                if (navImg.getAttribute('data-src') !== imgSrc) {
+                    navImg.src = imgSrc;
+                    navImg.setAttribute('data-src', imgSrc);
+                }
+            } else if (navEmpty && variant > 0) {
+                var img = document.createElement('img');
+                img.className = 'nav-circle-img';
+                img.src = imgSrc;
+                img.setAttribute('data-src', imgSrc);
+                img.style.cssText = 'opacity:' + opacity + ';transition:opacity .3s';
+                navEmpty.parentNode.replaceChild(img, navEmpty);
+            }
+        }
+    });
+    var pct  = total ? Math.round(done / total * 100) : 0;
+    var bar  = document.getElementById('total-bar');
+    var prog = document.getElementById('total-progress');
+    if (bar)  bar.style.width = pct + '%';
+    if (prog) prog.textContent = pct + '%';
+
+    // Odśwież badge stopni w sidebarze
+    STOPNIE_ORDER.forEach(function(sid) {
+        var navEl = document.getElementById('nav-item-' + sid);
+        if (!navEl) return;
+        var badge = navEl.querySelector('.nav-stopien-badge');
+        if (badge) {
+            var st = _stopnieStatus[sid];
+            if (!st) { badge.textContent = '—'; badge.className = 'nav-stopien-badge nav-stopien-none'; }
+            else if (st.status === 'open')   { badge.textContent = '📖'; badge.className = 'nav-stopien-badge nav-stopien-open'; }
+            else if (st.status === 'closed') { badge.textContent = '✅'; badge.className = 'nav-stopien-badge nav-stopien-done'; }
+        }
+    });
+}
+
+// ================================================================
+// HELPERY UI
+// ================================================================
+function toggleSidebar()    { document.getElementById('sidebar').classList.toggle('open'); }
+function openPhoto(src)     { document.getElementById('modalImg').src = src; document.getElementById('photoModal').style.display = 'flex'; document.getElementById('modalImg').classList.remove('zoomed'); }
+function closeModal()       { document.getElementById('photoModal').style.display = 'none'; }
+function toggleZoom(e)      { e.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
+function filterNav()        { renderSidebar(document.getElementById('searchInput').value); }
+function openSettings()     { toggleSettingsModal(true); }
+function closeSettings(e)   { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
+function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
+function loadSettings() {
+    var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
+    if (s.dark)      { document.body.classList.add('dark-mode'); document.body.classList.add('dark');  document.getElementById('darkModeToggle').checked = true; }
+    if (s.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
+}
+function saveSettings() {
+    localStorage.setItem('nkih_settings', JSON.stringify({
+        dark:      document.body.classList.contains('dark-mode'),
+        largeText: document.body.classList.contains('large-text')
+    }));
+}
+function toggleDarkMode() { document.body.classList.toggle('dark-mode'); document.body.classList.toggle('dark'); saveSettings(); }
+function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
+function resetProgress()  { alert('Skontaktuj sie z administratorem.'); }
+
+
+async function renderZastepyPanel() {
+    hideSidebarArea();
+    bnavSetActive('book');
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+
+    var [rZ, rM] = await Promise.all([apiFetch('/zastepy'), apiFetch('/team-members')]);
+    var zastepy  = rZ.ok ? rZ.data : [];
+    var members  = rM.ok ? rM.data.filter(function(u){ return u.status === 'active'; }) : [];
+
+    // Nieprzypisani - osobna "pula"
+    var unassigned = members.filter(function(u){ return !u.zastepId; });
+
+    var html = '<div class="welcome-header"><h2>Zastepy</h2>'
+        + '<button onclick="renderAdminDashboard()" style="margin-top:8px;padding:8px 16px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.85rem;">&#8592; Wróc do panelu</button>'
+        + '</div>';
+
+    // Dodaj zastep
+    html += '<div class="home-card">'
+        + '<h3 style="margin-top:0">Dodaj nowy zastep</h3>'
+        + '<div style="display:flex;gap:8px">'
+        + '<input id="newZastepName" class="input-add" placeholder="Nazwa zastepu (np. Zastep Orla)">'
+        + '<button class="btn-sm btn-approve" onclick="addZastep()">+ Dodaj</button>'
+        + '</div></div>';
+
+    // Pula nieprzypisanych
+    html += '<div class="home-card">'
+        + '<h3 style="margin-top:0;color:var(--muted)">&#128100; Nieprzypisani (' + unassigned.length + ')</h3>'
+        + '<div class="zastep-drop-zone" id="zone-unassigned" data-zid="" '
+        + 'ondragover="dragOver(event,this)" '
+        + 'ondragleave="dragLeave(this)" '
+        + 'ondrop="dropToZastep(event,this)">'
+        + unassigned.map(function(u){ return memberChip(u); }).join('')
+        + (unassigned.length === 0 ? '<span style="color:var(--muted);font-size:.82rem">Wszyscy przypisani</span>' : '')
+        + '</div></div>';
+
+    // Zastepy
+    html += '<div class="home-card"><h3 style="margin-top:0">Zastepy (' + zastepy.length + ')</h3>';
+    if (!zastepy.length) {
+        html += '<p style="color:var(--muted)">Brak zastepow.</p>';
+    } else {
+        html += '<div style="display:grid;gap:12px">';
+        zastepy.forEach(function(z) {
+            var inZ = members.filter(function(u){ return u.zastepId === z.zastepId; });
+            html += '<div style="background:var(--panel2);border-radius:var(--rs);padding:14px;border:1.5px solid var(--border)">'
+                + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+                + '<strong>&#128101; ' + z.name + ' <span style="color:var(--muted);font-weight:400;font-size:.82rem">(' + inZ.length + ')</span></strong>'
+                + '<button class="btn-sm btn-delete" data-zid="' + z.zastepId + '" onclick="deleteZastep(this.dataset.zid)">Usun</button>'
+                + '</div>'
+                + '<div class="zastep-drop-zone" id="zone-' + z.zastepId + '" data-zid="' + z.zastepId + '" '
+                + 'ondragover="dragOver(event,this)" '
+                + 'ondragleave="dragLeave(this)" '
+                + 'ondrop="dropToZastep(event,this)">'
+                + inZ.map(function(u){ return memberChip(u); }).join('')
+                + (inZ.length === 0 ? '<span style="color:var(--muted);font-size:.82rem">Przeciagnij tu osoby</span>' : '')
+                + '</div>'
+                + '</div>';
+        });
+        html += '</div>';
+    }
+    html += '</div>';
+
+    document.getElementById('contentArea').innerHTML = html;
+
+    // Inicjalizuj drag na chipach
+    document.querySelectorAll('.member-chip').forEach(function(chip) {
+        chip.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('userId', this.dataset.uid);
+            this.style.opacity = '0.5';
+        });
+        chip.addEventListener('dragend', function() {
+            this.style.opacity = '1';
+        });
+    });
+}
+
+function memberChip(u) {
+    var rColor = ROLE_COLORS[u.role] || '#546e7a';
+    return '<div class="member-chip" draggable="true" data-uid="' + u._id + '" '
+        + 'style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;'
+        + 'background:var(--panel);border:1.5px solid var(--border);border-radius:20px;'
+        + 'cursor:grab;font-size:.82rem;margin:3px">'
+        + '<span style="width:8px;height:8px;border-radius:50%;background:' + rColor + ';flex-shrink:0"></span>'
+        + u.name
+        + '</div>';
+}
+
+
+function dragOver(e, el) { e.preventDefault(); el.classList.add('drag-over'); }
+function dragLeave(el)   { el.classList.remove('drag-over'); }
+
+async function dropToZastep(event, zone) {
+    event.preventDefault();
+    if (typeof zone === 'object' && zone.classList) zone.classList.remove('drag-over');
+    var zastepId = zone && zone.dataset ? zone.dataset.zid : '';
+    var userId = event.dataTransfer.getData('userId');
+    if (!userId) return;
+    await apiFetch('/users/' + userId + '/zastep', {
+        method: 'POST',
+        body: JSON.stringify({ zastepId: zastepId || null })
+    });
+    renderZastepyPanel();
+}
+
+
+
+async function respondRequest(reqId, fromUserId, taskId, action, btn) {
+    btn.disabled = true;
+    var r = await apiFetch('/requests/' + reqId + '/respond', {
+        method: 'POST',
+        body: JSON.stringify({ action })
+    });
+    if (r.ok) {
+        renderAdminDashboard(); // odswież
+    } else {
+        btn.disabled = false;
+        alert(r.data.error || 'Blad');
+    }
+}
+
+async function addZastep() {
+    var name = document.getElementById('newZastepName').value.trim();
+    if (!name) return;
+    var r = await apiFetch('/zastepy', { method: 'POST', body: JSON.stringify({ name }) });
+    if (r.ok) { renderZastepyPanel(); }
+    else { alert(r.data.error || 'Blad'); }
+}
+
+async function deleteZastep(zastepId) {
+    if (!confirm('Usunac zastep?')) return;
+    await apiFetch('/zastepy/' + zastepId, { method: 'DELETE' });
+    renderZastepyPanel();
+}
+
+async function addToZastep(userId, zastepId, sel) {
+    if (!userId) return;
+    sel.value = '';
+    await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId }) });
+    renderZastepyPanel();
+}
+
+async function removeFromZastep(userId) {
+    await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: null }) });
+    renderZastepyPanel();
+}
+
+// ══════════════════════════════════════════════════════
+// NOWE FUNKCJE UI
+// ══════════════════════════════════════════════════════
+
+// ── Pending screen ────────────────────────────────────
+function showPendingScreen() {
+    document.getElementById('pendingScreen').classList.add('active');
+    document.getElementById('appShell').style.display = 'none';
+}
+function hidePendingScreen() {
+    document.getElementById('pendingScreen').classList.remove('active');
+}
+
+// ── Bottom nav ────────────────────────────────────────
+function updateBnavTeam() {
+    var teamName = (currentUser && currentUser.teamName) || '';
+    var teamKey  = 'team_' + ((currentUser && currentUser.teamId) || 'default');
+    var storedImg  = localStorage.getItem(teamKey + '_img');
+    var storedName = localStorage.getItem(teamKey + '_name');
+    if (storedName) teamName = storedName;
+
+    var nameEl = document.getElementById('bnavTeamName');
+    var imgEl  = document.getElementById('bnavTeamImg');
+    var emojiEl = document.getElementById('bnavTeamEmoji');
+
+    if (nameEl && teamName) {
+        // Skróć nazwę do ~12 znaków żeby zmieścić się w pasku
+        nameEl.textContent = teamName.length > 13 ? teamName.substring(0,11) + '...' : teamName;
+    }
+    if (imgEl && storedImg) {
+        imgEl.src = storedImg;
+        imgEl.style.display = 'block';
+        if (emojiEl) emojiEl.style.display = 'none';
+    }
+}
+
+function bnavSetActive(tab) {
+    document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('active'); });
+    var el = document.getElementById('bnav-' + tab);
+    if (el) el.classList.add('active');
+}
+
+function bnavClick(tab) {
+    bnavSetActive(tab);
+    if (tab === 'profile') {
+        hideSidebarArea();
+        showProfileTab();
+    }
+    if (tab === 'board') {
+        hideSidebarArea();
+        showBoardTab();
+    }
+    if (tab === 'book') {
+        showSidebarArea();
+        goHome();
+        renderSidebar();
+    }
+    if (tab === 'uniform') {
+        hideSidebarArea();
+        document.getElementById('contentArea').innerHTML =
+            '<div class="placeholder-screen"><div class="ph-icon">&#129333;</div><p>Moj mundur — wkrótce</p></div>';
+    }
+    if (tab === 'settings') {
+        hideSidebarArea();
+        openSettings();
+    }
+}
+
+function showProfileTab() {
+    if (!(currentUser && currentUser.teamName)) {
+        apiFetch('/my-team').then(function(r) {
+            if (r.ok && r.data) {
+                if (r.data.teamName) currentUser.teamName = r.data.teamName;
+                if (r.data._id)      currentUser.teamId   = r.data._id;
+            }
+            _renderProfileTab();
+        });
+    } else {
+        _renderProfileTab();
+    }
+}
+
+function _renderProfileTab() {
+    var teamName   = (currentUser && currentUser.teamName) || 'Twoja druzyna';
+    var teamKey    = 'team_' + ((currentUser && currentUser.teamId) || 'default');
+    var storedImg  = localStorage.getItem(teamKey + '_img');
+    var storedName = localStorage.getItem(teamKey + '_name');
+    if (storedName) teamName = storedName;
+
+    var imgSrc = storedImg || ('https://api.dicebear.com/7.x/shapes/svg?seed='
+        + encodeURIComponent(teamName) + '&backgroundColor=1a3424&size=200');
+    var isSuperAdmin = currentUser && (currentUser.role === 'superadmin' || currentUser.role === 'druzynowy');
+
+    var editHtml = '';
+    if (isSuperAdmin) {
+        editHtml = '<div class="team-edit-panel">'
+            + '<div class="team-edit-row">'
+            +   '<label class="team-edit-label">Nazwa druzyny</label>'
+            +   '<div style="display:flex;gap:8px;align-items:center">'
+            +     '<input id="teamNameInput" class="input-add" value="' + teamName.replace(/"/g,'&quot;') + '" placeholder="Nazwa druzyny">'
+            +     '<button class="btn-sm btn-approve" onclick="saveTeamName()">Zapisz</button>'
+            +   '</div>'
+            + '</div>'
+            + '<div class="team-edit-row">'
+            +   '<label class="team-edit-label">Zdjecie druzyny</label>'
+            +   '<input type="file" id="teamImgFile" accept="image/*" style="display:none" onchange="handleTeamImgFile(event)">'
+            +   '<button class="btn-sm btn-view" onclick="triggerTeamImgPick()">&#128247; Wybierz zdjecie z dysku</button>'
+            + '</div>'
+            + '</div>';
+    }
+
+    document.getElementById('contentArea').innerHTML =
+        '<div class="team-profile-card">'
+        + '<img id="teamProfileImg" src="' + imgSrc + '" class="team-profile-img" alt="druzyna">'
+        + '<div class="team-profile-name" id="teamProfileNameDisplay">' + teamName + '</div>'
+        + '</div>'
+        + editHtml;
+}
+
+
+function triggerTeamImgPick() {
+    document.getElementById('teamImgFile').click();
+}
+function saveTeamName() {
+    var val = document.getElementById('teamNameInput').value.trim();
+    if (!val) return;
+    var key = 'team_' + ((currentUser && currentUser.teamId) || 'default') + '_name';
+    localStorage.setItem(key, val);
+    currentUser.teamName = val;
+    var el = document.getElementById('teamProfileNameDisplay');
+    if (el) el.textContent = val;
+    var sb = document.querySelector('.sidebar-team-name');
+    if (sb) sb.textContent = val;
+    updateBnavTeam();
+    // Spróbuj też zapisać na serwerze
+    apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ name: val }) }).catch(function(){});
+}
+
+function handleTeamImgFile(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        var key = 'team_' + ((currentUser && currentUser.teamId) || 'default') + '_img';
+        localStorage.setItem(key, dataUrl);
+        var img = document.getElementById('teamProfileImg');
+        if (img) img.src = dataUrl;
+        updateBnavTeam();
+        // Spróbuj też zapisać na serwerze
+        apiFetch('/update-team', { method: 'POST', body: JSON.stringify({ avatar: dataUrl }) }).catch(function(){});
+    };
+    reader.readAsDataURL(file);
+}
+
+function openNameEdit() {
+    document.getElementById('nameEditForm').style.display = 'block';
+    document.getElementById('nameEditInput').value = currentUser.name || '';
+    document.getElementById('nameEditInput').focus();
+}
+function closeNameEdit() { document.getElementById('nameEditForm').style.display = 'none'; }
+
+async function saveName() {
+    var val = document.getElementById('nameEditInput').value.trim();
+    if (!val) return;
+    var r = await apiFetch('/update-profile', { method: 'POST', body: JSON.stringify({ name: val }) });
+    if (r.ok) {
+        currentUser.name = val;
+        document.getElementById('profileNameDisplay').textContent = val;
+        closeNameEdit();
+    } else {
+        alert((r.data && r.data.message) || 'Blad zapisu.');
+    }
+}
+
+function openAvatarEdit() {
+    document.getElementById('avatarEditForm').style.display = 'block';
+    document.getElementById('avatarEditInput').value = currentUser.avatar || '';
+    document.getElementById('avatarEditInput').focus();
+}
+function closeAvatarEdit() { document.getElementById('avatarEditForm').style.display = 'none'; }
+
+async function saveAvatar() {
+    var val = document.getElementById('avatarEditInput').value.trim();
+    if (!val) return;
+    var r = await apiFetch('/update-profile', { method: 'POST', body: JSON.stringify({ avatar: val }) });
+    if (r.ok) {
+        currentUser.avatar = val;
+        document.getElementById('profileAvatar').src = val;
+        closeAvatarEdit();
+    } else {
+        alert((r.data && r.data.message) || 'Blad zapisu.');
+    }
+}
+
+function showSidebarArea() {
+    document.getElementById('sidebar').style.display = '';
+}
+function hideSidebarArea() {
+    // Na PC chowamy sidebar, na mobile i tak jest ukryty
+    document.getElementById('sidebar').style.display = 'none';
+    closeSidebar();
+}
+
+// ── Sidebar mobile ────────────────────────────────────
+function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('active');
+}
+function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+}
+
+// Na PC sidebar zawsze widoczny; na mobile chowany
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 900) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
+    }
+});
+
+// ── Klik na nav-item zamyka sidebar na mobile ─────────
+var _origNavClick = window.loadContent;
+document.addEventListener('click', function(e) {
+    var item = e.target.closest('.nav-item');
+    if (item && window.innerWidth <= 900) { closeSidebar(); }
+});
+
+// ── showMainApp (helper dla switchToUser itp.) ─────────
+function showMainApp() {
+    goHome();
+    renderSidebar();
+}
+
+// ══════════════════════════════════════════════════════
+// REJESTRACJA DWUETAPOWA — wybór drużyny
+// ══════════════════════════════════════════════════════
+var _pendingRegData = {};
+var _selectedTeamId = null;
+
+function goToTeamPick() {
+    var username  = document.getElementById('regUsername').value.trim().toLowerCase();
+    var name      = document.getElementById('regName').value.trim();
+    var password  = document.getElementById('regPassword').value;
+    var password2 = document.getElementById('regPassword2').value;
+    clearMsg('registerMsg');
+
+    if (username.length < 3)             { showMsg('registerMsg', 'Login min. 3 znaki.'); return; }
+    if (!/^[a-z0-9_]+$/.test(username)) { showMsg('registerMsg', 'Login: tylko litery, cyfry, _'); return; }
+    if (!name)                           { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
+    if (password.length < 6)            { showMsg('registerMsg', 'Haslo min. 6 znakow.'); return; }
+    if (password !== password2)         { showMsg('registerMsg', 'Hasla nie sa zgodne.'); return; }
+
+    _pendingRegData = { username, name, password };
+    _selectedTeamId = null;
+
+    // Zaladuj druzyny
+    apiFetch('/teams').then(function(r) {
+        var list = document.getElementById('teamPickList');
+        list.innerHTML = '';
+        var teams = r.ok ? r.data : [];
+        if (!teams.length) {
+            list.innerHTML = '<p style="color:var(--muted);font-size:.9rem">Brak druzyn. Skontaktuj sie z administratorem.</p>';
+        }
+        teams.forEach(function(t) {
+            var btn = document.createElement('button');
+            btn.className = 'team-pick-btn';
+            // Pokaz nazwe druzyny
+            btn.textContent = t.name || t.teamId;
+            btn.onclick = function() {
+                document.querySelectorAll('.team-pick-btn').forEach(function(b){ b.classList.remove('sel'); });
+                btn.classList.add('sel');
+                // Serwer sprawdza Team.findOne({ teamId }) wiec wysylamy string teamId
+                _selectedTeamId = t.teamId;
+                document.getElementById('teamPickConfirm').classList.add('show');
+            };
+            list.appendChild(btn);
+        });
+        document.getElementById('teamPickConfirm').classList.remove('show');
+        document.getElementById('teamPickOverlay').classList.add('active');
+    });
+}
+
+function backFromTeamPick() {
+    document.getElementById('teamPickOverlay').classList.remove('active');
+}
+
+async function submitRegisterWithTeam() {
+    if (!_selectedTeamId) return;
+    var btn = document.getElementById('teamPickConfirm');
+    btn.textContent = 'Rejestrowanie...';
+    btn.disabled = true;
+
+    var result = await apiFetch('/register', {
+        method: 'POST',
+        body: JSON.stringify(Object.assign({}, _pendingRegData, { teamId: _selectedTeamId }))
+    });
+
+    btn.textContent = 'Zarejestruj sie ✓';
+    btn.disabled = false;
+
+    if (result.ok) {
+        document.getElementById('teamPickOverlay').classList.remove('active');
+        ['regUsername','regName','regPassword','regPassword2'].forEach(function(id){ document.getElementById(id).value=''; });
+        showPanel('login');
+        showMsg('loginMsg', (result.data && result.data.message) || 'Konto utworzone! Poczekaj na akceptacje druzynowego.', 'success');
+    } else {
+        document.getElementById('teamPickOverlay').classList.remove('active');
+        showMsg('registerMsg', (result.data && result.data.message) || 'Blad rejestracji.');
+    }
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// MODAL "POPROŚ O ZDANIE SPRAWNOŚCI"
+// ══════════════════════════════════════════════════════
+var _askItemId    = null;
+var _askTaskId    = null;
+var _askTaskText  = null;
+
+async function openAskModal(itemId) {
+    _askItemId   = itemId;
+    _askTaskId   = null;
+    _askTaskText = null;
+
+    var item = db.find(function(x){ return x.id === itemId; });
+    document.getElementById('askModalItemName').textContent = item ? item.title : itemId;
+    document.getElementById('askModalStatus').textContent   = '';
+    document.getElementById('askStep1').style.display = 'block';
+    document.getElementById('askStep2').style.display = 'none';
+    document.getElementById('askModal').style.display = 'flex';
+
+    // Wylistuj niezaliczone podpunkty
+    var taskList = document.getElementById('askTaskList');
+    if (!item) { taskList.innerHTML = '<p style="color:var(--muted)">Brak zadan.</p>'; return; }
+
+    var tasks = [];
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) {
+            var tid = itemId + '-' + gi + '-' + ti;
+            if (!cachedProgress[tid]) tasks.push({ tid, text: t.replace(/\*/g,'★'), group: g.name });
+        });
+    });
+
+    if (!tasks.length) {
+        taskList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Wszystkie podpunkty juz zaliczone!</p>';
+        return;
+    }
+
+    taskList.innerHTML = tasks.map(function(t) {
+        return '<div class="member-picker-item" data-tid="' + t.tid + '" data-ttext="' + t.text.replace(/"/g,'&quot;') + '" '
+            + 'onclick="pickTask(this.dataset.tid,this.dataset.ttext)" '
+            + 'style="padding:9px 12px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.83rem">'
+            + '<span style="color:var(--muted);font-size:.75rem">' + t.group + '</span><br>'
+            + t.text
+            + '</div>';
+    }).join('');
+}
+
+async function loadKadraForAsk() {
+    var kadraList = document.getElementById('askKadraList');
+    if (!kadraList) return;
+    kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
+    apiFetch('/my-kadra').then(function(r) {
+        var kadra = r.ok ? r.data : [];
+        if (!kadra.length) {
+            kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w drużynie.</p>';
+            return;
+        }
+        kadraList.innerHTML = kadra.map(function(k) {
+            var rColor = ROLE_COLORS[k.role] || '#546e7a';
+            return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
+                + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+                + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
+                + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
+                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
+                + '</div>';
+        }).join('');
+    });
+}
+
+function pickTask(taskId, taskText) {
+    _askTaskId   = taskId;
+    _askTaskText = taskText;
+    document.getElementById('askSelectedTask').textContent = taskText;
+    document.getElementById('askStep1').style.display = 'none';
+    document.getElementById('askStep2').style.display = 'block';
+    document.getElementById('askModalStatus').textContent = '';
+    loadKadraForAsk();
+}
+
+function backToTaskPick() {
+    document.getElementById('askStep1').style.display = 'block';
+    document.getElementById('askStep2').style.display = 'none';
+}
+
+async function sendAskRequest(kadraId, kadraName) {
+    document.getElementById('askModalStatus').textContent = 'Wysylanie...';
+    var item = db.find(function(x){ return x.id === _askItemId; });
+    var r = await apiFetch('/requests', {
+        method: 'POST',
+        body: JSON.stringify({
+            toUserId:  kadraId,
+            itemId:    _askItemId,
+            itemTitle: item ? item.title : _askItemId,
+            taskId:    _askTaskId,
+            taskText:  _askTaskText
+        })
+    });
+    if (r.ok) {
+        document.getElementById('askModalStatus').textContent = '✓ Wyslano do ' + kadraName + '!';
+        setTimeout(closeAskModal, 1400);
+    } else {
+        document.getElementById('askModalStatus').textContent = 'Blad wysylania.';
+    }
+}
+function closeAskModal() {
+    document.getElementById('askModal').style.display = 'none';
+}
+
+
+// ══════════════════════════════════════════════════════
+// TABLICA SPRAWNOŚCI — circles
+// ══════════════════════════════════════════════════════
+
+function getSprawDone(item, progress) {
+    // Ile zadań gwiazdkowych zdanych
+    var done = 0, total = 0;
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) {
+            if (!t.match(/^✶/)) return; // tylko gwiazdkowe
+            total++;
+            if (progress[item.id + '-' + gi + '-' + ti]) done++;
+        });
+    });
+    return { done: done, total: total };
+}
+
+function getSprawLevel(item, progress) {
+    // Najwyższy zaliczony poziom (gwiazdki) — stara kompatybilność
+    var maxLevel = 0;
+    item.groups.forEach(function(g, gi) {
+        g.tasks.forEach(function(t, ti) {
+            if (!progress[item.id + '-' + gi + '-' + ti]) return;
+            var stars = (t.match(/^✶+/) || [''])[0].length;
+            if (stars > maxLevel) maxLevel = stars;
+        });
+    });
+    return maxLevel;
+}
+
+function getSprawVariant(item, progress) {
+    // Numer wariantu zdjęcia (1-based) wg logiki:
+    // variant = CEIL( done / total * variants )
+    if (!item.circleVariants) return 0;
+    var s = getSprawDone(item, progress);
+    if (s.total === 0 || s.done === 0) return 0;
+    return Math.ceil(s.done / s.total * item.circleVariants);
+}
+
+function getSprawOpacity(item, progress) {
+    // opacity = 0.15 + (done/total) * 0.85
+    // Minimum 0.15 (zawsze lekko widoczna), max 1.0
+    var s = getSprawDone(item, progress);
+    if (s.total === 0) return 0.15;
+    return Math.round((0.15 + (s.done / s.total) * 0.85) * 100) / 100;
+}
+
+function getCircleImg(item, level) {
+    // Stara kompatybilność — użyj variant zamiast level
+    var variant = getSprawVariant(item, cachedProgress);
+    if (!variant || !item.circleVariants) return null;
+    return 'circles/' + item.id + '_' + variant + '.png';
+}
+
+function getCircleImgForProgress(item, progress) {
+    var variant = getSprawVariant(item, progress);
+    if (!item.circleVariants) return null;
+    // Jeśli nic nie zdane — pokaż wariant 1 ale z niską opacity
+    var v = variant || 1;
+    return 'circles/' + item.id + '_' + v + '.png';
+}
+
+
+// ══════════════════════════════════════════════════════
+// TABLICA SPRAWNOŚCI (12 slotów)
+// ══════════════════════════════════════════════════════
+
+var _boardSlots = Array(12).fill(null);
+var _stopnieStatus = {}; // stopienId -> {status, openedAt, closedAt} // { sprawnoscId, level, variantIdx }
+var _boardLoaded = false;
+var _boardPickingSlot = null; // który slot wypełniamy
+
+async function showBoardTab() {
+    bnavSetActive('board');
+    _boardLoaded = false;
+    document.getElementById('contentArea').innerHTML =
+        '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie tablicy...</p></div>';
+
+    // Pobierz tablicę z serwera
+    var r = await apiFetch('/board/' + (window._currentViewUserId || currentUser.id));
+    _boardSlots = r.ok ? r.data : Array(12).fill(null);
+    if (!Array.isArray(_boardSlots)) _boardSlots = Array(12).fill(null);
+    while (_boardSlots.length < 12) _boardSlots.push(null);
+
+    renderBoard();
+}
+
+
+// ══════════════════════════════════════════════════════
+// BOARD — dodawanie/usuwanie sprawności
+// ══════════════════════════════════════════════════════
+
+function boardSlotClick(pos) {
+    var slot = _boardSlots[pos];
+    if (slot && slot.sprawnoscId) {
+        // Zapełniony — kliknij żeby usunąć
+        if (!confirm('Usunąć tę sprawność z munduru?')) return;
+        _boardSlots[pos] = null;
+        boardSave();
+        renderBoard();
+    } else {
+        // Pusty — otwórz picker sprawności
+        openBoardPicker(pos);
+    }
+}
+
+function openBoardPicker(pos) {
+    _boardPickerPos = pos;
+    // Filtruj sprawności które już są na mundurze
+    var usedIds = _boardSlots.filter(Boolean).map(function(s){ return s.sprawnoscId; });
+    var available = db.filter(function(item){
+        return !item.id.startsWith('st_') && !usedIds.includes(item.id);
+    });
+
+    var html = '<div class="board-picker-overlay" onclick="if(event.target===this)closeBoardPicker()">'
+             + '<div class="board-picker-modal">'
+             + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+             + '<h3 style="margin:0;font-family:var(--ff-display)">Wybierz sprawność</h3>'
+             + '<button onclick="closeBoardPicker()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>'
+             + '</div>'
+             + '<input id="boardPickSearch" oninput="filterBoardPicker(this.value)" placeholder="Szukaj..." '
+             + 'style="width:100%;box-sizing:border-box;padding:8px 12px;background:var(--panel2);border:1.5px solid var(--border);'
+             + 'border-radius:var(--rs);color:var(--text);margin-bottom:10px;font-size:.88rem">'
+             + '<div id="boardPickList" style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+             + available.map(function(item){
+                 var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+                 var level  = getSprawLevel(item, cachedProgress);
+                 return '<div class="board-pick-item" data-id="'+item.id+'" onclick="boardPickSelect(''+item.id+'',''+item.category+'')">'
+                      + (imgSrc ? '<img src="'+imgSrc+'" class="board-pick-img">' : '<div class="board-pick-img-placeholder"></div>')
+                      + '<div class="board-pick-name">'+item.title+'</div>'
+                      + (level>0 ? '<div style="color:var(--amber);font-size:.65rem">'+'★'.repeat(level)+'</div>' : '')
+                      + '</div>';
+             }).join('')
+             + '</div></div></div>';
+
+    document.body.insertAdjacentHTML('beforeend', html);
+    document.getElementById('boardPickSearch').focus();
+}
+
+function filterBoardPicker(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('.board-pick-item').forEach(function(el){
+        el.style.display = el.dataset.id.toLowerCase().includes(q)
+            || el.querySelector('.board-pick-name').textContent.toLowerCase().includes(q)
+            ? '' : 'none';
+    });
+}
+
+function closeBoardPicker() {
+    var overlay = document.querySelector('.board-picker-overlay');
+    if (overlay) overlay.remove();
+}
+
+function boardPickSelect(sprawnoscId) {
+    closeBoardPicker();
+    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId, variantIdx: 1, level: 1 };
+    boardSave();
+    renderBoard();
+}
+
+async function boardSave() {
+    var uid = window._currentViewUserId || currentUser.id;
+    await apiFetch('/board/' + uid, {
+        method: 'POST',
+        body: JSON.stringify({ slots: _boardSlots })
+    });
+}
+
+var _boardPickerPos = 0;
+
+function renderBoard() {
+    var isOwn  = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
+    var filled = 0;
+    for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
+    var row2unlocked = (filled >= 6);
+    var visible = Math.min(filled + 1, 12);
+
+    /* ══ STOPNIE — 6 kwadratów 2×3 ══ */
+    var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+    var sqHtml = '<div class="msq-grid">';
+    ORDER.forEach(function(sid) {
+        var e     = STOPNIE_IMG_MAP[sid];
+        var st    = _stopnieStatus[sid];
+        var label = e ? e.label : sid;
+        var color = e ? e.color : '#888';
+        var imgF  = e ? (e.imgFilter || 'none') : 'none';
+
+        if (!st) {
+            /* szary, pusty */
+            sqHtml += '<div class="msq-sq msq-sq-ghost" title="'+label+'">'
+                    + '<div class="msq-sq-lbl">'+label+'</div>'
+                    + '</div>';
+        } else if (st.status === 'open') {
+            /* kolorowy border, BEZ ikonki */
+            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:'+color+'" title="'+label+'">'
+                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+                    + '</div>';
+        } else {
+            /* zaliczony — z ikonką */
+            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:'+color+'" title="'+label+'">'
+                    + '<img src="stopnie/'+e.key+'_1.png" class="msq-sq-img" style="filter:'+imgF+'">'
+                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+                    + '</div>';
+        }
+    });
+    sqHtml += '</div>';
+
+    /* ══ SPRAWNOŚCI — kółka ══ */
+    var circHtml = '<div class="msq-circles">';
+    for (var i = 0; i < visible; i++) {
+        if (i >= 6 && !row2unlocked) {
+            circHtml += '<div class="msq-circle msq-circle-locked">🔒</div>';
+            continue;
+        }
+        var slot = _boardSlots[i];
+        var oc   = isOwn ? 'onclick="boardSlotClick('+i+')"' : '';
+        if (slot && slot.sprawnoscId) {
+            var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
+            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
+                              : 'circles/'+slot.sprawnoscId+'_1.png';
+            var level  = item ? getSprawLevel(item, cachedProgress) : 0;
+            circHtml += '<div class="msq-circle msq-circle-filled" '+oc+'>'
+                      + '<img src="'+imgSrc+'" class="msq-circle-img">'
+                      + (level>0 ? '<div class="msq-circle-stars">'+'★'.repeat(level)+'</div>' : '')
+                      + '<div class="msq-circle-name">'+(item?item.title:slot.sprawnoscId)+'</div>'
+                      + '</div>';
+        } else {
+            circHtml += '<div class="msq-circle msq-circle-empty" '+oc+'>'
+                      + '<span class="msq-circle-plus">+</span>'
+                      + '</div>';
+        }
+    }
+    circHtml += '</div>';
+
+    var html = '<div class="mundur-wrap">'
+             + '<h2 class="mundur-title">Mój Mundur</h2>'
+             + sqHtml
+             + circHtml
+             + '</div>';
+
+    document.getElementById('contentArea').innerHTML = html;
+}
+function closeBoardPicker() {
+    document.getElementById('boardPickerOverlay').style.display = 'none';
+}
+
+async function pickBoardSprawnosc(sprawnoscId, level) {
+    closeBoardPicker();
+    _boardSlots[_boardPickingSlot] = { sprawnoscId, level, variantIdx: level };
+    await saveBoardSlot(_boardPickingSlot, { sprawnoscId, level, variantIdx: level });
+    renderBoard();
+}
+
+async function saveBoardSlot(pos, data) {
+    await apiFetch('/board/' + currentUser.id, {
+        method: 'POST',
+        body: JSON.stringify({ position: pos, slot: data })
+    });
+}
+
+
+
+// ══════════════════════════════════════════════════════
+// STOPNIE — ikony kategorii i statusy w sidebarze  
+// ══════════════════════════════════════════════════════
+
+
+
+
+var STOPNIE_IMG_MAP = {
+    'st_1': { key:'adept_adeptka',                    color:'rgba(255,255,255,.15)', imgFilter:'invert(1) opacity(.25)', imgs:4 , label:'Adept'       },
+    'st_2': { key:'mlodzik_ochotniczka',               color:'#e5e5e5',              imgFilter:'invert(1)',              imgs:7 , label:'Młodzik'      },
+    'st_3': { key:'wywiadowca_tropicielka',            color:'#34d399',              imgFilter:'invert(1) sepia(1) saturate(3) hue-rotate(100deg)', imgs:6 , label:'Wywiadowca'   },
+    'st_4': { key:'cwik_samarytanka',                  color:'#fbbf24',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(10deg)',  imgs:6 , label:'Ćwik'         },
+    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#f97316',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(340deg)', imgs:7 , label:'Harcerz Orli' },
+    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#f43f5e',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(300deg)', imgs:6 , label:'Harcerz RP'   },
+};
+
+function getStopienCatImg(stopienId, groupIndex) {
+    var e = STOPNIE_IMG_MAP[stopienId];
+    if (!e || groupIndex >= e.imgs) return null;
+    return 'stopnie/' + e.key + '_' + (groupIndex + 1) + '.png';
+}
+
+var STOPNIE_CATEGORY_ICONS = {
+    'Bielik':        '🦅',
+    'Lilijka':       '⚜️',
+    'Róża Wiatrów':  '🧭',
+    'Robinson':      '🏕️',
+    'Las':           '🌲',
+    'Plaster':       '🩹',
+};
+
+var STOPNIE_ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+
+function getStopienNavBadge(item) {
+    if (!item.id || !item.id.startsWith('st_')) return '';
+    var st = _stopnieStatus[item.id];
+    if (!st) return '<span class="nav-stopien-badge nav-stopien-none">—</span>';
+    if (st.status === 'open')   return '<span class="nav-stopien-badge nav-stopien-open">📖</span>';
+    if (st.status === 'closed') return '<span class="nav-stopien-badge nav-stopien-done">✅</span>';
+    return '';
+}
+
+function isStopienLocked(item) {
+    if (!item.id || !item.id.startsWith('st_')) return false;
+    var idx = STOPNIE_ORDER.indexOf(item.id);
+    if (idx === 0) return false; // pierwszy zawsze dostępny
+    var prev = _stopnieStatus[STOPNIE_ORDER[idx - 1]];
+    return !prev || prev.status !== 'closed';
+}
+
+// ══════════════════════════════════════════════════════
+// STOPNIE — otwieranie i zamykanie
+// ══════════════════════════════════════════════════════
+
+async function loadStopnieStatus(userId) {
+    var r = await apiFetch('/stopnie/' + userId);
+    _stopnieStatus = {};
+    if (r.ok && Array.isArray(r.data)) {
+        r.data.forEach(function(s) { _stopnieStatus[s.stopienId] = s; });
+    }
+}
+
+function getStopienStatus(stopienId) {
+    return _stopnieStatus[stopienId] || null;
+}
+
+function canManageStopnie() {
+    var role = currentUser.role;
+    return ['superadmin','ksis','instruktor','druzynowy'].indexOf(role) >= 0;
+}
+
+function canOpenStopien(stopienId) {
+    if (!canManageStopnie()) return false;
+    var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+    var idx = ORDER.indexOf(stopienId);
+    if (idx < 0) return false;
+    // Stopień już otwarty lub zamknięty
+    if (_stopnieStatus[stopienId]) return false;
+    // Pierwszy stopień zawsze można otworzyć
+    if (idx === 0) return true;
+    // Poprzedni musi być zamknięty
+    var prev = _stopnieStatus[ORDER[idx - 1]];
+    return prev && prev.status === 'closed';
+}
+
+async function openStopien(userId, stopienId) {
+    var r = await apiFetch('/stopnie/' + userId + '/open', {
+        method: 'POST',
+        body: JSON.stringify({ stopienId })
+    });
+    if (!r.ok) { alert('Błąd: ' + (r.data && r.data.error || 'Nieznany błąd')); return; }
+    _stopnieStatus[stopienId] = r.data;
+    // Odśwież aktualnie otwarty content
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+}
+
+async function closeStopien(userId, stopienId) {
+    var item = db.find(function(x){ return x.id === stopienId; });
+    if (item) {
+        var totalT = 0, doneT = 0;
+        item.groups.forEach(function(g, gi) {
+            g.tasks.forEach(function(t, ti) {
+                totalT++;
+                if (cachedProgress[stopienId + '-' + gi + '-' + ti]) doneT++;
+            });
+        });
+        if (doneT < totalT) {
+            alert('Nie można zaliczyć — brakuje ' + (totalT-doneT) + ' zadań!');
+            return;
+        }
+    }
+    if (!confirm('Zaliczyć stopień ' + (item ? item.title : stopienId) + '?\nHarcerz nie będzie mógł edytować jego zadań.')) return;
+    var r = await apiFetch('/stopnie/' + userId + '/close', {
+        method: 'POST',
+        body: JSON.stringify({ stopienId })
+    });
+    if (!r.ok) { alert('Błąd: ' + (r.data && r.data.error || 'Nieznany błąd')); return; }
+    _stopnieStatus[stopienId] = r.data;
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+}
+
+function stopienStatusBadge(stopienId) {
+    var s = _stopnieStatus[stopienId];
+    if (!s) return '<span class="stopien-badge stopien-badge-locked">🔒 Zamknięty</span>';
+    if (s.status === 'open')   return '<span class="stopien-badge stopien-badge-open">📖 Otwarty</span>';
+    if (s.status === 'closed') return '<span class="stopien-badge stopien-badge-done">✅ Zaliczony</span>';
+    return '';
+}
+
+// ══════════════════════════════════════════════════════
+// PICKER OSOBY w widoku sprawnosci
+// ══════════════════════════════════════════════════════
+var _memberPickerLoaded = false;
+
+function toggleMemberPicker() {
+    var dd = document.getElementById('memberPickerDropdown');
+    if (!dd) return;
+    if (dd.style.display === 'none') {
+        dd.style.display = 'block';
+        if (!_memberPickerLoaded) {
+            _memberPickerLoaded = true;
+            loadMemberPickerList();
+        }
+    } else {
+        dd.style.display = 'none';
+    }
+}
+
+// Zamknij picker kliknięciem poza nim
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#memberPickBtn') && !e.target.closest('#memberPickerDropdown')) {
+        var dd = document.getElementById('memberPickerDropdown');
+        if (dd) dd.style.display = 'none';
+    }
+});
+
+async function loadMemberPickerList() {
+    var dd = document.getElementById('memberPickerDropdown');
+    if (!dd) return;
+    dd.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:.85rem">Ladowanie...</div>';
+
+    var r = await apiFetch('/team-members');
+    if (!r.ok) { dd.innerHTML = '<div style="padding:12px;color:#c33;font-size:.85rem">Blad ladowania.</div>'; return; }
+
+    var role   = currentUser.role;
+    var myRank = rankIndex(role);
+    var members = r.data.filter(function(u) {
+        return u.status === 'active' && u._id !== currentUser.id
+            && (role === 'superadmin' || rankIndex(u.role) > myRank);
+    });
+
+    if (!members.length) {
+        dd.innerHTML = '<div style="padding:12px;color:var(--muted);font-size:.85rem">Brak osob do wybrania.</div>';
+        return;
+    }
+
+    // Własne sprawnosci na górze
+    var selfHtml = '<div onclick="pickMember(null)" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);'
+        + 'font-size:.88rem;font-weight:600;color:var(--f4);display:flex;align-items:center;gap:8px;">'
+        + '&#128100; Moje sprawnosci</div>';
+
+    var listHtml = members.map(function(u) {
+        var rColor = ROLE_COLORS[u.role] || '#546e7a';
+        var rLabel = ROLE_LABELS[u.role] || u.role;
+        return '<div onclick="pickMember(\'' + u._id + '\',\'' + u.name.replace(/'/g,"\'") + '\',\'' + u.role + '\')" '
+            + 'style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);'
+            + 'font-size:.88rem;display:flex;align-items:center;gap:8px;" '
+            + 'class="member-picker-item">'
+            + '<span>&#128100;</span>'
+            + '<span style="flex:1">' + u.name + '</span>'
+            + '<span style="font-size:.7rem;padding:2px 7px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+            + '</div>';
+    }).join('');
+
+    dd.innerHTML = selfHtml + listHtml;
+}
+
+async function pickMember(userId, userName, userRole) {
+    _memberPickerLoaded = false;
+    var dd = document.getElementById('memberPickerDropdown');
+    if (dd) dd.style.display = 'none';
+
+    if (!userId) {
+        currentViewUserId           = currentUser.id;
+        window._currentViewUserRole = currentUser.role;
+        window._currentViewUserName = currentUser.name;
+    } else {
+        currentViewUserId           = userId;
+        window._currentViewUserRole = userRole || 'user';
+        window._currentViewUserName = userName || '';
+    }
+
+    // Załaduj progress i statusy stopni wybranej osoby
+    var uid = userId || currentUser.id;
+    var r = await apiFetch('/progress/' + uid);
+    cachedProgress = (r.ok && r.data) ? r.data : {};
+    await loadStopnieStatus(uid);
+
+    // Zapisz w localStorage jeśli to własny progress
+    if (!userId || userId === currentUser.id) {
+        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+    }
+
+    // Odśwież sidebar ikony dla nowej osoby
+    renderSidebar();
+    updateUIStats();
+
+    // Odśwież aktywny widok
+    var activeNav = document.querySelector('.nav-item.active');
+    if (activeNav) {
+        var id = activeNav.id.replace('nav-item-','');
+        if (id) loadContent(id);
+    }
+
+    // Zaktualizuj przycisk
+    var btn = document.getElementById('memberPickBtn');
+    if (btn) {
+        btn.innerHTML = '&#128101; ' + (userName || currentUser.name)
+            + '<span style="font-size:.7rem;color:var(--muted)">&#9660;</span>';
+    }
+}
+
+// ══════════════════════════════════════════════════════
+// WAKE UP SERVER
+// ══════════════════════════════════════════════════════
+fetch('https://harcerze-backend.onrender.com/api/ping').catch(function(){});
+</script>
+</body>
+                 return '<div class="board-pick-item" data-id="'+item.id+'" onclick="boardPickSelect(\'' + item.id + '\')">'>
