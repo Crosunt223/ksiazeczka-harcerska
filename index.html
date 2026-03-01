@@ -734,27 +734,50 @@ input:checked+.slider:before{transform:translateX(21px);}
   font-size:1rem;opacity:.3;cursor:default;
 }
 
-/* Board picker modal */
-.board-picker-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.7);
-  display:flex;align-items:flex-end;justify-content:center;z-index:999;
+
+/* ══ endmundur ══ */
+/* Board picker */
+.bp-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  display:flex;align-items:flex-end;justify-content:center;z-index:9999;
 }
-.board-picker-modal{
+.bp-modal{
   background:var(--panel);border-radius:20px 20px 0 0;
-  padding:20px 16px;width:100%;max-width:480px;
-  max-height:85vh;overflow-y:auto;
+  width:100%;max-width:480px;max-height:80vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding:0;
 }
-.board-pick-item{
+.bp-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 10px;flex-shrink:0;
+}
+.bp-title{margin:0;font-family:var(--ff-display);font-size:1.1rem;}
+.bp-close{
+  background:var(--panel2);border:none;color:var(--text);
+  width:32px;height:32px;border-radius:50%;cursor:pointer;
+  font-size:1rem;display:flex;align-items:center;justify-content:center;
+}
+.bp-search{
+  margin:0 16px 10px;padding:9px 13px;
   background:var(--panel2);border:1.5px solid var(--border);
-  border-radius:12px;padding:10px 8px;cursor:pointer;
+  border-radius:var(--rs);color:var(--text);font-size:.88rem;
+  flex-shrink:0;
+}
+.bp-list{
+  flex:1;overflow-y:auto;padding:0 16px 16px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+}
+.bp-item{
+  background:var(--panel2);border:1.5px solid var(--border);
+  border-radius:12px;padding:10px 6px 8px;cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:4px;
   transition:.15s;text-align:center;
 }
-.board-pick-item:active{transform:scale(.95);}
-.board-pick-img{width:52px;height:52px;border-radius:50%;object-fit:contain;}
-.board-pick-img-placeholder{width:52px;height:52px;border-radius:50%;background:var(--panel);border:1.5px dashed var(--border);}
-.board-pick-name{font-size:.72rem;font-weight:600;line-height:1.2;color:var(--text);}
-/* ══ endmundur ══ */
+.bp-item:active{transform:scale(.94);background:var(--f4);}
+.bp-img{width:50px;height:50px;border-radius:50%;object-fit:contain;flex-shrink:0;}
+.bp-img-empty{background:var(--panel);border:1.5px dashed var(--border);border-radius:50%;}
+.bp-name{font-size:.7rem;font-weight:600;line-height:1.2;color:var(--text);}
+.bp-stars{font-size:.6rem;color:var(--amber);}
 </style>
 </head>
 <body>
@@ -986,43 +1009,56 @@ let cachedProgress    = {};
 // ================================================================
 // INICJALIZACJA
 // ================================================================
-window.onload = async () => {
+window.onload = function() {
     loadSettings();
     db = [
         ...(typeof stopnieData    !== 'undefined' ? stopnieData    : []),
         ...(typeof sprawnosciData !== 'undefined' ? sprawnosciData : [])
     ];
+    patchDbCircleVariants();
 
-    patchDbCircleVariants(); // dodaj circleVariants do każdej sprawności
-    const savedToken    = localStorage.getItem('hk_token');
-    const savedUser     = localStorage.getItem('hk_user');
-    const savedProgress = localStorage.getItem('hk_progress');
+    // ── Czytaj localStorage z pełną ochroną ──
+    var savedToken = null, savedUser = null, savedProgress = null;
+    try { savedToken    = localStorage.getItem('hk_token'); }    catch(e) {}
+    try { savedUser     = localStorage.getItem('hk_user'); }     catch(e) {}
+    try { savedProgress = localStorage.getItem('hk_progress'); } catch(e) {}
 
+    // ── Spróbuj odtworzyć sesję ──
+    var userObj = null;
     if (savedToken && savedUser) {
+        try { userObj = JSON.parse(savedUser); } catch(e) { userObj = null; }
+    }
+
+    if (savedToken && userObj && userObj.id) {
+        // Mamy sesję — wczytaj od razu bez czekania na serwer
         authToken   = savedToken;
-        currentUser = JSON.parse(savedUser);
-        // Zaladuj cache progress od razu z localStorage
+        currentUser = userObj;
         if (savedProgress) {
             try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
         }
-        // Inicjalizuj od razu (nie czekaj na serwer - działa offline/cold start)
+        // Pokaż aplikację natychmiast
         initAppAfterLogin();
-        // W tle sprawdź token - tylko gdy serwer odpowie 401 to wyloguj
-        apiFetch('/my-team').then(function(pingRes) {
-            if (pingRes.status === 401 || pingRes.status === 403) {
-                authToken = null; currentUser = null;
-                localStorage.removeItem('hk_token');
-                localStorage.removeItem('hk_user');
-                localStorage.removeItem('hk_progress');
-                loadTeams().then(function() { showPanel('login'); });
-            }
-            // status 0 = serwer spi (Render cold start) - nie wylogowuj
-        });
+        // W tle tylko odśwież progress — NIE wylogowuj nigdy przy błędzie
+        _backgroundRefreshProgress();
     } else {
-        await loadTeams();
-        showPanel('login');
+        // Brak sesji — pokaż login
+        loadTeams().then(function() { showPanel('login'); }).catch(function() { showPanel('login'); });
     }
 };
+
+function _backgroundRefreshProgress() {
+    if (!authToken || !currentUser || !currentUser.id) return;
+    apiFetch('/progress/' + currentUser.id).then(function(r) {
+        // Aktualizuj tylko jeśli dostaliśmy prawdziwe dane (nie błąd)
+        if (r.ok && r.data && typeof r.data === 'object' && !r.data.error) {
+            cachedProgress = r.data;
+            try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
+            updateUIStats();
+        }
+        // Przy każdym błędzie (sieć, serwer śpi, 401, 403) — NIC nie robimy
+    }).catch(function() {});
+}
+
 
 // ================================================================
 // PANELE LOGOWANIA
@@ -1186,20 +1222,8 @@ function initAppAfterLogin() {
     }
     renderSidebar(); // ikony od razu z localStorage cache
 
-    // Potem zaktualizuj progress z serwera w tle
-    apiFetch('/progress/' + currentUser.id).then(function(r) {
-        if (!r.ok) return;
-        var fresh = r.data || {};
-        cachedProgress = fresh;
-        try { localStorage.setItem('hk_progress', JSON.stringify(cachedProgress)); } catch(e) {}
-        updateUIStats(); // odswierz procenty i ikony
-        // Odswierz aktualnie otwarty content
-        var activeNav = document.querySelector('.nav-item.active');
-        if (activeNav) {
-            var activeId = activeNav.id.replace('nav-item-','');
-            if (activeId) loadContent(activeId);
-        }
-    });
+    // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
+    // (wywoływane z window.onload)
 }
 
 // ================================================================
@@ -2662,66 +2686,118 @@ async function showBoardTab() {
 // BOARD — dodawanie/usuwanie sprawności
 // ══════════════════════════════════════════════════════
 
+var _boardPickerPos = 0;
+
 function boardSlotClick(pos) {
     var slot = _boardSlots[pos];
     if (slot && slot.sprawnoscId) {
-        // Zapełniony — kliknij żeby usunąć
-        if (!confirm('Usunąć tę sprawność z munduru?')) return;
-        _boardSlots[pos] = null;
+        // Wypełniony — pytaj o usunięcie
+        if (!confirm('Usunąć "' + slot.sprawnoscId + '" z munduru?')) return;
+        for (var i = pos; i < 11; i++) {
+            _boardSlots[i] = _boardSlots[i+1] || null;
+        }
+        _boardSlots[11] = null;
         boardSave();
         renderBoard();
     } else {
-        // Pusty — otwórz picker sprawności
+        // Pusty — otwórz picker
         openBoardPicker(pos);
     }
 }
 
 function openBoardPicker(pos) {
     _boardPickerPos = pos;
-    // Filtruj sprawności które już są na mundurze
-    var usedIds = _boardSlots.filter(Boolean).map(function(s){ return s.sprawnoscId; });
-    var available = db.filter(function(item){
-        return !item.id.startsWith('st_') && !usedIds.includes(item.id);
+
+    // Tylko sprawności które ma już zdane (jakikolwiek postęp)
+    var usedIds = [];
+    for (var k = 0; k < 12; k++) {
+        if (_boardSlots[k] && _boardSlots[k].sprawnoscId) usedIds.push(_boardSlots[k].sprawnoscId);
+    }
+
+    var available = db.filter(function(item) {
+        if (item.id.startsWith('st_')) return false;
+        if (usedIds.indexOf(item.id) !== -1) return false;
+        // Tylko sprawności gdzie jest jakikolwiek postęp
+        var s = getSprawDone(item, cachedProgress);
+        return s.done > 0;
     });
 
-    var html = '<div class="board-picker-overlay" onclick="if(event.target===this)closeBoardPicker()">'
-             + '<div class="board-picker-modal">'
-             + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
-             + '<h3 style="margin:0;font-family:var(--ff-display)">Wybierz sprawność</h3>'
-             + '<button onclick="closeBoardPicker()" style="background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer">✕</button>'
-             + '</div>'
-             + '<input id="boardPickSearch" oninput="filterBoardPicker(this.value)" placeholder="Szukaj..." '
-             + 'style="width:100%;box-sizing:border-box;padding:8px 12px;background:var(--panel2);border:1.5px solid var(--border);'
-             + 'border-radius:var(--rs);color:var(--text);margin-bottom:10px;font-size:.88rem">'
-             + '<div id="boardPickList" style="max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-             + available.map(function(item){
-                 var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
-                 var level  = getSprawLevel(item, cachedProgress);
-                 return '<div class="board-pick-item" onclick="boardPickSelect(\'' + item.id + '\')">'
-             }).join('')
-             + '</div></div></div>';
+    // Zbuduj listę
+    var listItems = available.length === 0
+        ? '<p style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1">Brak zdanych sprawności do dodania</p>'
+        : '';
 
-    document.body.insertAdjacentHTML('beforeend', html);
-    document.getElementById('boardPickSearch').focus();
+    for (var i = 0; i < available.length; i++) {
+        var item = available[i];
+        var imgSrc = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : '';
+        var level  = getSprawLevel(item, cachedProgress);
+        var stars  = level > 0 ? '<div class="bp-stars">' + '★'.repeat(level) + '</div>' : '';
+        var imgHtml = imgSrc
+            ? '<img src="' + imgSrc + '" class="bp-img">'
+            : '<div class="bp-img bp-img-empty"></div>';
+        listItems += '<div class="bp-item" data-id="' + item.id + '" data-title="' + item.title.toLowerCase().replace(/"/g,'') + '">'
+            + imgHtml
+            + '<div class="bp-name">' + item.title + '</div>'
+            + stars
+            + '</div>';
+    }
+
+    // Usuń stary modal jeśli istnieje
+    var old = document.getElementById('boardPickerOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'boardPickerOverlay';
+    overlay.className = 'bp-overlay';
+
+    var modal = document.createElement('div');
+    modal.className = 'bp-modal';
+    modal.innerHTML = '<div class="bp-header">'
+        + '<h3 class="bp-title">Wybierz sprawność</h3>'
+        + '<button class="bp-close" id="bpCloseBtn">✕</button>'
+        + '</div>'
+        + '<input id="bpSearch" class="bp-search" placeholder="Szukaj..." autocomplete="off">'
+        + '<div class="bp-list" id="bpList">' + listItems + '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    // Event listenery - nie inline onclick żeby uniknąć błędów
+    document.getElementById('bpCloseBtn').addEventListener('click', closeBoardPicker);
+    document.getElementById('bpSearch').addEventListener('input', function(){ filterBoardPicker(this.value); });
+    document.getElementById('bpSearch').focus();
+
+    // Klik na overlay (nie modal) zamyka
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeBoardPicker();
+    });
+
+    // Klik na item
+    var items = document.querySelectorAll('.bp-item');
+    for (var j = 0; j < items.length; j++) {
+        items[j].addEventListener('click', function() {
+            boardPickSelect(this.dataset.id);
+        });
+    }
 }
 
 function filterBoardPicker(q) {
-    q = q.toLowerCase();
-    document.querySelectorAll('.board-pick-item').forEach(function(el){
-        el.style.display = el.dataset.id.toLowerCase().includes(q)
-            || el.querySelector('.board-pick-name').textContent.toLowerCase().includes(q)
-            ? '' : 'none';
-    });
+    q = q.toLowerCase().trim();
+    var items = document.querySelectorAll('.bp-item');
+    for (var i = 0; i < items.length; i++) {
+        var t = items[i].dataset.title || '';
+        items[i].style.display = (!q || t.indexOf(q) !== -1) ? '' : 'none';
+    }
 }
 
 function closeBoardPicker() {
-    var overlay = document.querySelector('.board-picker-overlay');
-    if (overlay) overlay.remove();
+    var el = document.getElementById('boardPickerOverlay');
+    if (el) el.remove();
 }
 
 function boardPickSelect(sprawnoscId) {
     closeBoardPicker();
-    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId, variantIdx: 1, level: 1 };
+    _boardSlots[_boardPickerPos] = { sprawnoscId: sprawnoscId };
     boardSave();
     renderBoard();
 }
@@ -2734,14 +2810,14 @@ async function boardSave() {
     });
 }
 
-var _boardPickerPos = 0;
 
 function renderBoard() {
     var isOwn  = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
+
+    // Ile zajętych slotów
     var filled = 0;
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
-    var visible = Math.min(filled + 1, 12);
 
     /* ══ STOPNIE — 6 kwadratów 2×3 ══ */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
@@ -2754,51 +2830,61 @@ function renderBoard() {
         var imgF  = e ? (e.imgFilter || 'none') : 'none';
 
         if (!st) {
-            /* szary, pusty */
-            sqHtml += '<div class="msq-sq msq-sq-ghost" title="'+label+'">'
-                    + '<div class="msq-sq-lbl">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-ghost" title="' + label + '">'
+                    + '<div class="msq-sq-lbl">' + label + '</div>'
                     + '</div>';
         } else if (st.status === 'open') {
-            /* kolorowy border, BEZ ikonki */
-            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:'+color+'" title="'+label+'">'
-                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:' + color + '" title="' + label + '">'
+                    + '<div class="msq-sq-lbl" style="color:' + color + '">' + label + '</div>'
                     + '</div>';
         } else {
-            /* zaliczony — z ikonką */
-            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:'+color+'" title="'+label+'">'
-                    + '<img src="stopnie/'+e.key+'_1.png" class="msq-sq-img" style="filter:'+imgF+'">'
-                    + '<div class="msq-sq-lbl" style="color:'+color+'">'+label+'</div>'
+            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:' + color + '" title="' + label + '">'
+                    + '<img src="stopnie/' + e.key + '_1.png" class="msq-sq-img" style="filter:' + imgF + '" onerror="this.style.display=\'none\'">'
+                    + '<div class="msq-sq-lbl" style="color:' + color + '">' + label + '</div>'
                     + '</div>';
         }
     });
     sqHtml += '</div>';
 
-    /* ══ SPRAWNOŚCI — kółka ══ */
+    /* ══ SPRAWNOŚCI — kółka, sekwencyjne odblokowanie ══ */
+    var maxVisible = Math.min(filled + 1, 12); // tylko 1 pusty slot na końcu
     var circHtml = '<div class="msq-circles">';
-    for (var i = 0; i < visible; i++) {
+
+    for (var i = 0; i < maxVisible; i++) {
+        var slot = _boardSlots[i];
+        var canClick = isOwn;
+
         if (i >= 6 && !row2unlocked) {
+            // rząd 2 zablokowany
             circHtml += '<div class="msq-circle msq-circle-locked">🔒</div>';
             continue;
         }
-        var slot = _boardSlots[i];
-        var oc   = isOwn ? 'onclick="boardSlotClick('+i+')"' : '';
+
         if (slot && slot.sprawnoscId) {
+            // Wypełniony slot
             var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
-            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress)
-                              : 'circles/'+slot.sprawnoscId+'_1.png';
+            var imgSrc = item ? getCircleImgForProgress(item, cachedProgress) : null;
             var level  = item ? getSprawLevel(item, cachedProgress) : 0;
-            circHtml += '<div class="msq-circle msq-circle-filled" '+oc+'>'
-                      + '<img src="'+imgSrc+'" class="msq-circle-img">'
-                      + (level>0 ? '<div class="msq-circle-stars">'+'★'.repeat(level)+'</div>' : '')
-                      + '<div class="msq-circle-name">'+(item?item.title:slot.sprawnoscId)+'</div>'
+            var oc     = canClick ? ' onclick="boardSlotClick(' + i + ')"' : '';
+            circHtml += '<div class="msq-circle msq-circle-filled"' + oc + '>'
+                      + (imgSrc ? '<img src="' + imgSrc + '" class="msq-circle-img">' : '')
+                      + (level > 0 ? '<div class="msq-circle-stars">' + '★'.repeat(level) + '</div>' : '')
+                      + '<div class="msq-circle-name">' + (item ? item.title : slot.sprawnoscId) + '</div>'
                       + '</div>';
         } else {
-            circHtml += '<div class="msq-circle msq-circle-empty" '+oc+'>'
+            // Następny pusty slot do wypełnienia
+            var oc2 = canClick ? ' onclick="boardSlotClick(' + i + ')"' : '';
+            circHtml += '<div class="msq-circle msq-circle-empty"' + oc2 + '>'
                       + '<span class="msq-circle-plus">+</span>'
                       + '</div>';
         }
     }
     circHtml += '</div>';
+
+    if (filled < 6 && filled >= 1 && isOwn)
+        circHtml += '<p class="mundur-sub">Zapełnij rząd 1 aby odblokować rząd 2 (' + filled + '/6)</p>';
+    if (filled === 6 && isOwn)
+        circHtml += '<p class="mundur-sub" style="color:var(--amber)">Odblokowano drugi rząd! 🎉</p>';
 
     var html = '<div class="mundur-wrap">'
              + '<h2 class="mundur-title">Mój Mundur</h2>'
