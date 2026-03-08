@@ -34,6 +34,17 @@ body.neon-mode .sidebar { border-right: 1px solid rgba(0,255,180,.15); }
 body.neon-mode h2, body.neon-mode .nav-item.active { text-shadow: 0 0 8px var(--accent); }
 body.neon-mode .msq-circle-empty { box-shadow: 0 0 12px rgba(0,255,180,.4); }
 body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,.3); }
+
+#sidebarOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 199;
+}
+#sidebarOverlay.active {
+  display: block;
+}
 </style>
 <style>
 :root{
@@ -952,7 +963,7 @@ body.neon-mode .btn-main {
 </div>
 
 <!-- ══ SIDEBAR OVERLAY ══ -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:transparent;z-index:199;"></div>
 
 <!-- ══ APP SHELL ══ -->
 <div id="appShell">
