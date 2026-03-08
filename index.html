@@ -5614,6 +5614,81 @@ async function switchToUser(userId, userName, userRole) {
 // ================================================================
 // UI CORE
 // ================================================================
+
+// ══ WIDOK GŁÓWNY: 6 kategorii jako kafelki ══════════════
+var CAT_META = {
+    'Bielik':       { icon: '🦅', color: '#3b82f6' },
+    'Lilijka':      { icon: '⚜️',  color: '#8b5cf6' },
+    'Róża Wiatrów': { icon: '🧭', color: '#f59e0b' },
+    'Robinson':     { icon: '🏕️', color: '#10b981' },
+    'Las':          { icon: '🌲', color: '#16a34a' },
+    'Plaster':      { icon: '🩹', color: '#ef4444' },
+};
+var CAT_ORDER = ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'];
+
+function renderCategoryGrid() {
+    var html = '<div style="padding:16px">';
+    html += '<h2 style="margin:0 0 16px;font-size:1.3rem">Sprawności</h2>';
+    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">';
+
+    CAT_ORDER.forEach(function(cat) {
+        var meta  = CAT_META[cat] || { icon:'📋', color:'#888' };
+        var items = db.filter(function(x){ return x.category === cat && !x.id.startsWith('st_'); });
+        var done  = items.filter(function(x){ return getSprawLevel(x, cachedProgress) > 0; }).length;
+
+        html += '<div onclick="renderCategoryItems(\''+cat+'\')" style="'
+              + 'background:var(--panel2);border:2px solid '+meta.color+';border-radius:14px;'
+              + 'padding:18px 14px;cursor:pointer;text-align:center;'
+              + 'display:flex;flex-direction:column;align-items:center;gap:8px;'
+              + 'transition:.15s;user-select:none" '
+              + 'onmouseenter="this.style.transform=\'scale(1.03)\'" '
+              + 'onmouseleave="this.style.transform=\'scale(1)\'">'
+              + '<div style="font-size:2.4rem">'+meta.icon+'</div>'
+              + '<div style="font-weight:700;font-size:1rem;color:var(--f1)">'+cat+'</div>'
+              + '<div style="font-size:.8rem;color:var(--muted)">'+done+' / '+items.length+' zdobytych</div>'
+              + '</div>';
+    });
+
+    html += '</div></div>';
+    document.getElementById('contentArea').innerHTML = html;
+}
+
+function renderCategoryItems(cat) {
+    var items = db.filter(function(x){ return x.category === cat && !x.id.startsWith('st_'); });
+    var meta  = CAT_META[cat] || { icon:'📋', color:'#888' };
+
+    var html = '<div style="padding:16px">';
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
+    html += '<button onclick="renderCategoryGrid()" style="background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:0">←</button>';
+    html += '<span style="font-size:1.5rem">'+meta.icon+'</span>';
+    html += '<h2 style="margin:0;font-size:1.2rem">'+cat+'</h2>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">';
+
+    items.forEach(function(item) {
+        var level  = getSprawLevel(item, cachedProgress);
+        var imgSrc = getCircleImgForProgress(item, cachedProgress);
+        var stars  = level > 0 ? ('<div style="color:#f59e0b;font-size:.7rem">'+'★'.repeat(level)+'</div>') : '';
+        var border = level > 0 ? '2px solid '+meta.color : '2px solid var(--border)';
+        var opacity = level > 0 ? '1' : '0.5';
+
+        html += '<div onclick="loadContent(\''+item.id+'\')" style="'
+              + 'background:var(--panel2);border:'+border+';border-radius:12px;'
+              + 'padding:10px 6px;cursor:pointer;text-align:center;'
+              + 'display:flex;flex-direction:column;align-items:center;gap:4px;'
+              + 'opacity:'+opacity+';transition:.15s" '
+              + 'onmouseenter="this.style.opacity=\'1\';this.style.transform=\'scale(1.04)\'" '
+              + 'onmouseleave="this.style.opacity=\''+opacity+'\';this.style.transform=\'scale(1)\'">'
+              + (imgSrc ? '<img src="'+imgSrc+'" style="width:52px;height:52px;object-fit:contain">' : '<div style="width:52px;height:52px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+meta.icon+'</div>')
+              + '<div style="font-size:.72rem;color:var(--f1);line-height:1.2">'+item.title+'</div>'
+              + stars
+              + '</div>';
+    });
+
+    html += '</div></div>';
+    document.getElementById('contentArea').innerHTML = html;
+}
+
 function goHome() {
     document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
     var isAdmin = currentUser.role !== 'user';
@@ -6208,8 +6283,8 @@ function bnavClick(tab) {
     }
     if (tab === 'book') {
         showSidebarArea();
-        goHome();
         renderSidebar();
+        renderCategoryGrid();
     }
     if (tab === 'uniform') {
         hideSidebarArea();
