@@ -5528,8 +5528,11 @@ async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
     window._currentViewUserRole = userRole || 'user';
     cachedProgress    = {};
+    _stopnieStatus    = {};
     var r = await apiFetch('/progress/' + userId);
-    cachedProgress = r.ok ? r.data : {};
+    cachedProgress = (r.ok && r.data) ? r.data : {};
+    // Załaduj statusy stopni dla viewowanego usera
+    await loadStopnieStatus(userId);
     goHome();
     renderSidebar();
     setTimeout(function() {
