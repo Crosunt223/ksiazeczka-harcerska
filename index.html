@@ -5156,7 +5156,7 @@ function initAppAfterLogin() {
         renderAdminDashboard();
     } else {
         bnavSetActive('book');
-        goHome();
+        renderCategoryGrid();
     }
     renderSidebar(); // ikony od razu z localStorage cache
 
@@ -5627,8 +5627,26 @@ var CAT_META = {
 var CAT_ORDER = ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'];
 
 function renderCategoryGrid() {
+    var isAdmin = currentUser && currentUser.role !== 'user';
+    var viewName = window._currentViewUserName || (currentUser ? currentUser.name : '');
     var html = '<div style="padding:16px">';
-    html += '<h2 style="margin:0 0 16px;font-size:1.3rem">Sprawności</h2>';
+
+    // Czuwaj header
+    html += '<div class="welcome-header" style="margin-bottom:16px">'
+          + '<h2>Czuwaj, ' + (viewName || '') + '!</h2>'
+          + (isAdmin ? '<button onclick="renderAdminDashboard()" style="background:var(--accent);border:none;color:white;padding:6px 14px;border-radius:8px;cursor:pointer;margin-top:8px;font-size:.85rem">← Wróć do drużyny</button>' : '')
+          + '</div>';
+
+    // Pasek postępu
+    html += '<div class="home-card" style="margin-bottom:16px">'
+          + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'
+          + '<h3 style="margin:0">Postęp sprawności</h3>'
+          + '<span id="total-progress" style="font-weight:bold;color:var(--primary);font-size:1.2em">0%</span>'
+          + '</div>'
+          + '<div class="big-progress-wrapper"><div class="big-progress-fill" id="total-bar"></div></div>'
+          + '</div>';
+
+    html += '<h3 style="margin:0 0 12px;font-size:1rem;color:var(--muted)">Kategorie sprawności</h3>';
     html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">';
 
     CAT_ORDER.forEach(function(cat) {
@@ -5651,6 +5669,7 @@ function renderCategoryGrid() {
 
     html += '</div></div>';
     document.getElementById('contentArea').innerHTML = html;
+    updateUIStats();
 }
 
 function renderCategoryItems(cat) {
@@ -6464,7 +6483,7 @@ document.addEventListener('click', function(e) {
 
 // ── showMainApp (helper dla switchToUser itp.) ─────────
 function showMainApp() {
-    goHome();
+    renderCategoryGrid();
     renderSidebar();
 }
 
