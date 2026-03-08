@@ -35,16 +35,6 @@ body.neon-mode h2, body.neon-mode .nav-item.active { text-shadow: 0 0 8px var(--
 body.neon-mode .msq-circle-empty { box-shadow: 0 0 12px rgba(0,255,180,.4); }
 body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,.3); }
 
-#sidebarOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: transparent;
-  z-index: 199;
-}
-#sidebarOverlay.active {
-  display: block;
-}
 </style>
 <style>
 :root{
@@ -273,7 +263,7 @@ body.dark .login-box h2{color:var(--f2);}
 /* SIDEBAR OVERLAY (mobile) */
 .sidebar-overlay{
   display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.5);z-index:200;backdrop-filter:blur(2px);
+  background:transparent;z-index:200;
 }
 .sidebar-overlay.active{display:block;}
 
@@ -978,7 +968,6 @@ body.neon-mode .btn-main {
 
   <!-- BODY -->
   <div class="app-body">
-    <div id="sidebarOverlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:transparent;z-index:199;"></div>
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
@@ -6658,8 +6647,17 @@ async function showBoardTab() {
         '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie tablicy...</p></div>';
 
     // Pobierz tablicę z serwera
-    var r = await apiFetch('/board/' + (window._currentViewUserId || currentUser.id));
-    _boardSlots = r.ok ? r.data : Array(12).fill(null);
+    var uid = window._currentViewUserId || currentUser.id;
+    var r = await apiFetch('/board/' + uid);
+    if (r.ok && Array.isArray(r.data) && r.data.length) {
+        _boardSlots = r.data;
+    } else {
+        // Fallback: localStorage
+        try {
+            var saved = localStorage.getItem('hk_board_' + uid);
+            _boardSlots = saved ? JSON.parse(saved) : Array(12).fill(null);
+        } catch(e) { _boardSlots = Array(12).fill(null); }
+    }
     if (!Array.isArray(_boardSlots)) _boardSlots = Array(12).fill(null);
     while (_boardSlots.length < 12) _boardSlots.push(null);
 
@@ -6789,10 +6787,15 @@ function boardPickSelect(sprawnoscId) {
 
 async function boardSave() {
     var uid = window._currentViewUserId || currentUser.id;
-    await apiFetch('/board/' + uid, {
-        method: 'POST',
-        body: JSON.stringify({ slots: _boardSlots })
-    });
+    try {
+        await apiFetch('/board/' + uid, {
+            method: 'POST',
+            body: JSON.stringify({ slots: _boardSlots })
+        });
+    } catch(e) {
+        // fallback: zapisz w localStorage
+        try { localStorage.setItem('hk_board_' + uid, JSON.stringify(_boardSlots)); } catch(e2) {}
+    }
 }
 
 
