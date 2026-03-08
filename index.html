@@ -953,7 +953,7 @@ body.neon-mode .btn-main {
 </div>
 
 <!-- ══ SIDEBAR OVERLAY ══ -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:transparent;z-index:199;"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- ══ APP SHELL ══ -->
 <div id="appShell">
@@ -6785,6 +6785,12 @@ function boardPickSelect(sprawnoscId) {
     renderBoard();
 }
 
+async function boardSaveAndNotify() {
+    await boardSave();
+    var btn = document.querySelector('[onclick="boardSaveAndNotify()"]');
+    if (btn) { var orig = btn.textContent; btn.textContent = 'Zapisano!'; setTimeout(function(){ btn.textContent = orig; }, 2000); }
+}
+
 async function boardSave() {
     var uid = window._currentViewUserId || currentUser.id;
     try {
@@ -6872,11 +6878,14 @@ function renderBoard() {
     }
     circHtml += '</div>';
 
+    var isOwn2 = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
+    var saveBtn = isOwn2 ? '<div style="text-align:center;margin-top:16px"><button onclick="boardSaveAndNotify()" style="padding:10px 28px;background:#16a34a;color:#fff;border:none;border-radius:20px;font-size:1rem;cursor:pointer;font-weight:600;">Zapisz mundur</button></div>' : '';
     document.getElementById('contentArea').innerHTML =
         '<div class="mundur-wrap">'
       + '<h2 class="mundur-title">Mój Mundur</h2>'
       + sqHtml
       + circHtml
+      + saveBtn
       + '</div>';
 }
 function closeBoardPicker() {
