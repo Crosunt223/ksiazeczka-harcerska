@@ -5143,6 +5143,13 @@ function initAppAfterLogin() {
     }
     renderSidebar(); // ikony od razu z localStorage cache
 
+    // Załaduj statusy stopni — potrzebne do munduru i widoku stopni
+    loadStopnieStatus(currentUser.id).then(function() {
+        // Odśwież mundur jeśli jest aktywny
+        var active = document.querySelector('.bnav-btn.active');
+        if (active && active.id === 'nav-board') renderBoard();
+    }).catch(function(){});
+
     // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
     // (wywoływane z window.onload)
 }
@@ -6935,11 +6942,12 @@ function canOpenStopien(stopienId) {
 async function openStopien(userId, stopienId) {
     var r = await apiFetch('/stopnie/' + userId + '/open', {
         method: 'POST',
-        body: JSON.stringify({ stopienId })
+        body: JSON.stringify({ stopienId: stopienId })
     });
     if (!r.ok) { alert('Błąd: ' + (r.data && r.data.error || 'Nieznany błąd')); return; }
-    _stopnieStatus[stopienId] = r.data;
-    // Odśwież aktualnie otwarty content
+    // Przeładuj wszystkie statusy żeby był spójny stan
+    await loadStopnieStatus(userId);
+    // Odśwież widok
     var activeNav = document.querySelector('.nav-item.active');
     if (activeNav) {
         var id = activeNav.id.replace('nav-item-','');
