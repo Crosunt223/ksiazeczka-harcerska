@@ -989,8 +989,12 @@ body.neon-mode .btn-main {
       <div class="bnav-icon">🪡</div>
       <span class="bnav-label">Mój Mundur</span>
     </button>
+    <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
+      <div class="bnav-icon">&#9881;</div>
+      <span class="bnav-label">Ustawienia</span>
+    </button>
   </nav>
-  <button id="settings-fab" onclick="bnavClick('settings')" style="position:fixed;bottom:70px;left:12px;width:44px;height:44px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);color:var(--f2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.4)">&#9881;</button>
+  
 
 </div>
 
@@ -6801,7 +6805,7 @@ function renderBoard() {
         } else {
             /* Pokaż ikonki z displaySid (poprzedniego zdanego lub obecnego closed) */
             var imgKey = eDisp.key;
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden">'
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#ffffff;display:flex;align-items:center;justify-content:center;overflow:hidden">'
                     + '<img src="stopnie/'+imgKey+'_'+(gi+1)+'.png" style="width:85%;height:85%;object-fit:contain">'
                     + '</div>';
         }
