@@ -6714,8 +6714,8 @@ function renderBoard() {
             sqHtml += '<div class="msq-sq msq-sq-ghost"></div>';
 
         } else if (st.status === 'open') {
-            /* OPEN — pełny kolor stopnia, jedna ikona */
-            sqHtml += '<div class="msq-sq msq-sq-open" style="background:' + color + ';border-color:' + color + '">'
+            /* OPEN — kolorowy border + lekkie tło + ikona */
+            sqHtml += '<div class="msq-sq" style="border:3px solid ' + color + ';background:rgba(0,0,0,.6)">'
                     + '<img src="stopnie/' + key + '_1.png" class="msq-single-img">'
                     + '</div>';
 
