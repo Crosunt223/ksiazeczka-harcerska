@@ -710,7 +710,7 @@ input:checked+.slider:before{transform:translateX(21px);}
 .msq-sq{
   aspect-ratio:1;border-radius:10px;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  padding:3px;box-sizing:border-box;transition:all .25s;
+  padding:4px;box-sizing:border-box;transition:all .25s;
 }
 .msq-sq-ghost{
   background:rgba(255,255,255,.04);
@@ -729,22 +729,21 @@ input:checked+.slider:before{transform:translateX(21px);}
 
 /* Jedna ikonka (open) */
 .msq-single-img{
-  width:75%;height:75%;object-fit:contain;
-  filter:invert(1) opacity(.7);
+  width:80%;height:80%;object-fit:contain;
+  opacity:.5;
 }
 
 /* Siatka ikonek (done) */
 .msq-imgrid{
   width:100%;height:100%;
-  display:grid;gap:1px;
-  align-items:center;justify-items:center;
+  display:grid;gap:0;
+  align-items:stretch;justify-items:stretch;
 }
 .msq-ig2{grid-template-columns:repeat(2,1fr);}
 .msq-ig3{grid-template-columns:repeat(3,1fr);}
 .msq-igimg{
   width:100%;height:100%;
   object-fit:contain;display:block;
-  filter:invert(1);
 }
 
 /* Kółka */
@@ -6798,10 +6797,10 @@ async function saveBoardSlot(pos, data) {
 
 var STOPNIE_IMG_MAP = {
     'st_1': { key:'adept_adeptka',                    color:'rgba(255,255,255,.15)', imgFilter:'invert(1) opacity(.25)', imgs:4 , label:'Adept'       },
-    'st_2': { key:'mlodzik_ochotniczka',               color:'#e5e5e5',              imgFilter:'invert(1)',              imgs:7 , label:'Młodzik'      },
+    'st_2': { key:'mlodzik_ochotniczka',               color:'#e5e5e5',              imgFilter:'invert(1)',              imgs:6 , label:'Młodzik'      },
     'st_3': { key:'wywiadowca_tropicielka',            color:'#34d399',              imgFilter:'invert(1) sepia(1) saturate(3) hue-rotate(100deg)', imgs:6 , label:'Wywiadowca'   },
     'st_4': { key:'cwik_samarytanka',                  color:'#fbbf24',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(10deg)',  imgs:6 , label:'Ćwik'         },
-    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#f97316',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(340deg)', imgs:7 , label:'Harcerz Orli' },
+    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#f97316',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(340deg)', imgs:6 , label:'Harcerz Orli' },
     'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#f43f5e',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(300deg)', imgs:6 , label:'Harcerz RP'   },
 };
 
