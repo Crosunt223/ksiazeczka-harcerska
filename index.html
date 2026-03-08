@@ -6698,45 +6698,67 @@ function renderBoard() {
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
 
-    /* ══ Znajdź aktualny stopień (otwarty lub ostatni zdany) ══ */
+    /* Znajdź aktywny stopień */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
-    var activeSid  = null;
+    var activeSid    = null;
     var activeStatus = null;
-
-    // Szukaj: najpierw otwarty, potem ostatni zamknięty
     for (var oi = 0; oi < ORDER.length; oi++) {
         var s = _stopnieStatus[ORDER[oi]];
-        if (s && s.status === 'open')    { activeSid = ORDER[oi]; activeStatus = 'open';   break; }
-        if (s && s.status === 'closed')  { activeSid = ORDER[oi]; activeStatus = 'closed'; }
+        if (s && s.status === 'open')   { activeSid = ORDER[oi]; activeStatus = 'open';   break; }
+        if (s && s.status === 'closed') { activeSid = ORDER[oi]; activeStatus = 'closed'; }
     }
 
     var e     = activeSid ? STOPNIE_IMG_MAP[activeSid] : null;
-    var color = e ? e.color : 'rgba(255,255,255,.2)';
-    var key   = e ? e.key : '';
+    var color = e ? e.color : 'rgba(255,255,255,.1)';
+    var key   = e ? e.key   : '';
 
-    /* ══ 6 kwadracików = 6 grup aktualnego stopnia ══ */
+    /* Pobierz postęp grup aktywnego stopnia */
+    var groupProgress = [0,0,0,0,0,0]; // 0=brak, 1=w trakcie, 2=ukończone
+    if (activeSid) {
+        var stItem = db.find(function(x){ return x.id === activeSid; });
+        if (stItem) {
+            stItem.groups.forEach(function(g, gi) {
+                var total = g.tasks.length;
+                var done  = 0;
+                g.tasks.forEach(function(t, ti) {
+                    if (cachedProgress[activeSid + '-' + gi + '-' + ti]) done++;
+                });
+                if (done === 0)     groupProgress[gi] = 0;
+                else if (done < total) groupProgress[gi] = 1;
+                else                groupProgress[gi] = 2;
+            });
+        }
+    }
+
+    /* 6 kwadracików */
     var sqHtml = '<div class="msq-grid">';
+    var showIcons = (activeSid && activeSid !== 'st_1' && activeStatus === 'closed');
 
     for (var gi = 0; gi < 6; gi++) {
-        if (!activeSid) {
-            /* Brak aktywnego stopnia — puste */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.15)"></div>';
-        } else if (activeSid === 'st_1') {
-            /* Adept — zero ikon, zero ramki */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.08);background:transparent"></div>';
+        if (!activeSid || activeSid === 'st_1') {
+            /* Adept (open lub done) — zero ikon, zero ramki */
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.08)"></div>';
+        } else if (!showIcons) {
+            /* Otwarty (nie adept) — ramka koloru stopnia, brak ikon */
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:rgba(0,0,0,.3)"></div>';
         } else {
-            /* Normalny stopień — każda grupa ma swoją ikonkę */
-            var imgN    = gi + 1;
-            var tileBg  = e.tileBg || 'rgba(255,255,255,.05)';
+            /* Zdany — ikony z kolorem wg postępu grupy */
+            var gp      = groupProgress[gi];
+            var tileBg  = e.tileBg  || 'rgba(255,255,255,.05)';
             var iFilter = e.iconFilter || 'invert(1)';
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
-                    + '<img src="stopnie/'+key+'_'+imgN+'.png" style="width:72%;height:72%;object-fit:contain;filter:'+iFilter+'">'
+            // Kolor ikony: szary=brak, żółty=w trakcie, biały/czarny=ukończone
+            var iconOpacity = gp === 0 ? '0.2' : gp === 1 ? '0.6' : '1.0';
+            var iconTint    = gp === 1 ? 'invert(1) sepia(1) saturate(3) hue-rotate(10deg)' : iFilter;
+            var borderClr   = gp === 0 ? 'rgba(255,255,255,.15)' : gp === 1 ? '#fbbf24' : color;
+
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+borderClr+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
+                    + '<img src="stopnie/'+key+'_'+(gi+1)+'.png" style="width:72%;height:72%;object-fit:contain;filter:'+iconTint+';opacity:'+iconOpacity+'">'
                     + '</div>';
         }
     }
     sqHtml += '</div>';
 
-    /* ══ Kółka sprawności ══ */
+    /* Kółka */
     var circHtml = '<div class="msq-circles">';
     for (var i = 0; i < 12; i++) {
         var slot = _boardSlots[i];
@@ -6758,7 +6780,7 @@ function renderBoard() {
             circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick('+i+')">'
                       + '<span class="msq-circle-plus">+</span></div>';
         } else {
-            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.1);border-radius:50%;opacity:.2"></div>';
+            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.1);border-radius:50%;opacity:.15"></div>';
         }
     }
     circHtml += '</div>';
