@@ -959,7 +959,6 @@ body.neon-mode .btn-main {
 
   <!-- TOPBAR -->
   <div class="topbar">
-    <button onclick="toggleSidebar()" style="background:none;border:none;color:var(--f1);font-size:22px;cursor:pointer;padding:0 12px 0 4px;line-height:1;flex-shrink:0;">&#9776;</button>
     <div class="topbar-brand" onclick="bnavClick('book')">
       LESNA SZKOLKA
       <small>Ksiazeczka Harcerska</small>
@@ -968,7 +967,7 @@ body.neon-mode .btn-main {
 
   <!-- BODY -->
   <div class="app-body">
-    <div id="sidebarOverlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;"></div>
+    <div id="sidebarOverlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:transparent;z-index:199;"></div>
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
@@ -5950,7 +5949,9 @@ function toggleSidebar() {
     var sb  = document.getElementById('sidebar');
     var ov  = document.getElementById('sidebarOverlay');
     var isOpen = sb.classList.toggle('open');
-    if (ov) ov.style.display = isOpen ? 'block' : 'none';
+    if (ov) {
+        ov.style.display = isOpen ? 'block' : 'none';
+    }
 }
 function openPhoto(src)     { document.getElementById('modalImg').src = src; document.getElementById('photoModal').style.display = 'flex'; document.getElementById('modalImg').classList.remove('zoomed'); }
 function closeModal()       { document.getElementById('photoModal').style.display = 'none'; }
