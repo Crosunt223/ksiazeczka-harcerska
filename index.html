@@ -6698,44 +6698,45 @@ function renderBoard() {
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
 
+    /* ══ Znajdź aktualny stopień (otwarty lub ostatni zdany) ══ */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
+    var activeSid  = null;
+    var activeStatus = null;
+
+    // Szukaj: najpierw otwarty, potem ostatni zamknięty
+    for (var oi = 0; oi < ORDER.length; oi++) {
+        var s = _stopnieStatus[ORDER[oi]];
+        if (s && s.status === 'open')    { activeSid = ORDER[oi]; activeStatus = 'open';   break; }
+        if (s && s.status === 'closed')  { activeSid = ORDER[oi]; activeStatus = 'closed'; }
+    }
+
+    var e     = activeSid ? STOPNIE_IMG_MAP[activeSid] : null;
+    var color = e ? e.color : 'rgba(255,255,255,.2)';
+    var key   = e ? e.key : '';
+
+    /* ══ 6 kwadracików = 6 grup aktualnego stopnia ══ */
     var sqHtml = '<div class="msq-grid">';
 
-    ORDER.forEach(function(sid) {
-        var e    = STOPNIE_IMG_MAP[sid];
-        var st   = _stopnieStatus[sid];
-        var color = e ? e.color : '#888';
-        var key  = e ? e.key : '';
-        var imgs = e ? e.imgs : 0;
-
-        if (!st) {
-            /* GHOST */
+    for (var gi = 0; gi < 6; gi++) {
+        if (!activeSid) {
+            /* Brak aktywnego stopnia — puste */
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.15)"></div>';
-
-        } else if (st.status === 'open') {
-            /* OPEN — kolorowy border + 1 ikona wycentrowana */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:3px solid '+color+';background:#111;display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
-                    + '<img src="stopnie/'+key+'_1.png" style="width:60%;height:60%;object-fit:contain;filter:invert(1);opacity:.8">'
-                    + '</div>';
-
+        } else if (activeSid === 'st_1') {
+            /* Adept — zero ikon, zero ramki */
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.08);background:transparent"></div>';
         } else {
-            /* DONE — siatka osobnych kafelków, każdy z własną ramką */
-            var cols = imgs <= 4 ? 2 : 3;
-            var cells = '';
-            for (var ci = 0; ci < imgs; ci++) {
-                cells += '<div style="background:#111;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;aspect-ratio:1">'
-                       + '<img src="stopnie/'+key+'_'+(ci+1)+'.png" style="width:80%;height:80%;object-fit:contain;filter:invert(1)">'
-                       + '</div>';
-            }
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px solid '+color+';overflow:hidden;box-sizing:border-box">'
-                    + '<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);width:100%;height:100%;gap:1px;background:rgba(255,255,255,.15)">'
-                    + cells
-                    + '</div></div>';
+            /* Normalny stopień — każda grupa ma swoją ikonkę */
+            var imgN    = gi + 1;
+            var tileBg  = e.tileBg || 'rgba(255,255,255,.05)';
+            var iFilter = e.iconFilter || 'invert(1)';
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
+                    + '<img src="stopnie/'+key+'_'+imgN+'.png" style="width:72%;height:72%;object-fit:contain;filter:'+iFilter+'">'
+                    + '</div>';
         }
-    });
+    }
     sqHtml += '</div>';
 
-    /* Kółka */
+    /* ══ Kółka sprawności ══ */
     var circHtml = '<div class="msq-circles">';
     for (var i = 0; i < 12; i++) {
         var slot = _boardSlots[i];
@@ -6757,7 +6758,7 @@ function renderBoard() {
             circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick('+i+')">'
                       + '<span class="msq-circle-plus">+</span></div>';
         } else {
-            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.08);border-radius:50%;opacity:.15"></div>';
+            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.1);border-radius:50%;opacity:.2"></div>';
         }
     }
     circHtml += '</div>';
@@ -6797,12 +6798,12 @@ async function saveBoardSlot(pos, data) {
 
 
 var STOPNIE_IMG_MAP = {
-    'st_1': { key:'adept_adeptka',                    color:'rgba(255,255,255,.15)', imgFilter:'invert(1) opacity(.25)', imgs:4 , label:'Adept'       },
-    'st_2': { key:'mlodzik_ochotniczka',               color:'#e5e5e5',              imgFilter:'invert(1)',              imgs:6 , label:'Młodzik'      },
-    'st_3': { key:'wywiadowca_tropicielka',            color:'#34d399',              imgFilter:'invert(1) sepia(1) saturate(3) hue-rotate(100deg)', imgs:6 , label:'Wywiadowca'   },
-    'st_4': { key:'cwik_samarytanka',                  color:'#fbbf24',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(10deg)',  imgs:6 , label:'Ćwik'         },
-    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#f97316',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(340deg)', imgs:6 , label:'Harcerz Orli' },
-    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#f43f5e',              imgFilter:'invert(1) sepia(1) saturate(5) hue-rotate(300deg)', imgs:6 , label:'Harcerz RP'   },
+    'st_1': { key:'adept_adeptka',                    color:'transparent',  tileBg:'transparent', iconFilter:'invert(1)', imgs:4, label:'Adept'        },
+    'st_2': { key:'mlodzik_ochotniczka',               color:'#222222',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Młodzik'      },
+    'st_3': { key:'wywiadowca_tropicielka',            color:'#16a34a',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Wywiadowca'   },
+    'st_4': { key:'cwik_samarytanka',                  color:'#dc2626',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Ćwik'         },
+    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#dc2626',      tileBg:'#000000',     iconFilter:'invert(1)', imgs:6, label:'Harcerz Orli' },
+    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#dc2626',      tileBg:'#ffffff',     iconFilter:'invert(0)', imgs:6, label:'Harcerz RP'   },
 };
 
 function getStopienCatImg(stopienId, groupIndex) {
