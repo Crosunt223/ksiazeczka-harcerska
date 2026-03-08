@@ -191,7 +191,7 @@ body.dark .login-box h2{color:var(--f2);}
 #appShell{display:none;flex-direction:column;height:100vh;overflow:hidden;}
 
 /* TOPBAR */
-.topbar{
+.topbar{display:flex;align-items:center;
   height:var(--topbar-h);background:var(--f9);
   display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
 }
@@ -933,6 +933,10 @@ body.neon-mode .btn-main {
       <span>Duzy tekst</span>
       <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
     </div>
+    <div class="settings-option">
+      <span>⚡ Neon Mode</span>
+      <label class="switch"><input type="checkbox" id="neonModeToggle" onchange="toggleNeonMode()"><span class="slider round"></span></label>
+    </div>
     
     
     <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
@@ -955,6 +959,7 @@ body.neon-mode .btn-main {
 
   <!-- TOPBAR -->
   <div class="topbar">
+    <button onclick="toggleSidebar()" style="background:none;border:none;color:var(--f1);font-size:22px;cursor:pointer;padding:0 12px 0 4px;line-height:1;flex-shrink:0;">&#9776;</button>
     <div class="topbar-brand" onclick="bnavClick('book')">
       LESNA SZKOLKA
       <small>Ksiazeczka Harcerska</small>
@@ -982,6 +987,10 @@ body.neon-mode .btn-main {
 
   <!-- BOTTOM NAV — 4 przyciski jak na screenshocie -->
   <nav class="bottom-nav">
+    <button class="bnav-btn" id="bnav-sidebar-toggle" onclick="toggleSidebar()" style="flex:0 0 44px;">
+      <div class="bnav-icon">&#9776;</div>
+      <span class="bnav-label">Lista</span>
+    </button>
     <button class="bnav-btn" id="bnav-book" onclick="bnavClick('book')">
       <div class="bnav-icon">&#128214;</div>
       <span class="bnav-label">Ksiazeczka</span>
@@ -995,7 +1004,7 @@ body.neon-mode .btn-main {
       <span class="bnav-label">Ustawienia</span>
     </button>
   </nav>
-  <button id="neon-fab" onclick="toggleNeonFab()" title="Neon Mode" style="position:fixed;bottom:72px;left:12px;width:40px;height:40px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.4)">⚡</button>
+  
 
 </div>
 
