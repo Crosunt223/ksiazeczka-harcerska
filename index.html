@@ -686,11 +686,11 @@ input:checked+.slider:before{transform:translateX(21px);}
 /* Board picker */
 .bp-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.75);
-  display:flex;align-items:flex-end;justify-content:center;z-index:9999;
+  display:flex;align-items:center;justify-content:center;z-index:9999;
 }
 .bp-modal{
-  background:var(--panel);border-radius:20px 20px 0 0;
-  width:100%;max-width:480px;max-height:80vh;
+  background:var(--panel);border-radius:16px;
+  width:90%;max-width:480px;max-height:80vh;
   display:flex;flex-direction:column;overflow:hidden;
   padding:0;
 }
@@ -921,10 +921,7 @@ body.neon-mode .btn-main {
   <div class="settings-content">
     <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
     <h3>Ustawienia</h3>
-    <div class="settings-option">
-      <span>Tryb ciemny</span>
-      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider"></span></label>
-    </div>
+
     <div class="settings-option">
       <span>Duzy tekst</span>
       <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
@@ -992,11 +989,8 @@ body.neon-mode .btn-main {
       <div class="bnav-icon">🪡</div>
       <span class="bnav-label">Mój Mundur</span>
     </button>
-    <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
-      <div class="bnav-icon">&#9881;</div>
-      <span class="bnav-label">Ustawienia</span>
-    </button>
   </nav>
+  <button id="settings-fab" onclick="bnavClick('settings')" style="position:fixed;bottom:70px;left:12px;width:44px;height:44px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);color:var(--f2);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.4)">&#9881;</button>
 
 </div>
 
@@ -5953,7 +5947,8 @@ function closeSettings(e)   { if (e.target === document.getElementById('settings
 function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
 function loadSettings() {
     var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
-    if (s.dark)      { document.body.classList.add('dark-mode'); document.body.classList.add('dark');  document.getElementById('darkModeToggle').checked = true; }
+    // Dark mode usunięty - zawsze biały motyw domyślnie
+    document.body.classList.remove('dark-mode', 'dark');
     if (s.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
     if (s.neon)      { document.body.classList.add('neon-mode');  var nt = document.getElementById('neonModeToggle'); if(nt) nt.checked = true; }
 }
@@ -6802,7 +6797,7 @@ function renderBoard() {
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.12)"></div>';
         } else if (!eDisp || activeSid === 'st_1') {
             /* Adept lub brak poprzedniego — ramka koloru stopnia, bez ikon */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#111"></div>';
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#ffffff"></div>';
         } else {
             /* Pokaż ikonki z displaySid (poprzedniego zdanego lub obecnego closed) */
             var imgKey = eDisp.key;
