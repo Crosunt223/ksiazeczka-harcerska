@@ -37,6 +37,8 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 </style>
 <style>
 :root{
+  --sq-bg:#ffffff;
+  --sq-border-opacity:1;
   --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
   --f4:#4e8a2a;--f3:#6aaa3d;--f2:#a8d080;--f1:#d4eab8;--f0:#eef7e2;
   --amber:#c97d1a;
@@ -56,6 +58,7 @@ body.dark{
   --text-main:#e0e0e0;--text-muted:#a0a0a0;--border-color:#333;
 }
 body.dark-mode{
+  --sq-bg:#111111;
   --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
   --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
 }
@@ -923,17 +926,15 @@ body.neon-mode .btn-main {
     <h3>Ustawienia</h3>
 
     <div class="settings-option">
+      <span>Tryb ciemny</span>
+      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider round"></span></label>
+    </div>
+    <div class="settings-option">
       <span>Duzy tekst</span>
       <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
     </div>
-    <div class="settings-option">
-      <span>⚡ Neon Mode</span>
-      <label class="switch"><input type="checkbox" id="neonModeToggle" onchange="toggleNeonMode()"><span class="slider round"></span></label>
-    </div>
-    <div class="settings-option">
-      <span>✨ Neon Mode</span>
-      <label class="switch"><input type="checkbox" id="neonModeToggle" onchange="toggleNeonMode()"><span class="slider"></span></label>
-    </div>
+    
+    
     <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
     <button class="settings-btn-action btn-reset"  onclick="resetProgress()">&#9888; Zresetuj progres</button>
     <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
@@ -994,7 +995,7 @@ body.neon-mode .btn-main {
       <span class="bnav-label">Ustawienia</span>
     </button>
   </nav>
-  
+  <button id="neon-fab" onclick="toggleNeonFab()" title="Neon Mode" style="position:fixed;bottom:72px;left:12px;width:40px;height:40px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.4)">⚡</button>
 
 </div>
 
@@ -5951,10 +5952,9 @@ function closeSettings(e)   { if (e.target === document.getElementById('settings
 function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
 function loadSettings() {
     var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
-    // Dark mode usunięty - zawsze biały motyw domyślnie
-    document.body.classList.remove('dark-mode', 'dark');
+    if (s.dark)      { document.body.classList.add('dark-mode', 'dark'); var dt = document.getElementById('darkModeToggle'); if(dt) dt.checked = true; }
+    if (s.neon)      { document.body.classList.add('neon-mode'); var nb = document.getElementById('neon-fab'); if(nb) nb.style.background='#7c3aed'; }
     if (s.largeText) { document.body.classList.add('large-text'); document.getElementById('textSizeToggle').checked = true; }
-    if (s.neon)      { document.body.classList.add('neon-mode');  var nt = document.getElementById('neonModeToggle'); if(nt) nt.checked = true; }
 }
 function saveSettings() {
     localStorage.setItem('nkih_settings', JSON.stringify({
@@ -5962,6 +5962,15 @@ function saveSettings() {
         largeText: document.body.classList.contains('large-text')
     }));
 }
+function toggleNeonFab() {
+    var isOn = document.body.classList.toggle('neon-mode');
+    var btn = document.getElementById('neon-fab');
+    if (btn) btn.style.background = isOn ? '#7c3aed' : 'var(--panel2)';
+    var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
+    s.neon = isOn;
+    localStorage.setItem('nkih_settings', JSON.stringify(s));
+}
+
 function toggleNeonMode() {
     var on = document.getElementById('neonModeToggle').checked;
     document.body.classList.toggle('neon-mode', on);
@@ -6801,11 +6810,11 @@ function renderBoard() {
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.12)"></div>';
         } else if (!eDisp || activeSid === 'st_1') {
             /* Adept lub brak poprzedniego — ramka koloru stopnia, bez ikon */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#ffffff"></div>';
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:var(--sq-bg)"></div>';
         } else {
             /* Pokaż ikonki z displaySid (poprzedniego zdanego lub obecnego closed) */
             var imgKey = eDisp.key;
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#ffffff;display:flex;align-items:center;justify-content:center;overflow:hidden">'
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:var(--sq-bg);display:flex;align-items:center;justify-content:center;overflow:hidden">'
                     + '<img src="stopnie/'+imgKey+'_'+(gi+1)+'.png" style="width:85%;height:85%;object-fit:contain">'
                     + '</div>';
         }
