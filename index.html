@@ -6701,62 +6701,47 @@ function renderBoard() {
     for (var k = 0; k < 12; k++) { if (_boardSlots[k] && _boardSlots[k].sprawnoscId) filled++; }
     var row2unlocked = (filled >= 6);
 
-    /* Znajdź aktywny stopień */
     var ORDER = ['st_1','st_2','st_3','st_4','st_5','st_6'];
-    var activeSid    = null;
-    var activeStatus = null;
+
+    /* Znajdź aktualny stopień (otwarty lub ostatni zdany) */
+    var openSid   = null;  // aktualnie otwarty
+    var closedSid = null;  // ostatni zdany (poprzedni)
+
     for (var oi = 0; oi < ORDER.length; oi++) {
         var s = _stopnieStatus[ORDER[oi]];
-        if (s && s.status === 'open')   { activeSid = ORDER[oi]; activeStatus = 'open';   break; }
-        if (s && s.status === 'closed') { activeSid = ORDER[oi]; activeStatus = 'closed'; }
+        if (s && s.status === 'open')   { openSid = ORDER[oi]; break; }
+        if (s && s.status === 'closed') { closedSid = ORDER[oi]; }
     }
 
+    /* Ikony z którego stopnia pokazujemy:
+       - otwarty: ikony z POPRZEDNIEGO zdanego (closedSid)
+       - zdany:   ikony z tego zdanego
+       - nic:     brak ikon */
+    var displaySid = openSid ? closedSid : closedSid;
+    var activeSid  = openSid || closedSid; // do koloru ramki
     var e     = activeSid ? STOPNIE_IMG_MAP[activeSid] : null;
-    var color = e ? e.color : 'rgba(255,255,255,.1)';
-    var key   = e ? e.key   : '';
-
-    /* Pobierz postęp grup aktywnego stopnia */
-    var groupProgress = [0,0,0,0,0,0]; // 0=brak, 1=w trakcie, 2=ukończone
-    if (activeSid) {
-        var stItem = db.find(function(x){ return x.id === activeSid; });
-        if (stItem) {
-            stItem.groups.forEach(function(g, gi) {
-                var total = g.tasks.length;
-                var done  = 0;
-                g.tasks.forEach(function(t, ti) {
-                    if (cachedProgress[activeSid + '-' + gi + '-' + ti]) done++;
-                });
-                if (done === 0)     groupProgress[gi] = 0;
-                else if (done < total) groupProgress[gi] = 1;
-                else                groupProgress[gi] = 2;
-            });
-        }
-    }
+    var eDisp = displaySid ? STOPNIE_IMG_MAP[displaySid] : null;
+    var color = e ? e.color : 'rgba(255,255,255,.15)';
 
     /* 6 kwadracików */
     var sqHtml = '<div class="msq-grid">';
-    var showIcons = (activeSid && activeSid !== 'st_1' && activeStatus === 'closed');
-
     for (var gi = 0; gi < 6; gi++) {
-        if (!activeSid || activeSid === 'st_1') {
-            /* Adept (open lub done) — zero ikon, zero ramki */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.08)"></div>';
-        } else if (!showIcons) {
-            /* Otwarty (nie adept) — ramka koloru stopnia, brak ikon */
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:rgba(0,0,0,.3)"></div>';
+        if (!activeSid) {
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.12)"></div>';
+        } else if (!eDisp || activeSid === 'st_1') {
+            /* Adept lub brak poprzedniego — ramka koloru stopnia, bez ikon */
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#111"></div>';
         } else {
-            /* Zdany — ikony bez zmiany koloru */
-            var tileBg  = e.tileBg  || 'rgba(255,255,255,.05)';
-            var iFilter = e.iconFilter || 'invert(1)';
-
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
-                    + '<img src="stopnie/'+key+'_'+(gi+1)+'.png" style="width:90%;height:90%;object-fit:contain;filter:'+iFilter+'" onerror="this.style.display=\'none\'">'
+            /* Pokaż ikonki z displaySid (poprzedniego zdanego lub obecnego closed) */
+            var imgKey = eDisp.key;
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden">'
+                    + '<img src="stopnie/'+imgKey+'_'+(gi+1)+'.png" style="width:85%;height:85%;object-fit:contain">'
                     + '</div>';
         }
     }
     sqHtml += '</div>';
 
-    /* Kółka */
+    /* Kółka sprawności */
     var circHtml = '<div class="msq-circles">';
     for (var i = 0; i < 12; i++) {
         var slot = _boardSlots[i];
@@ -6819,11 +6804,11 @@ async function saveBoardSlot(pos, data) {
 
 var STOPNIE_IMG_MAP = {
     'st_1': { key:'adept_adeptka',                    color:'transparent',  tileBg:'transparent', iconFilter:'invert(1)', imgs:4, label:'Adept'        },
-    'st_2': { key:'mlodzik_ochotniczka',               color:'#222222',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Młodzik'      },
-    'st_3': { key:'wywiadowca_tropicielka',            color:'#16a34a',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Wywiadowca'   },
-    'st_4': { key:'cwik_samarytanka',                  color:'#dc2626',      tileBg:null,          iconFilter:'invert(1)', imgs:6, label:'Ćwik'         },
-    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#dc2626',      tileBg:'#000000',     iconFilter:'invert(1)', imgs:6, label:'Harcerz Orli' },
-    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#dc2626',      tileBg:'#ffffff',     iconFilter:'invert(0)', imgs:6, label:'Harcerz RP'   },
+    'st_2': { key:'mlodzik_ochotniczka',               color:'#222222',      tileBg:'#1a1a1a',     iconFilter:'none',      imgs:6, label:'Młodzik'      },
+    'st_3': { key:'wywiadowca_tropicielka',            color:'#16a34a',      tileBg:'#1a1a1a',     iconFilter:'none',      imgs:6, label:'Wywiadowca'   },
+    'st_4': { key:'cwik_samarytanka',                  color:'#dc2626',      tileBg:'#1a1a1a',     iconFilter:'none',      imgs:6, label:'Ćwik'         },
+    'st_5': { key:'harcerz_orli_wedrowniczka',         color:'#dc2626',      tileBg:'#000000',     iconFilter:'none',      imgs:6, label:'Harcerz Orli' },
+    'st_6': { key:'harcerz_harcerka_rzeczypospolitej', color:'#dc2626',      tileBg:'#ffffff',     iconFilter:'none',      imgs:6, label:'Harcerz RP'   },
 };
 
 function getStopienCatImg(stopienId, groupIndex) {
