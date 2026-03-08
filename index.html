@@ -188,6 +188,14 @@ body.dark .login-box h2{color:var(--f2);}
   width:260px;background:var(--f9);color:var(--f1);
   display:flex;flex-direction:column;flex-shrink:0;
   border-right:1px solid rgba(255,255,255,.05);overflow:hidden;
+  transition:transform .25s;
+}
+@media(max-width:600px){
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:200;
+    transform:translateX(-100%);
+  }
+  .sidebar.open{transform:translateX(0);}
 }
 .sidebar-search{padding:12px 12px 6px;}
 .sidebar-search input{
@@ -700,63 +708,56 @@ input:checked+.slider:before{transform:translateX(21px);}
 .bp-name{font-size:.7rem;font-weight:600;line-height:1.2;color:var(--text);}
 .bp-stars{font-size:.6rem;color:var(--amber);}
 
-/* ══ MUNDUR CSS ══ */
-.mundur-wrap{padding:14px 10px;max-width:380px;margin:0 auto;}
-.mundur-title{text-align:center;font-family:var(--ff-display);font-size:1.25rem;margin-bottom:16px;}
-.mundur-sub{text-align:center;color:var(--muted);font-size:.75rem;margin:8px 0 0;}
 
-/* 6 kwadratów 3×2 */
+/* ══ MUNDUR CSS ══ */
+.mundur-wrap{padding:14px 10px 30px;max-width:380px;margin:0 auto;}
+.mundur-title{text-align:center;font-family:var(--ff-display);font-size:1.25rem;margin-bottom:16px;}
+.mundur-sub{text-align:center;color:var(--muted);font-size:.75rem;margin:10px 0 0;}
+
+/* 3×2 grid stopni */
 .msq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
 .msq-sq{
   aspect-ratio:1;border-radius:10px;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  padding:4px;box-sizing:border-box;transition:all .25s;
+  box-sizing:border-box;transition:all .25s;position:relative;
+  border:2.5px solid transparent;
 }
 .msq-sq-ghost{
   background:rgba(255,255,255,.04);
-  border:2px dashed rgba(255,255,255,.13);
+  border:2px dashed rgba(255,255,255,.15);
 }
 .msq-sq-open{
-  border:2.5px solid var(--sc);
-  background:transparent;
-  box-shadow:0 0 10px color-mix(in srgb,var(--sc) 25%,transparent);
+  /* kolor ustawiony inline */
 }
 .msq-sq-done{
-  border:2.5px solid var(--sc);
-  background:color-mix(in srgb,var(--sc) 8%,transparent);
-  box-shadow:0 0 14px color-mix(in srgb,var(--sc) 35%,transparent);
+  background:#111;
+  padding:2px;
 }
 
-/* Jedna ikonka (open) */
+/* ikona w open (biała na kolorowym tle) */
 .msq-single-img{
-  width:80%;height:80%;object-fit:contain;
-  opacity:.5;
+  width:70%;height:70%;object-fit:contain;
+  filter:invert(1);
+  opacity:.9;
 }
 
-/* Siatka ikonek (done) */
-.msq-imgrid{
-  width:100%;height:100%;
-  display:grid;gap:0;
-  align-items:stretch;justify-items:stretch;
-}
+/* siatka ikon w done */
+.msq-imgrid{width:100%;height:100%;display:grid;gap:1px;}
 .msq-ig2{grid-template-columns:repeat(2,1fr);}
 .msq-ig3{grid-template-columns:repeat(3,1fr);}
-.msq-igimg{
-  width:100%;height:100%;
-  object-fit:contain;display:block;
-}
+.msq-igimg{width:100%;height:100%;object-fit:contain;display:block;filter:invert(1);}
 
-/* Kółka */
+/* Kółka sprawności */
 .msq-circles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
 .msq-circle{
   aspect-ratio:1;border-radius:50%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;transition:.15s;
+  position:relative;overflow:hidden;transition:.15s;cursor:pointer;
 }
-.msq-circle-empty{border:2.5px solid var(--amber);background:rgba(255,180,0,.05);cursor:pointer;}
+.msq-circle-empty{border:2.5px solid var(--amber);background:rgba(255,180,0,.06);}
 .msq-circle-empty:active{transform:scale(.92);}
 .msq-circle-plus{font-size:1.7rem;color:var(--amber);line-height:1;font-weight:300;}
-.msq-circle-filled{border:2px solid var(--border);background:var(--panel);cursor:pointer;}
+.msq-circle-filled{border:2px solid var(--border);background:var(--panel);}
 .msq-circle-filled:active{transform:scale(.93);}
 .msq-circle-img{width:78%;height:78%;object-fit:contain;border-radius:50%;}
 .msq-circle-name{
@@ -765,7 +766,7 @@ input:checked+.slider:before{transform:translateX(21px);}
   white-space:nowrap;overflow:hidden;padding:0 2px;
 }
 .msq-circle-stars{position:absolute;top:2px;right:3px;font-size:.5rem;color:var(--amber);}
-.msq-circle-locked{border:2px dashed rgba(255,255,255,.1);background:transparent;font-size:1rem;opacity:.25;cursor:default;}
+.msq-circle-locked{border:2px dashed rgba(255,255,255,.1);background:transparent;font-size:1rem;opacity:.2;cursor:default;}
 
 /* Board picker */
 .bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-end;justify-content:center;z-index:9999;}
@@ -781,11 +782,6 @@ input:checked+.slider:before{transform:translateX(21px);}
 .bp-img-empty{background:var(--panel);border:1.5px dashed var(--border);border-radius:50%;width:50px;height:50px;}
 .bp-name{font-size:.7rem;font-weight:600;line-height:1.2;color:var(--text);}
 .bp-stars{font-size:.6rem;color:var(--amber);}
-
-@supports not (background:color-mix(in srgb,red 50%,blue)){
-  .msq-sq-open,.msq-sq-done{box-shadow:none;}
-  .msq-sq-done{background:rgba(100,100,100,.1);}
-}
 /* ══ endmundur ══ */
 </style>
 </head>
@@ -912,6 +908,7 @@ input:checked+.slider:before{transform:translateX(21px);}
 
   <!-- BODY -->
   <div class="app-body">
+    <div id="sidebarOverlay" onclick="toggleSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;"></div>
 
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
@@ -5881,7 +5878,12 @@ function updateUIStats() {
 // ================================================================
 // HELPERY UI
 // ================================================================
-function toggleSidebar()    { document.getElementById('sidebar').classList.toggle('open'); }
+function toggleSidebar() {
+    var sb  = document.getElementById('sidebar');
+    var ov  = document.getElementById('sidebarOverlay');
+    var isOpen = sb.classList.toggle('open');
+    if (ov) ov.style.display = isOpen ? 'block' : 'none';
+}
 function openPhoto(src)     { document.getElementById('modalImg').src = src; document.getElementById('photoModal').style.display = 'flex'; document.getElementById('modalImg').classList.remove('zoomed'); }
 function closeModal()       { document.getElementById('photoModal').style.display = 'none'; }
 function toggleZoom(e)      { e.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
@@ -6704,45 +6706,46 @@ function renderBoard() {
         var e     = STOPNIE_IMG_MAP[sid];
         var st    = _stopnieStatus[sid];
         var color = e ? e.color : '#888';
+        var key   = e ? e.key : '';
+        var imgs  = e ? e.imgs : 0;
 
         if (!st) {
-            /* ── GHOST: szary, pusty ── */
+            /* GHOST — szary pusty */
             sqHtml += '<div class="msq-sq msq-sq-ghost"></div>';
 
         } else if (st.status === 'open') {
-            /* ── OPEN: kolorowy border + jedna duża ikonka wycentrowana ── */
-            var src = e ? 'stopnie/' + e.key + '_1.png' : '';
-            sqHtml += '<div class="msq-sq msq-sq-open" style="--sc:' + color + '">'
-                    + (src ? '<img src="' + src + '" class="msq-single-img">' : '')
+            /* OPEN — pełny kolor stopnia, jedna ikona */
+            sqHtml += '<div class="msq-sq msq-sq-open" style="background:' + color + ';border-color:' + color + '">'
+                    + '<img src="stopnie/' + key + '_1.png" class="msq-single-img">'
                     + '</div>';
 
         } else {
-            /* ── DONE: kolorowy border + siatka wszystkich ikonek ── */
-            var cols = (e && e.imgs <= 4) ? 'msq-ig2' : 'msq-ig3';
-            var gridHtml = '<div class="msq-imgrid ' + cols + '">';
-            if (e) {
-                for (var ci = 0; ci < e.imgs; ci++) {
-                    gridHtml += '<img src="stopnie/' + e.key + '_' + (ci+1) + '.png" class="msq-igimg">';
-                }
+            /* DONE — czarny + siatka ikon */
+            var cols  = imgs <= 4 ? 'msq-ig2' : 'msq-ig3';
+            var cells = '';
+            for (var ci = 0; ci < imgs; ci++) {
+                cells += '<img src="stopnie/' + key + '_' + (ci+1) + '.png" class="msq-igimg">';
             }
-            gridHtml += '</div>';
-            sqHtml += '<div class="msq-sq msq-sq-done" style="--sc:' + color + '">'
-                    + gridHtml
+            sqHtml += '<div class="msq-sq msq-sq-done" style="border-color:' + color + '">'
+                    + '<div class="msq-imgrid ' + cols + '">' + cells + '</div>'
                     + '</div>';
         }
     });
     sqHtml += '</div>';
 
     /* ══ Kółka sprawności ══ */
-    var maxVisible = Math.min(filled + 1, 12);
     var circHtml = '<div class="msq-circles">';
-    for (var i = 0; i < maxVisible; i++) {
+    for (var i = 0; i < 12; i++) {
         var slot = _boardSlots[i];
+
+        // Rząd 2 zablokowany
         if (i >= 6 && !row2unlocked) {
             circHtml += '<div class="msq-circle msq-circle-locked">🔒</div>';
             continue;
         }
+
         if (slot && slot.sprawnoscId) {
+            // Wypełniony
             var item   = db.find(function(x){ return x.id === slot.sprawnoscId; });
             var imgSrc = item ? getCircleImgForProgress(item, cachedProgress) : null;
             var level  = item ? getSprawLevel(item, cachedProgress) : 0;
@@ -6752,14 +6755,27 @@ function renderBoard() {
                       + (level > 0 ? '<div class="msq-circle-stars">' + '★'.repeat(level) + '</div>' : '')
                       + '<div class="msq-circle-name">' + (item ? item.title : '') + '</div>'
                       + '</div>';
-        } else {
-            var oc2 = isOwn ? ' onclick="boardSlotClick(' + i + ')"' : '';
-            circHtml += '<div class="msq-circle msq-circle-empty"' + oc2 + '>'
+        } else if (i === filled && isOwn) {
+            // Następny wolny slot do wypełnienia
+            circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick(' + i + ')">'
                       + '<span class="msq-circle-plus">+</span>'
                       + '</div>';
+        } else if (i < filled) {
+            // Nie powinno wystąpić ale zabezpieczenie
+            circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick(' + i + ')">'
+                      + '<span class="msq-circle-plus">+</span>'
+                      + '</div>';
+        } else {
+            // Zablokowany (czeka na wypełnienie poprzednich)
+            circHtml += '<div class="msq-circle msq-circle-locked" style="opacity:.15">+</div>';
         }
     }
     circHtml += '</div>';
+
+    if (filled > 0 && filled < 6 && isOwn)
+        circHtml += '<p class="mundur-sub">Rząd 2 odblokujesz po zapełnieniu rzędu 1 (' + filled + '/6)</p>';
+    if (filled === 6 && isOwn)
+        circHtml += '<p class="mundur-sub" style="color:var(--amber)">Odblokowano rząd 2! 🎉</p>';
 
     document.getElementById('contentArea').innerHTML =
         '<div class="mundur-wrap">'
