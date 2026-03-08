@@ -6742,17 +6742,12 @@ function renderBoard() {
             /* Otwarty (nie adept) — ramka koloru stopnia, brak ikon */
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:rgba(0,0,0,.3)"></div>';
         } else {
-            /* Zdany — ikony z kolorem wg postępu grupy */
-            var gp      = groupProgress[gi];
+            /* Zdany — ikony bez zmiany koloru */
             var tileBg  = e.tileBg  || 'rgba(255,255,255,.05)';
             var iFilter = e.iconFilter || 'invert(1)';
-            // Kolor ikony: szary=brak, żółty=w trakcie, biały/czarny=ukończone
-            var iconOpacity = gp === 0 ? '0.2' : gp === 1 ? '0.6' : '1.0';
-            var iconTint    = gp === 1 ? 'invert(1) sepia(1) saturate(3) hue-rotate(10deg)' : iFilter;
-            var borderClr   = gp === 0 ? 'rgba(255,255,255,.15)' : gp === 1 ? '#fbbf24' : color;
 
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+borderClr+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
-                    + '<img src="stopnie/'+key+'_'+(gi+1)+'.png" style="width:72%;height:72%;object-fit:contain;filter:'+iconTint+';opacity:'+iconOpacity+'">'
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:'+tileBg+';display:flex;align-items:center;justify-content:center;box-sizing:border-box">'
+                    + '<img src="'+key+'_'+(gi+1)+'.png" style="width:72%;height:72%;object-fit:contain;filter:'+iFilter+'">'
                     + '</div>';
         }
     }
@@ -6831,7 +6826,7 @@ var STOPNIE_IMG_MAP = {
 function getStopienCatImg(stopienId, groupIndex) {
     var e = STOPNIE_IMG_MAP[stopienId];
     if (!e || groupIndex >= e.imgs) return null;
-    return 'stopnie/' + e.key + '_' + (groupIndex + 1) + '.png';
+    return '' + e.key + '_' + (groupIndex + 1) + '.png';
 }
 
 var STOPNIE_CATEGORY_ICONS = {
