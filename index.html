@@ -35,6 +35,8 @@ body.neon-mode h2, body.neon-mode .nav-item.active { text-shadow: 0 0 8px var(--
 body.neon-mode .msq-circle-empty { box-shadow: 0 0 12px rgba(0,255,180,.4); }
 body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,.3); }
 
+
+.sidebar.hidden-area { display: none !important; }
 </style>
 <style>
 :root{
@@ -5130,8 +5132,8 @@ function initAppAfterLogin() {
     currentViewUserId = currentUser.id;
     window._currentViewUserRole = currentUser.role;
     window._currentViewUserName = currentUser.name;
-    // Panele dla zastepowy/podzastepowy — traktuj jak admin (maja panel)
     if (!currentUser._originalRole) currentUser._originalRole = currentUser.role;
+    document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
 
     // Pobierz dane druzyny dla kazdego uzytkownika
@@ -5156,6 +5158,8 @@ function initAppAfterLogin() {
         renderAdminDashboard();
     } else {
         bnavSetActive('book');
+        showSidebarArea();
+        renderSidebar();
         renderCategoryGrid();
     }
     renderSidebar(); // ikony od razu z localStorage cache
@@ -5673,6 +5677,7 @@ function renderCategoryGrid() {
 }
 
 function renderCategoryItems(cat) {
+    showSidebarArea();
     var items = db.filter(function(x){ return x.category === cat && !x.id.startsWith('st_'); });
     var meta  = CAT_META[cat] || { icon:'📋', color:'#888' };
 
@@ -5781,8 +5786,11 @@ function renderSidebar(filterText) {
 }
 
 function loadContent(id) {
+    showSidebarArea();
     var item = db.find(function(x) { return x.id === id; });
     if (!item) return;
+    showSidebarArea();
+    bnavSetActive('book');
     document.querySelectorAll('.nav-item').forEach(function(el) { el.classList.remove('active'); });
     var navEl = document.getElementById('nav-item-' + id);
     if (navEl) navEl.classList.add('active');
@@ -6305,11 +6313,6 @@ function bnavClick(tab) {
         renderSidebar();
         renderCategoryGrid();
     }
-    if (tab === 'uniform') {
-        hideSidebarArea();
-        document.getElementById('contentArea').innerHTML =
-            '<div class="placeholder-screen"><div class="ph-icon">&#129333;</div><p>Moj mundur — wkrótce</p></div>';
-    }
     if (tab === 'settings') {
         hideSidebarArea();
         openSettings();
@@ -6444,11 +6447,10 @@ async function saveAvatar() {
 }
 
 function showSidebarArea() {
-    document.getElementById('sidebar').style.display = '';
+    document.getElementById('sidebar').classList.remove('hidden-area');
 }
 function hideSidebarArea() {
-    // Na PC chowamy sidebar, na mobile i tak jest ukryty
-    document.getElementById('sidebar').style.display = 'none';
+    document.getElementById('sidebar').classList.add('hidden-area');
     closeSidebar();
 }
 
