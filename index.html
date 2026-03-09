@@ -4906,22 +4906,22 @@ const API = 'https://harcerze-backend.onrender.com/api';
 // ================================================================
 var HIERARCHY = ['superadmin','ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy','user'];
 var ROLE_LABELS = {
-    'superadmin':  '&#128081; Super Admin',
-    'ksis':        '&#11088; Ksis',
-    'instruktor':  '&#127775; Instruktor',
-    'druzynowy':   '&#128210; Druzynowy',
-    'zastepowy':   '&#128203; Zastepowy',
-    'podzastepowy':'&#128196; Podzastepowy',
-    'user':        '&#128100; Harcerz'
+    'superadmin':  '👑 Super Admin',
+    'ksis':        '⭐ Ksis',
+    'instruktor':  '🌟 Instruktor',
+    'druzynowy':   '🦅 Drużynowy',
+    'zastepowy':   '📋 Zastępowy',
+    'podzastepowy':'🌿 Podzastępowy',
+    'user':        '🍀 Harcerz'
 };
 var ROLE_COLORS = {
-    'superadmin': '#7b1fa2',
-    'ksis':       '#c62828',
-    'instruktor': '#e65100',
-    'druzynowy':  '#1565c0',
-    'zastepowy':    '#2e7d32',
-    'podzastepowy': '#558b2f',
-    'user':         '#546e7a'
+    'superadmin':   '#a855f7',
+    'ksis':         '#ef4444',
+    'instruktor':   '#f97316',
+    'druzynowy':    '#3b82f6',
+    'zastepowy':    '#22c55e',
+    'podzastepowy': '#84cc16',
+    'user':         '#94a3b8'
 };
 function rankIndex(role) {
     var i = HIERARCHY.indexOf(role);
@@ -5144,6 +5144,13 @@ function initAppAfterLogin() {
             if (r.data._id)      currentUser.teamId   = r.data._id;
         }
         updateBnavTeam();
+    });
+    apiFetch('/my-zastep').then(function(r) {
+        if (r.ok && r.data && r.data.zastepName) {
+            currentUser.zastepName = r.data.zastepName;
+            currentUser.zastepId   = r.data.zastepId;
+            try { localStorage.setItem('hk_user', JSON.stringify(currentUser)); } catch(e) {}
+        }
     });
 
     if (currentUser.status === 'pending' || currentUser.status === 'rejected') {
@@ -6625,7 +6632,30 @@ async function loadKadraForAsk() {
             kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak kadry w drużynie.</p>';
             return;
         }
-        kadraList.innerHTML = kadra.map(function(k) {
+
+        var inZastep = currentUser && currentUser.zastepId;
+        var filtered;
+
+        if (inZastep) {
+            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
+            filtered = kadra.filter(function(k) {
+                var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
+                var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
+                               && k.zastepId && k.zastepId === currentUser.zastepId;
+                return isGlobal || isMyZastep;
+            });
+        } else {
+            // Bez zastępu: tylko druzynowy i przyboczny
+            filtered = kadra.filter(function(k) {
+                return k.role === 'druzynowy' || k.role === 'przyboczny';
+            });
+        }
+
+        if (!filtered.length) {
+            kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak dostępnej kadry.</p>';
+            return;
+        }
+        kadraList.innerHTML = filtered.map(function(k) {
             var rColor = ROLE_COLORS[k.role] || '#546e7a';
             return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
                 + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
@@ -6636,6 +6666,8 @@ async function loadKadraForAsk() {
         }).join('');
     });
 }
+
+
 
 function pickTask(taskId, taskText) {
     _askTaskId   = taskId;
@@ -6653,6 +6685,19 @@ function backToTaskPick() {
 }
 
 async function sendAskRequest(kadraId, kadraName) {
+    // Cooldown 5 minut
+    var cdKey = 'hk_ask_cd_' + _askItemId + '_' + _askTaskId;
+    try {
+        var lastSent = parseInt(localStorage.getItem(cdKey) || '0');
+        var diff = Date.now() - lastSent;
+        if (diff < 5 * 60 * 1000) {
+            var left = Math.ceil((5 * 60 * 1000 - diff) / 60000);
+            document.getElementById('askModalStatus').textContent = 'Poczekaj jeszcze ' + left + ' min przed ponownym wysłaniem.';
+            document.getElementById('askModalStatus').style.color = '#f59e0b';
+            return;
+        }
+    } catch(e) {}
+
     document.getElementById('askModalStatus').textContent = 'Wysylanie...';
     var item = db.find(function(x){ return x.id === _askItemId; });
     var r = await apiFetch('/requests', {
@@ -6666,10 +6711,13 @@ async function sendAskRequest(kadraId, kadraName) {
         })
     });
     if (r.ok) {
-        document.getElementById('askModalStatus').textContent = '✓ Wyslano do ' + kadraName + '!';
+        try { localStorage.setItem(cdKey, Date.now().toString()); } catch(e) {}
+        document.getElementById('askModalStatus').textContent = '✓ Wysłano do ' + kadraName + '!';
         setTimeout(closeAskModal, 1400);
     } else {
-        document.getElementById('askModalStatus').textContent = 'Blad wysylania.';
+        var msg = (r.data && r.data.error) ? r.data.error : 'Błąd wysyłania.';
+        document.getElementById('askModalStatus').textContent = '⏳ ' + msg;
+        document.getElementById('askModalStatus').style.color = '#f59e0b';
     }
 }
 function closeAskModal() {
@@ -6932,11 +6980,10 @@ function renderBoard() {
         if (s && s.status === 'closed') { closedSid = ORDER[oi]; }
     }
 
-    /* Ikony z którego stopnia pokazujemy:
-       - otwarty: ikony z POPRZEDNIEGO zdanego (closedSid)
-       - zdany:   ikony z tego zdanego
-       - nic:     brak ikon */
-    var displaySid = openSid ? closedSid : closedSid;
+    /* Ikony:
+       - otwarty stopień: BRAK ikon (tylko ramka)
+       - zdany stopień:   ikony z tego zdanego */
+    var displaySid = openSid ? null : closedSid;
     var activeSid  = openSid || closedSid; // do koloru ramki
     var e     = activeSid ? STOPNIE_IMG_MAP[activeSid] : null;
     var eDisp = displaySid ? STOPNIE_IMG_MAP[displaySid] : null;
@@ -6989,9 +7036,18 @@ function renderBoard() {
 
     var isOwn2 = (!window._currentViewUserId || window._currentViewUserId === currentUser.id);
     var saveBtn = isOwn2 ? '<div style="text-align:center;margin-top:16px"><button onclick="boardSaveAndNotify()" style="padding:10px 28px;background:#16a34a;color:#fff;border:none;border-radius:20px;font-size:1rem;cursor:pointer;font-weight:600;">Zapisz mundur</button></div>' : '';
+
+    // Nazwa zastępu
+    var viewUser = isOwn2 ? currentUser : { zastepName: window._currentViewUserZastepName };
+    var zastepName = (currentUser && isOwn2) ? (currentUser.zastepName || currentUser.teamName || '') : (window._currentViewUserZastepName || '');
+    var zastepHtml = zastepName
+        ? '<div style="font-size:.85rem;color:var(--muted);margin-bottom:8px;text-align:left">&#128101; Zastęp: <strong style="color:var(--f1)">' + zastepName + '</strong></div>'
+        : '';
+
     document.getElementById('contentArea').innerHTML =
         '<div class="mundur-wrap">'
       + '<h2 class="mundur-title">Mój Mundur</h2>'
+      + zastepHtml
       + sqHtml
       + circHtml
       + saveBtn
