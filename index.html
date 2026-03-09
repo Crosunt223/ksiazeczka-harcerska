@@ -37,6 +37,14 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 
 
 .sidebar.hidden-area { display: none !important; }
+
+.role-filter-btn {
+    padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border);
+    background: var(--panel); color: var(--muted); font-size: .75rem; cursor: pointer;
+}
+.role-filter-btn.active {
+    background: var(--primary); color: #fff; border-color: var(--primary);
+}
 </style>
 <style>
 :root{
@@ -5329,6 +5337,29 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
+async function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
+    var role = currentUser.role;
+    var myRank = rankIndex(role);
+    var html = '<div class="member-row">'
+        + '<div>'
+        + '<strong>' + u.name + '</strong>'
+        + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + (u.username||'') + '</span>'
+        + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; ' + u.zastepName + '</span>' : '')
+        + '<br><span style="font-size:.72rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+        + '</div>'
+        + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+        + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
+        + (isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
+        + ((role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
+            ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
+        + ((role === 'superadmin' || (role === 'druzynowy' && isLower))
+            ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
+        + '</div>'
+        + '</div>';
+    return html;
+}
+
+
 async function renderAdminDashboard() {
     document.getElementById('navList').innerHTML = '';
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
@@ -5377,6 +5408,23 @@ async function renderAdminDashboard() {
             : '')
         + '</div>';
 
+    // ── Wyszukiwarka ──
+    html += '<div class="home-card" style="padding:12px 16px">'
+          + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj osoby (imię lub login)..." '
+          + 'style="flex:1;min-width:200px;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);'
+          + 'background:var(--panel);color:var(--f1);font-size:.9rem;outline:none">'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="adminRoleFilter">'
+          + '<button onclick="adminSetRoleFilter(this,\'\');" class="role-filter-btn active" data-role="">Wszyscy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'druzynowy\');" class="role-filter-btn" data-role="druzynowy">Dru&#380;ynowy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'przyboczny\');" class="role-filter-btn" data-role="przyboczny">Przyboczny</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'zastepowy\');" class="role-filter-btn" data-role="zastepowy">Zast&#281;powy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'podzastepowy\');" class="role-filter-btn" data-role="podzastepowy">Podzast&#281;powy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'user\');" class="role-filter-btn" data-role="user">Harcerz</button>'
+          + '</div>'
+          + '</div>';
+
     // ── Oczekujące — tylko superadmin i druzynowy ──
     var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
     if (canApprove && pending.length > 0) {
@@ -5419,55 +5467,26 @@ async function renderAdminDashboard() {
     }
 
     // ── Aktywni ──
-    html += '<div class="home-card"><h3>Aktywni harcerze (' + active.length + ')</h3><div style="display:grid;gap:8px">';
-    if (!active.length) {
-        html += '<p style="color:var(--muted);text-align:center">Brak aktywnych.</p>';
-    } else {
-        active.forEach(function(u) {
-            var esc    = u.name.replace(/'/g, "\'");
-            var uRank  = rankIndex(u.role);
-            var isLower = (role === 'superadmin') || (myRank < uRank);
-            var rLabel  = ROLE_LABELS[u.role] || u.role;
-            var rColor  = ROLE_COLORS[u.role] || '#546e7a';
+    window._adminAllMembers = active;
+    window._adminRoleFilter = '';
+    var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
+    ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
+        roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
+    });
+    html += '<div class="home-card">'
+          + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
+          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="Szukaj po imieniu lub loginie..." '
+          + 'style="width:100%;box-sizing:border-box;padding:8px 14px;border-radius:20px;'
+          + 'border:1.5px solid var(--border);background:var(--panel);color:var(--f1);'
+          + 'font-size:.9rem;outline:none;margin-bottom:10px">'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="adminRoleFilter">'
+          + roleFilterBtns
+          + '</div>'
+          + '<div id="adminMembersList" style="display:grid;gap:8px"></div>'
+          + '</div>';
+    adminRenderMembersList(active);
 
-            // Uprawnienia według roli
-            // Sprawnosci: kazdy moze zdawac osobom NIZEJ w hierarchii
-            var canSpraw  = isLower;
-            // Usuwanie: superadmin i druzynowy (tylko nizszych)
-            var canDelete = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
-            // Zmiana rangi: superadmin wszystkie, druzynowy tylko zastepowy/podzastepowy/user
-            var canRole   = isLower && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
-
-            var dropdown = '';
-            if (canRole) {
-                var av   = availableRoles(role);
-                var opts = '<option value="">-- Zmien range --</option>';
-                av.forEach(function(r) {
-                    opts += '<option value="' + r + '"' + (r === u.role ? ' selected' : '') + '>'
-                         + (ROLE_LABELS[r] || r) + '</option>';
-                });
-                dropdown = '<select class="btn-sm" style="background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:var(--rs);padding:6px 10px;font-weight:600;cursor:pointer;" data-uid="' + u._id + '" data-uname="' + esc + '" onchange="promoteUser(this.dataset.uid,this.dataset.uname,this.value,this)">' + opts + '</select>';
-            }
-
-            html += '<div class="member-row">'
-                + '<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
-                + '<strong>' + u.name + '</strong>'
-                + '<span style="color:var(--muted);font-size:.82em">@' + u.username + '</span>'
-                + '<span class="status-badge status-active">aktywny</span>'
-            + (u.teamName  ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#127956; '+u.teamName+'</span>' : '')
-            + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; '+u.zastepName+'</span>' : '')
-                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel2);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
-                + '</div>'
-                + '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">'
-                + dropdown
-                + (canSpraw  ? '<button class="btn-sm btn-view" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
-                + (canDelete ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
-                + '</div></div>';
-        });
-    }
-    html += '</div></div>';
-
-    // ── Odrzuceni — tylko superadmin ──
+// ── Odrzuceni — tylko superadmin ──
     if (role === 'superadmin' && rejected.length > 0) {
         html += '<div class="home-card" style="opacity:.7"><h3 style="color:var(--muted)">Odrzucone (' + rejected.length + ')</h3><div style="display:grid;gap:8px">';
         rejected.forEach(function(u) {
@@ -5483,6 +5502,49 @@ async function renderAdminDashboard() {
     }
 
     document.getElementById('contentArea').innerHTML = html;
+    window._adminAllMembers = active;
+}
+
+function adminFilterMembers() {
+    var q = (document.getElementById('adminSearch') || {}).value || '';
+    q = q.toLowerCase().trim();
+    var role = window._adminRoleFilter || '';
+    var list = (window._adminAllMembers || []).filter(function(u) {
+        var matchQ = !q || u.name.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q);
+        var matchR = !role || u.role === role;
+        return matchQ && matchR;
+    });
+    adminRenderMembersList(list);
+}
+
+function adminSetRoleFilter(btn, role) {
+    window._adminRoleFilter = role;
+    document.querySelectorAll('.role-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    adminFilterMembers();
+}
+
+function adminRenderMembersList(list) {
+    var el = document.getElementById('adminMembersList');
+    if (!el) return;
+    var role   = currentUser.role;
+    var myRank = rankIndex(role);
+    if (!list.length) {
+        el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wyników.</p>';
+        return;
+    }
+    el.innerHTML = list.map(function(u) {
+        var esc    = u.name.replace(/'/g, "\'");
+        var uRank  = rankIndex(u.role);
+        var isLower = (role === 'superadmin') || (myRank < uRank);
+        var rLabel  = ROLE_LABELS[u.role] || u.role;
+        var rColor  = ROLE_COLORS[u.role] || '#546e7a';
+        var canSpraw = isLower;
+        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
+
+        // Pobierz HTML wiersza z istniejącego renderowania
+        return adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete);
+    }).join('');
 }
 
 // ================================================================
