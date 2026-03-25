@@ -5408,22 +5408,7 @@ async function renderAdminDashboard() {
             : '')
         + '</div>';
 
-    // ── Wyszukiwarka ──
-    html += '<div class="home-card" style="padding:12px 16px">'
-          + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj osoby (imię lub login)..." '
-          + 'style="flex:1;min-width:200px;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);'
-          + 'background:var(--panel);color:var(--f1);font-size:.9rem;outline:none">'
-          + '</div>'
-          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="adminRoleFilter">'
-          + '<button onclick="adminSetRoleFilter(this,\'\');" class="role-filter-btn active" data-role="">Wszyscy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'druzynowy\');" class="role-filter-btn" data-role="druzynowy">Dru&#380;ynowy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'przyboczny\');" class="role-filter-btn" data-role="przyboczny">Przyboczny</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'zastepowy\');" class="role-filter-btn" data-role="zastepowy">Zast&#281;powy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'podzastepowy\');" class="role-filter-btn" data-role="podzastepowy">Podzast&#281;powy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'user\');" class="role-filter-btn" data-role="user">Harcerz</button>'
-          + '</div>'
-          + '</div>';
+    // (wyszukiwarka jest przy liście aktywnych poniżej)
 
     // ── Oczekujące — tylko superadmin i druzynowy ──
     var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
@@ -5474,10 +5459,10 @@ async function renderAdminDashboard() {
         roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
-          + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
-          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="Szukaj po imieniu lub loginie..." '
-          + 'style="width:100%;box-sizing:border-box;padding:8px 14px;border-radius:20px;'
-          + 'border:1.5px solid var(--border);background:var(--panel);color:var(--f1);'
+          + '<h3 style="margin:0 0 10px">&#128101; Druchy (' + active.length + ')</h3>'
+          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj po imieniu, loginie lub zastępie..." '
+          + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;'
+          + 'border:1.5px solid var(--border);background:var(--panel);color:var(--text);'
           + 'font-size:.9rem;outline:none;margin-bottom:10px">'
           + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="adminRoleFilter">'
           + roleFilterBtns
@@ -5510,7 +5495,10 @@ function adminFilterMembers() {
     q = q.toLowerCase().trim();
     var role = window._adminRoleFilter || '';
     var list = (window._adminAllMembers || []).filter(function(u) {
-        var matchQ = !q || u.name.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q);
+        var matchQ = !q
+            || u.name.toLowerCase().includes(q)
+            || (u.username||'').toLowerCase().includes(q)
+            || (u.zastepName||'').toLowerCase().includes(q);
         var matchR = !role || u.role === role;
         return matchQ && matchR;
     });
@@ -6699,17 +6687,19 @@ async function loadKadraForAsk() {
         var filtered;
 
         if (inZastep) {
-            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
+            // 1. W zastępie: druzynowy, przyboczny z drużyny + zastepowy i podzastepowy TYLKO z MOJEGO zastępu
             filtered = kadra.filter(function(k) {
-                var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
+                var isGlobal = (k.role === 'druzynowy' || k.role === 'przyboczny')
+                               && String(k.teamId) === String(currentUser.teamId);
                 var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
-                               && k.zastepId && k.zastepId === currentUser.zastepId;
+                               && k.zastepId && String(k.zastepId) === String(currentUser.zastepId);
                 return isGlobal || isMyZastep;
             });
         } else {
-            // Bez zastępu: tylko druzynowy i przyboczny
+            // 2. Bez zastępu: tylko druzynowy i przyboczny z mojej drużyny
             filtered = kadra.filter(function(k) {
-                return k.role === 'druzynowy' || k.role === 'przyboczny';
+                return (k.role === 'druzynowy' || k.role === 'przyboczny')
+                       && String(k.teamId) === String(currentUser.teamId);
             });
         }
 
@@ -6747,14 +6737,20 @@ function backToTaskPick() {
 }
 
 async function sendAskRequest(kadraId, kadraName) {
-    // Cooldown 5 minut
-    var cdKey = 'hk_ask_cd_' + _askItemId + '_' + _askTaskId;
+    // Cooldown 5 minut — per sprawność (nie per zadanie)
+    var cdKey = 'hk_ask_cd_' + _askItemId;
     try {
         var lastSent = parseInt(localStorage.getItem(cdKey) || '0');
         var diff = Date.now() - lastSent;
-        if (diff < 5 * 60 * 1000) {
-            var left = Math.ceil((5 * 60 * 1000 - diff) / 60000);
-            document.getElementById('askModalStatus').textContent = 'Poczekaj jeszcze ' + left + ' min przed ponownym wysłaniem.';
+        var CD_MS = 5 * 60 * 1000;
+        if (diff < CD_MS) {
+            var leftMs = CD_MS - diff;
+            var leftMin = Math.floor(leftMs / 60000);
+            var leftSec = Math.ceil((leftMs % 60000) / 1000);
+            var leftStr = leftMin > 0
+                ? leftMin + ' min ' + leftSec + ' sek'
+                : leftSec + ' sek';
+            document.getElementById('askModalStatus').textContent = '⏳ Poczekaj jeszcze ' + leftStr + ' przed ponownym wysłaniem.';
             document.getElementById('askModalStatus').style.color = '#f59e0b';
             return;
         }
