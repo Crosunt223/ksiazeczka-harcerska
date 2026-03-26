@@ -36,6 +36,53 @@ body.neon-mode .msq-circle-empty { box-shadow: 0 0 12px rgba(0,255,180,.4); }
 body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,.3); }
 
 
+
+/* ══ LEGENDARNE SPRAWNOSCI ══════════════════════════ */
+@keyframes legendary-glow {
+    0%   { box-shadow: 0 0 6px 2px #f59e0b, 0 0 18px 4px #f59e0b44; border-color: #f59e0b; }
+    50%  { box-shadow: 0 0 14px 4px #fbbf24, 0 0 32px 8px #f59e0b66; border-color: #fbbf24; }
+    100% { box-shadow: 0 0 6px 2px #f59e0b, 0 0 18px 4px #f59e0b44; border-color: #f59e0b; }
+}
+@keyframes legendary-shine {
+    0%   { opacity: 0; transform: translateX(-100%) rotate(25deg); }
+    18%  { opacity: .45; }
+    35%  { opacity: 0; transform: translateX(160%) rotate(25deg); }
+    100% { opacity: 0; }
+}
+.legendary-card {
+    position: relative;
+    border: 2px solid #f59e0b !important;
+    animation: legendary-glow 2.4s ease-in-out infinite;
+    overflow: hidden;
+}
+.legendary-card::before {
+    content: '';
+    position: absolute;
+    top: -60%; left: -40%;
+    width: 30%; height: 220%;
+    background: linear-gradient(90deg, transparent, rgba(251,191,36,.35), transparent);
+    animation: legendary-shine 3.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+.legendary-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #1a0a00;
+    font-size: .62rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: .04em;
+    z-index: 3;
+    box-shadow: 0 2px 6px #f59e0b55;
+}
+.legendary-nav-glow {
+    box-shadow: inset 0 0 0 2px #f59e0b88;
+    border-radius: var(--rs);
+}
+
 .sidebar.hidden-area { display: none !important; }
 
 .role-filter-btn {
@@ -44,6 +91,43 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 }
 .role-filter-btn.active {
     background: var(--primary); color: #fff; border-color: var(--primary);
+}
+
+/* ══ LEGENDARNE SPRAWNOSCI ══════════════════════════════ */
+.legendary-glow {
+    box-shadow: 0 0 8px #ffd700, 0 0 20px #b8860b, 0 0 40px rgba(255,215,0,.4) !important;
+    border-radius: 50%;
+    animation: legendary-pulse 2.5s ease-in-out infinite;
+}
+@keyframes legendary-pulse {
+    0%,100% { box-shadow: 0 0 8px #ffd700, 0 0 20px #b8860b, 0 0 40px rgba(255,215,0,.3); }
+    50%      { box-shadow: 0 0 14px #ffd700, 0 0 30px #b8860b, 0 0 60px rgba(255,215,0,.6); }
+}
+.legendary-item {
+    background: linear-gradient(90deg, rgba(255,215,0,.06) 0%, transparent 100%) !important;
+    border-left: 3px solid #ffd700 !important;
+}
+.legendary-item .nav-item-title {
+    color: #ffd700 !important;
+    text-shadow: 0 0 8px rgba(255,215,0,.5);
+}
+.legendary-badge {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #b8860b, #ffd700, #b8860b);
+    background-size: 200% auto;
+    animation: legendary-shine 3s linear infinite;
+    border-radius: 20px;
+    font-size: .72rem;
+    font-weight: 700;
+    color: #1a1000;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+@keyframes legendary-shine {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
 }
 </style>
 <style>
@@ -4953,6 +5037,7 @@ let currentUser       = null;
 let authToken         = null;
 let currentViewUserId = null;
 let cachedProgress    = {};
+var _legendaryStats   = {}; // itemId -> {threshold, owners, active}
 
 // ================================================================
 // INICJALIZACJA
@@ -5186,6 +5271,15 @@ function initAppAfterLogin() {
         if (active && active.id === 'nav-board') renderBoard();
     }).catch(function(){});
 
+    // Załaduj legendarne sprawnosci w tle
+    // Zaladuj legendarne sprawnosci
+    apiFetch('/legendary-stats').then(function(r) {
+        _legendaryStats = {};
+        if (r.ok && Array.isArray(r.data)) {
+            r.data.forEach(function(s) { _legendaryStats[s.itemId] = s; });
+        }
+    }).catch(function(){});
+
     // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
     // (wywoływane z window.onload)
 }
@@ -5406,6 +5500,9 @@ async function renderAdminDashboard() {
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
+        + (['superadmin','ksis','instruktor','druzynowy'].includes(role)
+            ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne sprawnosci</button>'
+            : '')
         + '</div>';
 
     // (wyszukiwarka jest przy liście aktywnych poniżej)
@@ -5549,6 +5646,101 @@ function adminRenderMembersList(list) {
     }
     el.innerHTML = html;
 }
+
+// ================================================================
+// PANEL LEGENDARNYCH SPRAWNOSCI
+// ================================================================
+async function renderLegendaryPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+
+    var r = await apiFetch('/legendary');
+    var saved = (r.ok && Array.isArray(r.data)) ? r.data : [];
+    var savedMap = {};
+    saved.forEach(function(s) { savedMap[s.itemId] = s; });
+
+    var html = '<div class="welcome-header">'
+        + '<h2>&#9876;&#65039; Legendarne Sprawnosci</h2>'
+        + '<p style="color:var(--muted);font-size:.9rem">Oznaczone sprawnosci swiecą złotą obramówką gdy osiągną próg posiadaczy.</p>'
+        + '<button onclick="renderAdminDashboard()" style="margin-top:10px;padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '</div>';
+
+    // Wyszukiwarka
+    html += '<div class="home-card" style="padding:14px 16px">'
+        + '<input id="legSearch" oninput="legFilterItems()" placeholder="&#128269; Szukaj sprawnosci..." '
+        + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.9rem;outline:none;margin-bottom:10px">'
+        + '<div id="legList" style="display:grid;gap:8px;max-height:60vh;overflow-y:auto"></div>'
+        + '</div>';
+
+    document.getElementById('contentArea').innerHTML = html;
+
+    // Zaladuj wszystkie sprawnosci do panelu
+    window._legSavedMap = savedMap;
+    window._legAllItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
+    legFilterItems();
+}
+
+function legFilterItems() {
+    var q = ((document.getElementById('legSearch') || {}).value || '').toLowerCase();
+    var el = document.getElementById('legList');
+    if (!el) return;
+    var items = (window._legAllItems || []).filter(function(x){
+        return !q || x.title.toLowerCase().includes(q) || x.category.toLowerCase().includes(q);
+    });
+    if (!items.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wynikow.</p>'; return; }
+
+    el.innerHTML = items.map(function(item) {
+        var saved = window._legSavedMap[item.id] || {};
+        var enabled = !!saved.enabled;
+        var threshold = saved.threshold || 10;
+        var stat = _legendaryStats[item.id] || {};
+        var owners = stat.owners || 0;
+        var active = stat.active || false;
+
+        var toggleStyle = enabled
+            ? 'background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none'
+            : 'background:var(--panel2);color:var(--muted);border:1.5px solid var(--border)';
+
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:var(--rs);'
+            + (active ? 'border:1.5px solid #f59e0b;box-shadow:0 0 8px #f59e0b44' : 'border:1.5px solid var(--border)') + '">'
+            + '<div style="flex:1">'
+            + '<div style="font-weight:600;font-size:.9rem">' + item.title + '</div>'
+            + '<div style="font-size:.75rem;color:var(--muted)">' + item.category
+            + (stat.owners !== undefined ? ' &nbsp;·&nbsp; <span style="color:' + (active ? '#f59e0b' : 'var(--muted)') + '">' + owners + ' posiadaczy</span>' : '')
+            + (active ? ' &nbsp;<span style="color:#f59e0b;font-weight:700">&#10024; AKTYWNA</span>' : '')
+            + '</div>'
+            + '</div>'
+            + '<input type="number" min="1" max="9999" value="' + threshold + '" id="leg-thr-' + item.id + '" '
+            + 'style="width:60px;padding:5px 8px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.85rem;text-align:center" '
+            + 'title="Próg posiadaczy">'
+            + '<button onclick="legToggle('' + item.id + '',' + (!enabled) + ')" '
+            + 'style="padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:700;' + toggleStyle + '">'
+            + (enabled ? '&#9876;&#65039; Wlaczona' : 'Wylaczona')
+            + '</button>'
+            + '</div>';
+    }).join('');
+}
+
+async function legToggle(itemId, enable) {
+    var thrEl = document.getElementById('leg-thr-' + itemId);
+    var threshold = thrEl ? parseInt(thrEl.value) || 10 : 10;
+    var r = await apiFetch('/legendary', {
+        method: 'POST',
+        body: JSON.stringify({ itemId: itemId, enabled: enable, threshold: threshold })
+    });
+    if (!r.ok) { alert((r.data && r.data.error) || 'Blad zapisu.'); return; }
+    // Odswierz globalne staty
+    window._legSavedMap[itemId] = { enabled: enable, threshold: threshold };
+    if (enable) {
+        if (!_legendaryStats[itemId]) _legendaryStats[itemId] = {};
+        _legendaryStats[itemId].threshold = threshold;
+    } else {
+        delete _legendaryStats[itemId];
+    }
+    // Odswierz panel
+    renderLegendaryPanel();
+}
+
 
 // ================================================================
 // PANEL DRUZYN (tylko superadmin)
@@ -5811,10 +6003,58 @@ function renderCategoryGrid() {
               + '</div>';
     });
 
-    html += '</div></div>';
+    html += '</div>';
+
+    // Przycisk nap.mp3 — pojawia sie po skrolowaniu w dol
+    html += '<div id="napBtnWrap" style="'
+          + 'opacity:0;transform:translateY(30px);transition:opacity .5s,transform .5s;'
+          + 'display:flex;justify-content:center;margin-top:32px;padding-bottom:24px">'
+          + '<button onclick="playNap()" style="'
+          + 'background:linear-gradient(135deg,#1a3a2a,#2d6a3f);'
+          + 'border:2px solid #4ade80;border-radius:50px;'
+          + 'padding:14px 32px;cursor:pointer;'
+          + 'display:flex;align-items:center;gap:10px;'
+          + 'box-shadow:0 0 18px rgba(74,222,128,.25);'
+          + 'transition:.2s" '
+          + 'onmouseenter="this.style.boxShadow=\'0 0 32px rgba(74,222,128,.5)\';this.style.transform=\'scale(1.06)\'" '
+          + 'onmouseleave="this.style.boxShadow=\'0 0 18px rgba(74,222,128,.25)\';this.style.transform=\'scale(1)\'">'
+          + '<span style="font-size:1.6rem">&#127925;</span>'
+          + '<span style="color:#d1fae5;font-weight:700;font-size:1rem;letter-spacing:.03em">Czuwaj!</span>'
+          + '</button>'
+          + '</div>';
+
+    html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
+
+    // Scroll trigger — pokaz przycisk po przewiniêciu
+    var area = document.getElementById('contentArea');
+    var napWrap = document.getElementById('napBtnWrap');
+    function _napScrollCheck() {
+        if (!napWrap) return;
+        if (area.scrollTop > 80) {
+            napWrap.style.opacity = '1';
+            napWrap.style.transform = 'translateY(0)';
+        } else {
+            napWrap.style.opacity = '0';
+            napWrap.style.transform = 'translateY(30px)';
+        }
+    }
+    if (area._napScroll) area.removeEventListener('scroll', area._napScroll);
+    area._napScroll = _napScrollCheck;
+    area.addEventListener('scroll', area._napScroll);
 }
+
+function playNap() {
+    var existing = document.getElementById('napAudio');
+    if (existing) { existing.currentTime = 0; existing.play(); return; }
+    var audio = document.createElement('audio');
+    audio.id = 'napAudio';
+    audio.src = 'nap.mp3';
+    document.body.appendChild(audio);
+    audio.play().catch(function(){});
+}
+
 
 function renderCategoryItems(cat) {
     showSidebarArea();
@@ -5836,13 +6076,20 @@ function renderCategoryItems(cat) {
         var border = level > 0 ? '2px solid '+meta.color : '2px solid var(--border)';
         var opacity = level > 0 ? '1' : '0.5';
 
-        html += '<div onclick="loadContent(\''+item.id+'\')" style="'
-              + 'background:var(--panel2);border:'+border+';border-radius:12px;'
+        var leg = _legendaryStats[item.id];
+        var isLegendary = leg && leg.active;
+        var legBadge = isLegendary ? '<div class="legendary-badge">&#9876;&#65039; LEGENDA</div>' : '';
+        var legClass = isLegendary ? 'legendary-card' : '';
+        if (isLegendary) { border = '2px solid #f59e0b'; opacity = '1'; }
+
+        html += '<div onclick="loadContent(\''+item.id+'\')" class="'+legClass+'" style="'
+              + 'position:relative;background:var(--panel2);border:'+border+';border-radius:12px;'
               + 'padding:10px 6px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:4px;'
               + 'opacity:'+opacity+';transition:.15s" '
               + 'onmouseenter="this.style.opacity=\'1\';this.style.transform=\'scale(1.04)\'" '
               + 'onmouseleave="this.style.opacity=\''+opacity+'\';this.style.transform=\'scale(1)\'">'
+              + legBadge
               + (imgSrc ? '<img src="'+imgSrc+'" style="width:52px;height:52px;object-fit:contain">' : '<div style="width:52px;height:52px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+meta.icon+'</div>')
               + '<div style="font-size:.72rem;color:var(--f1);line-height:1.2">'+item.title+'</div>'
               + stars
@@ -7462,6 +7709,8 @@ async function pickMember(userId, userName, userRole) {
             + '<span style="font-size:.7rem;color:var(--muted)">&#9660;</span>';
     }
 }
+
+
 
 // ══════════════════════════════════════════════════════
 // WAKE UP SERVER
