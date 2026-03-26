@@ -5669,6 +5669,74 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
+
+// ================================================================
+// ZMIANA ROLI — modal
+// ================================================================
+function changeRolePrompt(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    if (!roles.length) { alert('Nie masz uprawnien do zmiany roli.'); return; }
+    var old = document.getElementById('changeRoleOverlay');
+    if (old) old.remove();
+    var opts = roles.map(function(r) {
+        return '<option value="' + r + '"' + (r === currentRole ? ' selected' : '') + '>' + (ROLE_LABELS[r]||r) + '</option>';
+    }).join('');
+    var overlay = document.createElement('div');
+    overlay.id = 'changeRoleOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg)">'
+      + '<h3 style="margin:0 0 4px">&#9998; Zmien role</h3>'
+      + '<p style="color:var(--muted);font-size:.88rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
+      + '<select id="changeRoleSelect" style="width:100%;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:16px">' + opts + '</select>'
+      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+      + '<button onclick="document.getElementById('changeRoleOverlay').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+      + '<button onclick="doChangeRole('' + userId + '')" style="padding:8px 18px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer">Zapisz</button>'
+      + '</div></div>';
+    document.body.appendChild(overlay);
+}
+async function doChangeRole(userId) {
+    var newRole = document.getElementById('changeRoleSelect').value;
+    if (!newRole) return;
+    var r = await apiFetch('/users/' + userId + '/promote', { method: 'POST', body: JSON.stringify({ newRole: newRole }) });
+    document.getElementById('changeRoleOverlay').remove();
+    if (r.ok) { renderAdminDashboard(); }
+    else { alert((r.data && r.data.error) || 'Blad zmiany roli.'); }
+}
+
+// ================================================================
+// ZMIANA ZASTEPU — modal
+// ================================================================
+async function changeZastepPrompt(userId, userName) {
+    var old = document.getElementById('changeZastepOverlay');
+    if (old) old.remove();
+    var rz = await apiFetch('/zastepy');
+    var zastepy = (rz.ok && Array.isArray(rz.data)) ? rz.data : [];
+    var opts = '<option value="">— Brak zastepu —</option>';
+    zastepy.forEach(function(z) { opts += '<option value="' + z.zastepId + '">' + z.name + '</option>'; });
+    var overlay = document.createElement('div');
+    overlay.id = 'changeZastepOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg)">'
+      + '<h3 style="margin:0 0 4px">&#128101; Przypisz do zastepu</h3>'
+      + '<p style="color:var(--muted);font-size:.88rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
+      + (zastepy.length === 0
+          ? '<p style="color:var(--muted);font-size:.88rem">Brak zastepow w druzynie.</p>'
+          : '<select id="changeZastepSelect" style="width:100%;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:16px">' + opts + '</select>')
+      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+      + '<button onclick="document.getElementById('changeZastepOverlay').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+      + (zastepy.length > 0 ? '<button onclick="doChangeZastep('' + userId + '')" style="padding:8px 18px;border-radius:var(--rs);border:none;background:var(--f5);color:#fff;font-weight:600;cursor:pointer">Zapisz</button>' : '')
+      + '</div></div>';
+    document.body.appendChild(overlay);
+}
+async function doChangeZastep(userId) {
+    var sel = document.getElementById('changeZastepSelect');
+    var zastepId = sel ? sel.value : null;
+    var r = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
+    document.getElementById('changeZastepOverlay').remove();
+    if (r.ok) { renderAdminDashboard(); }
+    else { alert((r.data && r.data.error) || 'Blad przypisania zastepu.'); }
+}
+
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
     window._currentViewUserRole = userRole || 'user';
