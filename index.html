@@ -5452,9 +5452,9 @@ async function renderAdminDashboard() {
     }
 
     // ── Aktywni ──
-    var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
+    var roleFilterBtns = '<button onclick="adminSetRoleFilter(this,\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
-        roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
+        roleFilterBtns += '<button onclick="adminSetRoleFilter(this,\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
           + '<h3 style="margin:0 0 10px">&#128101; Druchy (' + active.length + ')</h3>'
@@ -5516,22 +5516,38 @@ function adminRenderMembersList(list) {
     if (!el) return;
     var role   = currentUser.role;
     var myRank = rankIndex(role);
-    if (!list.length) {
+    if (!list || !list.length) {
         el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wyników.</p>';
         return;
     }
-    el.innerHTML = list.map(function(u) {
-        var esc    = u.name.replace(/'/g, "\'");
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+        var u      = list[i];
+        var esc    = u.name.replace(/'/g, "\\'");
         var uRank  = rankIndex(u.role);
-        var isLower = (role === 'superadmin') || (myRank < uRank);
-        var rLabel  = ROLE_LABELS[u.role] || u.role;
-        var rColor  = ROLE_COLORS[u.role] || '#546e7a';
+        var isLower  = (role === 'superadmin') || (myRank < uRank);
+        var rLabel   = ROLE_LABELS[u.role] || u.role;
+        var rColor   = ROLE_COLORS[u.role] || '#546e7a';
         var canSpraw = isLower;
-        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
-
-        // Pobierz HTML wiersza z istniejącego renderowania
-        return adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete);
-    }).join('');
+        var row = '<div class="member-row">'
+            + '<div>'
+            + '<strong>' + u.name + '</strong>'
+            + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + (u.username||'') + '</span>'
+            + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; ' + u.zastepName + '</span>' : '')
+            + '<br><span style="font-size:.72rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
+            + '</div>'
+            + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+            + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
+            + (isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
+            + ((role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
+                ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
+            + ((role === 'superadmin' || (role === 'druzynowy' && isLower))
+                ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
+            + '</div>'
+            + '</div>';
+        html += row;
+    }
+    el.innerHTML = html;
 }
 
 // ================================================================
