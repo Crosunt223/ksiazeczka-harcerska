@@ -6071,12 +6071,17 @@ function renderCategoryGrid() {
 
 function playNap() {
     var existing = document.getElementById('napAudio');
-    if (existing) { existing.currentTime = 0; existing.play(); return; }
+    if (existing) {
+        existing.currentTime = 0;
+        existing.play().catch(function(e){ alert('Nie mozna odtworzyc nap.mp3 — upewnij sie ze plik jest w repo GitHub.'); });
+        return;
+    }
     var audio = document.createElement('audio');
     audio.id = 'napAudio';
     audio.src = 'nap.mp3';
+    audio.preload = 'auto';
     document.body.appendChild(audio);
-    audio.play().catch(function(){});
+    audio.play().catch(function(e){ alert('Nie mozna odtworzyc nap.mp3 — upewnij sie ze plik jest w repo GitHub.\n' + e.message); });
 }
 
 
@@ -6212,7 +6217,7 @@ function renderSidebar(filterText) {
         + 'box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s" '
         + 'onmouseenter="this.style.boxShadow=\'0 0 28px rgba(74,222,128,.5)\';this.style.transform=\'scale(1.03)\'" '
         + 'onmouseleave="this.style.boxShadow=\'0 0 14px rgba(74,222,128,.2)\';this.style.transform=\'scale(1)\'">'
-        + '<span style="font-size:1.2rem">&#127925;</span> Czuwaj!'
+        + '<span style="font-size:1.2rem">&#127925;</span> nap'
         + '</button>';
     list.appendChild(napLi);
 
