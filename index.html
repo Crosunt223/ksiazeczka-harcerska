@@ -5337,7 +5337,7 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
-async function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
+function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
     var role = currentUser.role;
     var myRank = rankIndex(role);
     var html = '<div class="member-row">'
@@ -5452,8 +5452,6 @@ async function renderAdminDashboard() {
     }
 
     // ── Aktywni ──
-    window._adminAllMembers = active;
-    window._adminRoleFilter = '';
     var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
         roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
@@ -5469,7 +5467,6 @@ async function renderAdminDashboard() {
           + '</div>'
           + '<div id="adminMembersList" style="display:grid;gap:8px"></div>'
           + '</div>';
-    adminRenderMembersList(active);
 
 // ── Odrzuceni — tylko superadmin ──
     if (role === 'superadmin' && rejected.length > 0) {
@@ -5488,6 +5485,8 @@ async function renderAdminDashboard() {
 
     document.getElementById('contentArea').innerHTML = html;
     window._adminAllMembers = active;
+    window._adminRoleFilter = '';
+    adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
@@ -6687,19 +6686,17 @@ async function loadKadraForAsk() {
         var filtered;
 
         if (inZastep) {
-            // 1. W zastępie: druzynowy, przyboczny z drużyny + zastepowy i podzastepowy TYLKO z MOJEGO zastępu
+            // W zastępie: druzynowy/przyboczny z drużyny + zastepowy/podzastepowy TYLKO z MOJEGO zastępu
             filtered = kadra.filter(function(k) {
-                var isGlobal = (k.role === 'druzynowy' || k.role === 'przyboczny')
-                               && String(k.teamId) === String(currentUser.teamId);
+                var isGlobal = (k.role === 'druzynowy' || k.role === 'przyboczny');
                 var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
                                && k.zastepId && String(k.zastepId) === String(currentUser.zastepId);
                 return isGlobal || isMyZastep;
             });
         } else {
-            // 2. Bez zastępu: tylko druzynowy i przyboczny z mojej drużyny
+            // Bez zastępu: tylko druzynowy i przyboczny
             filtered = kadra.filter(function(k) {
-                return (k.role === 'druzynowy' || k.role === 'przyboczny')
-                       && String(k.teamId) === String(currentUser.teamId);
+                return k.role === 'druzynowy' || k.role === 'przyboczny';
             });
         }
 
