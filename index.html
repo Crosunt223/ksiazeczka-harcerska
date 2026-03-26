@@ -1074,6 +1074,19 @@ body.neon-mode .btn-main {
         <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
       </div>
       <ul class="nav-list" id="navList"></ul>
+      <div style="padding:12px 10px 16px;border-top:1px solid var(--border);margin-top:auto">
+        <button onclick="playNap()" id="napSidebarBtn" style="
+          width:100%;padding:10px;border-radius:30px;cursor:pointer;
+          background:linear-gradient(135deg,#1a3a2a,#2d6a3f);
+          border:1.5px solid #4ade80;color:#d1fae5;
+          font-weight:700;font-size:.88rem;letter-spacing:.03em;
+          display:flex;align-items:center;justify-content:center;gap:8px;
+          box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s"
+          onmouseenter="this.style.boxShadow='0 0 28px rgba(74,222,128,.5)';this.style.transform='scale(1.03)'"
+          onmouseleave="this.style.boxShadow='0 0 14px rgba(74,222,128,.2)';this.style.transform='scale(1)'">
+          <span style="font-size:1.2rem">&#127925;</span> Czuwaj!
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT -->
@@ -5276,7 +5289,10 @@ function initAppAfterLogin() {
     apiFetch('/legendary-stats').then(function(r) {
         _legendaryStats = {};
         if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(s) { _legendaryStats[s.itemId] = s; });
+            r.data.forEach(function(s) {
+                s.active = s.owners >= 1; // aktywna gdy chociaz 1 osoba ma
+                _legendaryStats[s.itemId] = s;
+            });
         }
     }).catch(function(){});
 
@@ -5500,7 +5516,7 @@ async function renderAdminDashboard() {
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
-        + (['superadmin','ksis','instruktor','druzynowy'].includes(role)
+        + (['superadmin','ksis','druzynowy'].includes(role)
             ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne sprawnosci</button>'
             : '')
         + '</div>';
@@ -5661,8 +5677,12 @@ async function renderLegendaryPanel() {
 
     var html = '<div class="welcome-header">'
         + '<h2>&#9876;&#65039; Legendarne Sprawnosci</h2>'
-        + '<p style="color:var(--muted);font-size:.9rem">Oznaczone sprawnosci swiecą złotą obramówką gdy osiągną próg posiadaczy.</p>'
-        + '<button onclick="renderAdminDashboard()" style="margin-top:10px;padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<p style="color:var(--muted);font-size:.9rem">Oznaczone sprawnosci swiecą złotą obramówką gdy chociaz 1 osoba ma jakiekolwiek zadanie zdane.</p>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<button onclick="legToggleAll(true)" style="padding:8px 18px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#9876;&#65039; Włącz wszystkie</button>'
+        + '<button onclick="legToggleAll(false)" style="padding:8px 18px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--muted);font-weight:600;cursor:pointer">&#10007; Wyłącz wszystkie</button>'
+        + '</div>'
         + '</div>';
 
     // Wyszukiwarka
@@ -5747,6 +5767,33 @@ async function legToggle(itemId, enable) {
     renderLegendaryPanel();
 }
 
+
+async function legToggleAll(enable) {
+    var items = window._legAllItems || db.filter(function(x){ return !x.id.startsWith('st_'); });
+    var btns = document.querySelectorAll('[onclick*="legToggleAll"]');
+    btns.forEach(function(b){ b.disabled = true; b.textContent = 'Czekaj...'; });
+
+    var promises = items.map(function(item) {
+        var threshold = 10;
+        return apiFetch('/legendary', {
+            method: 'POST',
+            body: JSON.stringify({ itemId: item.id, enabled: enable, threshold: threshold })
+        }).then(function(r) {
+            if (r.ok) {
+                if (!window._legSavedMap) window._legSavedMap = {};
+                window._legSavedMap[item.id] = { enabled: enable, threshold: threshold };
+                if (enable) {
+                    if (!_legendaryStats[item.id]) _legendaryStats[item.id] = {};
+                } else {
+                    delete _legendaryStats[item.id];
+                }
+            }
+        });
+    });
+
+    await Promise.all(promises);
+    renderLegendaryPanel();
+}
 
 // ================================================================
 // PANEL DRUZYN (tylko superadmin)
@@ -6010,45 +6057,8 @@ function renderCategoryGrid() {
     });
 
     html += '</div>';
-
-    // Przycisk nap.mp3 — pojawia sie po skrolowaniu w dol
-    html += '<div id="napBtnWrap" style="'
-          + 'opacity:0;transform:translateY(30px);transition:opacity .5s,transform .5s;'
-          + 'display:flex;justify-content:center;margin-top:32px;padding-bottom:24px">'
-          + '<button onclick="playNap()" style="'
-          + 'background:linear-gradient(135deg,#1a3a2a,#2d6a3f);'
-          + 'border:2px solid #4ade80;border-radius:50px;'
-          + 'padding:14px 32px;cursor:pointer;'
-          + 'display:flex;align-items:center;gap:10px;'
-          + 'box-shadow:0 0 18px rgba(74,222,128,.25);'
-          + 'transition:.2s" '
-          + 'onmouseenter="this.style.boxShadow=\'0 0 32px rgba(74,222,128,.5)\';this.style.transform=\'scale(1.06)\'" '
-          + 'onmouseleave="this.style.boxShadow=\'0 0 18px rgba(74,222,128,.25)\';this.style.transform=\'scale(1)\'">'
-          + '<span style="font-size:1.6rem">&#127925;</span>'
-          + '<span style="color:#d1fae5;font-weight:700;font-size:1rem;letter-spacing:.03em">Czuwaj!</span>'
-          + '</button>'
-          + '</div>';
-
-    html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
-
-    // Scroll trigger — pokaz przycisk po przewiniêciu
-    var area = document.getElementById('contentArea');
-    var napWrap = document.getElementById('napBtnWrap');
-    function _napScrollCheck() {
-        if (!napWrap) return;
-        if (area.scrollTop > 80) {
-            napWrap.style.opacity = '1';
-            napWrap.style.transform = 'translateY(0)';
-        } else {
-            napWrap.style.opacity = '0';
-            napWrap.style.transform = 'translateY(30px)';
-        }
-    }
-    if (area._napScroll) area.removeEventListener('scroll', area._napScroll);
-    area._napScroll = _napScrollCheck;
-    area.addEventListener('scroll', area._napScroll);
 }
 
 function playNap() {
