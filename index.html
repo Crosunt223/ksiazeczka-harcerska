@@ -1074,19 +1074,6 @@ body.neon-mode .btn-main {
         <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
       </div>
       <ul class="nav-list" id="navList"></ul>
-      <div style="padding:12px 10px 16px;border-top:1px solid var(--border);margin-top:auto">
-        <button onclick="playNap()" id="napSidebarBtn" style="
-          width:100%;padding:10px;border-radius:30px;cursor:pointer;
-          background:linear-gradient(135deg,#1a3a2a,#2d6a3f);
-          border:1.5px solid #4ade80;color:#d1fae5;
-          font-weight:700;font-size:.88rem;letter-spacing:.03em;
-          display:flex;align-items:center;justify-content:center;gap:8px;
-          box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s"
-          onmouseenter="this.style.boxShadow='0 0 28px rgba(74,222,128,.5)';this.style.transform='scale(1.03)'"
-          onmouseleave="this.style.boxShadow='0 0 14px rgba(74,222,128,.2)';this.style.transform='scale(1)'">
-          <span style="font-size:1.2rem">&#127925;</span> Czuwaj!
-        </button>
-      </div>
     </nav>
 
     <!-- CONTENT -->
@@ -5516,7 +5503,7 @@ async function renderAdminDashboard() {
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
-        + (['superadmin','ksis','druzynowy'].includes(role)
+        + (['superadmin'].includes(role)
             ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne sprawnosci</button>'
             : '')
         + '</div>';
@@ -6179,6 +6166,23 @@ function renderSidebar(filterText) {
         });
     });
     updateUIStats();
+
+    // Przycisk nap na dole listy
+    var napLi = document.createElement('li');
+    napLi.style.cssText = 'padding:14px 10px 10px;list-style:none';
+    napLi.innerHTML = '<button onclick="playNap()" style="'
+        + 'width:100%;padding:10px;border-radius:30px;cursor:pointer;'
+        + 'background:linear-gradient(135deg,#1a3a2a,#2d6a3f);'
+        + 'border:1.5px solid #4ade80;color:#d1fae5;'
+        + 'font-weight:700;font-size:.88rem;letter-spacing:.03em;'
+        + 'display:flex;align-items:center;justify-content:center;gap:8px;'
+        + 'box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s" '
+        + 'onmouseenter="this.style.boxShadow=\'0 0 28px rgba(74,222,128,.5)\';this.style.transform=\'scale(1.03)\'" '
+        + 'onmouseleave="this.style.boxShadow=\'0 0 14px rgba(74,222,128,.2)\';this.style.transform=\'scale(1)\'">'
+        + '<span style="font-size:1.2rem">&#127925;</span> Czuwaj!'
+        + '</button>';
+    list.appendChild(napLi);
+
     // Pokaz druzyne zalogowanego usera
     if (currentUser && currentUser.teamId) {
         apiFetch('/my-team').then(function(r) {
