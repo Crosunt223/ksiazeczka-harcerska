@@ -5271,16 +5271,37 @@ function initAppAfterLogin() {
         if (active && active.id === 'nav-board') renderBoard();
     }).catch(function(){});
 
-    // Załaduj legendarne sprawnosci w tle
-    // Zaladuj legendarne sprawnosci
+    // Zaladuj legendarne sprawnosci — po załadowaniu odswierz aktywny widok
     apiFetch('/legendary-stats').then(function(r) {
         _legendaryStats = {};
         if (r.ok && Array.isArray(r.data)) {
             r.data.forEach(function(s) {
-                s.active = s.owners >= 1; // aktywna gdy chociaz 1 osoba ma
+                s.active = s.owners >= 1;
                 _legendaryStats[s.itemId] = s;
             });
         }
+        // Odswierz kafelki jesli widoczne
+        var legItems = document.querySelectorAll('[data-leg-id]');
+        legItems.forEach(function(el) {
+            var id = el.getAttribute('data-leg-id');
+            var leg = _legendaryStats[id];
+            var isLeg = leg && leg.active;
+            if (isLeg) {
+                el.classList.add('legendary-card');
+                el.style.border = '2px solid #f59e0b';
+                el.style.opacity = '1';
+                if (!el.querySelector('.legendary-badge')) {
+                    var b = document.createElement('div');
+                    b.className = 'legendary-badge';
+                    b.innerHTML = '&#9876;&#65039; LEGENDA';
+                    el.insertBefore(b, el.firstChild);
+                }
+            } else {
+                el.classList.remove('legendary-card');
+                var badge = el.querySelector('.legendary-badge');
+                if (badge) badge.remove();
+            }
+        });
     }).catch(function(){});
 
     // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
@@ -6059,10 +6080,22 @@ function playNap() {
 }
 
 
-function renderCategoryItems(cat) {
+async function renderCategoryItems(cat) {
     showSidebarArea();
     var items = db.filter(function(x){ return x.category === cat && !x.id.startsWith('st_'); });
     var meta  = CAT_META[cat] || { icon:'📋', color:'#888' };
+
+    // Zawsze pobierz aktualne staty legendarnych przed renderem
+    try {
+        var r = await apiFetch('/legendary-stats');
+        if (r.ok && Array.isArray(r.data)) {
+            _legendaryStats = {};
+            r.data.forEach(function(s) {
+                s.active = s.owners >= 1;
+                _legendaryStats[s.itemId] = s;
+            });
+        }
+    } catch(e) {}
 
     var html = '<div style="padding:16px">';
     html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
@@ -6085,7 +6118,7 @@ function renderCategoryItems(cat) {
         var legClass = isLegendary ? 'legendary-card' : '';
         if (isLegendary) { border = '2px solid #f59e0b'; opacity = '1'; }
 
-        html += '<div onclick="loadContent(\''+item.id+'\')" class="'+legClass+'" style="'
+        html += '<div onclick="loadContent(\''+item.id+'\')" class="'+legClass+'" data-leg-id="'+item.id+'" style="'
               + 'position:relative;background:var(--panel2);border:'+border+';border-radius:12px;'
               + 'padding:10px 6px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:4px;'
