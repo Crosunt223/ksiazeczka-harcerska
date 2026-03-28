@@ -52,31 +52,38 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 .legendary-card {
     position: relative;
     border: 2px solid #f59e0b !important;
-    animation: legendary-glow 2.4s ease-in-out infinite;
-    overflow: hidden;
+    box-shadow: 0 0 0 1px #f59e0b44, 0 0 18px 2px #f59e0b33 !important;
+    animation: legendary-glow 2.2s ease-in-out infinite !important;
+    overflow: visible !important;
 }
-.legendary-card::before {
+.legendary-card::after {
     content: '';
     position: absolute;
-    top: -60%; left: -40%;
-    width: 30%; height: 220%;
-    background: linear-gradient(90deg, transparent, rgba(251,191,36,.35), transparent);
-    animation: legendary-shine 3.5s ease-in-out infinite;
+    inset: -2px;
+    border-radius: 13px;
     pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(251,191,36,.25) 50%, transparent 65%);
+    background-size: 200% 100%;
+    animation: legendary-sweep 2.5s linear infinite;
     z-index: 2;
+}
+@keyframes legendary-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 .legendary-badge {
     position: absolute;
-    top: 6px; right: 6px;
-    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    top: -8px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, #b45309, #f59e0b, #fbbf24);
     color: #1a0a00;
-    font-size: .62rem;
-    font-weight: 800;
-    padding: 2px 7px;
+    font-size: .58rem;
+    font-weight: 900;
+    padding: 2px 8px;
     border-radius: 20px;
-    letter-spacing: .04em;
-    z-index: 3;
-    box-shadow: 0 2px 6px #f59e0b55;
+    letter-spacing: .06em;
+    z-index: 10;
+    box-shadow: 0 2px 8px #f59e0b88;
+    white-space: nowrap;
 }
 .legendary-nav-glow {
     box-shadow: inset 0 0 0 2px #f59e0b88;
@@ -5038,6 +5045,8 @@ let authToken         = null;
 let currentViewUserId = null;
 let cachedProgress    = {};
 var _legendaryStats   = {}; // itemId -> {threshold, owners, active}
+var _customSpraw      = {}; // itemId -> {title, extraTasks, images, disabled}
+var _privateSpraw     = []; // prywatne sprawnosci dostepne dla mnie
 
 // ================================================================
 // INICJALIZACJA
@@ -5304,6 +5313,24 @@ function initAppAfterLogin() {
         });
     }).catch(function(){});
 
+    // Zaladuj prywatne sprawnosci
+    apiFetch('/private-spraw').then(function(r) {
+        _privateSpraw = [];
+        if (r.ok && Array.isArray(r.data)) {
+            _privateSpraw = r.data;
+            applyPrivateSpraw();
+        }
+    }).catch(function(){});
+
+    // Zaladuj customizacje sprawnosci
+    apiFetch('/custom-spraw').then(function(r) {
+        _customSpraw = {};
+        if (r.ok && Array.isArray(r.data)) {
+            r.data.forEach(function(c) { _customSpraw[c.itemId] = c; });
+            applyCustomSpraw();
+        }
+    }).catch(function(){});
+
     // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
     // (wywoływane z window.onload)
 }
@@ -5526,6 +5553,12 @@ async function renderAdminDashboard() {
             : '')
         + (['superadmin'].includes(role)
             ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne sprawnosci</button>'
+            : '')
+        + (['superadmin'].includes(role)
+            ? '<button onclick="renderEditSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--primary-dark);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9998; Edytuj sprawnosci</button>'
+            : '')
+        + (['superadmin'].includes(role)
+            ? '<button onclick="renderPrivateSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128274; Prywatne sprawnosci</button>'
             : '')
         + '</div>';
 
@@ -5802,6 +5835,457 @@ async function legToggleAll(enable) {
     await Promise.all(promises);
     renderLegendaryPanel();
 }
+
+
+// ================================================================
+// PRYWATNE SPRAWNOSCI — nakładanie na db
+// ================================================================
+function applyPrivateSpraw() {
+    _privateSpraw.forEach(function(ps) {
+        var exists = db.find(function(x){ return x.id === ps.itemId; });
+        if (exists) return;
+        db.push({
+            id:            ps.itemId,
+            title:         ps.title,
+            category:      ps.category || 'Prywatne',
+            images:        ps.images || [],
+            circleVariants:0,
+            groups:        ps.groups && ps.groups.length ? ps.groups : [{ name: 'Zadania', tasks: [] }],
+            _isPrivate:    true
+        });
+    });
+}
+
+// ================================================================
+// PANEL PRYWATNYCH SPRAWNOSCI (tylko superadmin)
+// ================================================================
+async function renderPrivateSprawPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+
+    var [rPriv, rUsers] = await Promise.all([
+        apiFetch('/private-spraw/all'),
+        apiFetch('/team-members')
+    ]);
+
+    var privItems = (rPriv.ok && Array.isArray(rPriv.data)) ? rPriv.data : [];
+    window._privAllUsers = (rUsers.ok && Array.isArray(rUsers.data))
+        ? rUsers.data.filter(function(u){ return u.status === 'active'; })
+        : [];
+
+    var html = '<div class="welcome-header">'
+        + '<h2>&#128274; Prywatne Sprawnosci</h2>'
+        + '<p style="color:var(--muted);font-size:.9rem">Sprawnosci widoczne tylko dla wybranych harcerzy.</p>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<button onclick="privSprawNew()" style="padding:8px 18px;background:var(--f4);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">+ Nowa prywatna</button>'
+        + '</div></div>';
+
+    if (!privItems.length) {
+        html += '<div class="home-card"><p style="color:var(--muted);text-align:center">Brak prywatnych sprawnosci. Kliknij "+ Nowa prywatna".</p></div>';
+    } else {
+        html += '<div style="display:grid;gap:10px;padding-bottom:20px">';
+        privItems.forEach(function(ps) {
+            var assignedNames = (ps.allowedUsers || []).map(function(uid) {
+                var u = (window._privAllUsers || []).find(function(x){ return x._id === uid || x._id.toString() === uid; });
+                return u ? u.name : uid;
+            });
+            html += '<div class="home-card" style="padding:14px 16px;border-left:3px solid #a855f7">'
+                + '<div style="display:flex;align-items:flex-start;gap:10px">'
+                + '<div style="flex:1">'
+                + '<div style="font-weight:700;font-size:.95rem">&#128274; ' + ps.title + '</div>'
+                + '<div style="font-size:.75rem;color:var(--muted);margin-top:2px">' + (ps.category||'Prywatne')
+                + ' &middot; ' + (ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).length : 0) + ' zadań'
+                + '</div>'
+                + '<div style="font-size:.78rem;color:#c084fc;margin-top:6px">'
+                + (assignedNames.length ? '&#128100; ' + assignedNames.join(', ') : '<em style="color:var(--muted)">Brak przypisanych</em>')
+                + '</div>'
+                + '</div>'
+                + '<div style="display:flex;gap:6px;flex-shrink:0">'
+                + '<button onclick="privSprawEdit('' + ps.itemId + '')" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600">&#9998; Edytuj</button>'
+                + '<button onclick="privSprawDelete('' + ps.itemId + '','' + ps.title.replace(/'/g,"\'") + '')" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem">&#128465;</button>'
+                + '</div></div></div>';
+        });
+        html += '</div>';
+    }
+
+    document.getElementById('contentArea').innerHTML = html;
+    window._privItems = privItems;
+}
+
+function privSprawNew() { privSprawOpenModal(null); }
+function privSprawEdit(itemId) {
+    var ps = (window._privItems || []).find(function(x){ return x.itemId === itemId; });
+    privSprawOpenModal(ps);
+}
+
+function privSprawOpenModal(ps) {
+    var old = document.getElementById('privSprawModal');
+    if (old) old.remove();
+
+    var isEdit = !!ps;
+    var title   = ps ? ps.title : '';
+    var cat     = ps ? (ps.category||'Prywatne') : 'Prywatne';
+    var tasks   = ps && ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).join('
+') : '';
+    var images  = ps ? (ps.images||[]).join('
+') : '';
+    var allowed = ps ? (ps.allowedUsers || []) : [];
+
+    var usersHtml = (window._privAllUsers || []).map(function(u) {
+        var checked = allowed.includes(u._id) || allowed.includes(u._id.toString());
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--rs);cursor:pointer;background:var(--panel2);border:1px solid var(--border)">'
+            + '<input type="checkbox" value="' + u._id + '" ' + (checked ? 'checked' : '') + ' style="width:16px;height:16px;accent-color:var(--primary)">'
+            + '<span style="font-size:.88rem">' + u.name + '</span>'
+            + '<span style="font-size:.7rem;color:var(--muted);margin-left:auto">' + (ROLE_LABELS[u.role]||u.role) + '</span>'
+            + '</label>';
+    }).join('');
+
+    var overlay = document.createElement('div');
+    overlay.id = 'privSprawModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<h3 style="margin:0 0 16px">&#128274; ' + (isEdit ? 'Edytuj' : 'Nowa') + ' prywatna sprawnosc</h3>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Tytuł *</label>'
+        + '<input id="psTitle" value="' + title + '" placeholder="np. Tajny Agent" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Kategoria</label>'
+        + '<input id="psCategory" value="' + cat + '" placeholder="Prywatne" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zadania (każde w nowej linii)</label>'
+        + '<textarea id="psTasks" rows="6" placeholder="✶ | Pierwsze zadanie&#10;✶✶ | Drugie zadanie" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">' + tasks + '</textarea>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
+        + '<textarea id="psImages" rows="2" placeholder="https://..." '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">' + images + '</textarea>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:8px">Przypisz do harcerzy</label>'
+        + '<div style="display:grid;gap:5px;max-height:200px;overflow-y:auto;margin-bottom:16px;padding:4px">' + usersHtml + '</div>'
+
+        + '<p id="psMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+        + '<button onclick="document.getElementById('privSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="privSprawSave('' + (ps ? ps.itemId : '') + '')" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
+        + '</div></div>';
+    document.body.appendChild(overlay);
+}
+
+async function privSprawSave(existingItemId) {
+    var title    = (document.getElementById('psTitle').value||'').trim();
+    var category = (document.getElementById('psCategory').value||'Prywatne').trim();
+    var tasksRaw = document.getElementById('psTasks').value || '';
+    var imagesRaw= document.getElementById('psImages').value || '';
+    var msg      = document.getElementById('psMsg');
+
+    if (!title) { msg.style.color='#f87171'; msg.textContent='Wpisz tytuł.'; return; }
+
+    var tasks  = tasksRaw.split('
+').map(function(t){ return t.trim(); }).filter(Boolean);
+    var images = imagesRaw.split('
+').map(function(u){ return u.trim(); }).filter(Boolean);
+    var groups = tasks.length ? [{ name: 'Zadania', tasks: tasks }] : [];
+
+    var checkboxes = document.querySelectorAll('#privSprawModal input[type=checkbox]');
+    var allowedUsers = [];
+    checkboxes.forEach(function(cb){ if (cb.checked) allowedUsers.push(cb.value); });
+
+    msg.textContent = 'Zapisywanie...';
+    var r = await apiFetch('/private-spraw', {
+        method: 'POST',
+        body: JSON.stringify({ itemId: existingItemId || null, title: title, category: category, groups: groups, images: images, allowedUsers: allowedUsers })
+    });
+
+    if (r.ok) {
+        msg.style.color = '#4ade80';
+        msg.textContent = '✓ Zapisano!';
+        setTimeout(function() {
+            document.getElementById('privSprawModal').remove();
+            renderPrivateSprawPanel();
+        }, 700);
+    } else {
+        msg.style.color = '#f87171';
+        msg.textContent = (r.data && r.data.error) || 'Blad zapisu.';
+    }
+}
+
+async function privSprawDelete(itemId, name) {
+    if (!confirm('Usunac prywatna sprawnosc "' + name + '"?')) return;
+    var r = await apiFetch('/private-spraw/' + itemId, { method: 'DELETE' });
+    if (r.ok) { renderPrivateSprawPanel(); }
+    else { alert((r.data && r.data.error) || 'Blad usuwania.'); }
+}
+
+// ================================================================
+// APPLY CUSTOM SPRAW — nakłada customizacje na db
+// ================================================================
+function applyCustomSpraw() {
+    // Nakładaj modyfikacje na istniejące sprawnosci
+    db.forEach(function(item) {
+        var c = _customSpraw[item.id];
+        if (!c) return;
+        if (c.title)    item.title    = c.title;
+        if (c.category) item.category = c.category;
+        if (c.images && c.images.length) {
+            if (!item.images) item.images = [];
+            c.images.forEach(function(img) { if (!item.images.includes(img)) item.images.push(img); });
+        }
+        if (c.extraTasks && c.extraTasks.length) {
+            if (!item.groups) item.groups = [];
+            if (!item.groups[0]) item.groups[0] = { name: 'Zadania', tasks: [] };
+            c.extraTasks.forEach(function(t) { if (!item.groups[0].tasks.includes(t)) item.groups[0].tasks.push(t); });
+        }
+        if (c.disabled) item._hidden = true;
+    });
+    // Dodaj nowe sprawnosci stworzone przez admina
+    Object.keys(_customSpraw).forEach(function(itemId) {
+        var c = _customSpraw[itemId];
+        if (!c.isNew || c.disabled) return;
+        var exists = db.find(function(x){ return x.id === itemId; });
+        if (exists) return; // juz jest
+        db.push({
+            id:             itemId,
+            title:          c.title || itemId,
+            category:       c.category || 'Bielik',
+            images:         c.images || [],
+            circleVariants: c.circleVariants || 0,
+            groups:         c.groups && c.groups.length ? c.groups : [{ name: 'Zadania', tasks: [] }],
+            _isCustom:      true
+        });
+    });
+}
+
+// ================================================================
+// PANEL EDYCJI SPRAWNOSCI (tylko superadmin)
+// ================================================================
+async function renderEditSprawPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+
+    var r = await apiFetch('/custom-spraw');
+    _customSpraw = {};
+    if (r.ok && Array.isArray(r.data)) {
+        r.data.forEach(function(c) { _customSpraw[c.itemId] = c; });
+        applyCustomSpraw();
+    }
+
+    var html = '<div class="welcome-header">'
+        + '<h2>&#9998; Edycja Sprawnosci</h2>'
+        + '<p style="color:var(--muted);font-size:.9rem">Edytuj istniejace lub dodaj nowe sprawnosci.</p>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<button onclick="editSprawNew()" style="padding:8px 18px;background:var(--f4);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">+ Nowa sprawnosc</button>'
+        + '</div>'
+        + '</div>';
+
+    html += '<div class="home-card" style="padding:14px 16px">'
+        + '<input id="editSprawSearch" oninput="editSprawFilter()" placeholder="&#128269; Szukaj po nazwie lub kategorii..." '
+        + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.9rem;outline:none">'
+        + '</div>'
+        + '<div id="editSprawList" style="display:grid;gap:10px;padding:0 0 20px"></div>';
+
+    document.getElementById('contentArea').innerHTML = html;
+    window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
+    editSprawFilter();
+}
+
+function editSprawFilter() {
+    var q = ((document.getElementById('editSprawSearch')||{}).value||'').toLowerCase();
+    var items = (window._editSprawItems||[]).filter(function(x){
+        return !q || x.title.toLowerCase().includes(q) || x.category.toLowerCase().includes(q);
+    });
+    var el = document.getElementById('editSprawList');
+    if (!el) return;
+    if (!items.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">Brak wynikow.</p>'; return; }
+
+    el.innerHTML = items.map(function(item) {
+        var c = _customSpraw[item.id] || {};
+        var isNew = !!c.isNew;
+        var hasCustom = isNew || c.extraTasks && c.extraTasks.length || c.images && c.images.length || c.title;
+        var borderStyle = isNew ? 'border-left:3px solid var(--f4)' : hasCustom ? 'border-left:3px solid var(--primary)' : '';
+        var tag = isNew ? '<span style="font-size:.68rem;background:var(--f4);color:#fff;padding:1px 7px;border-radius:20px;margin-left:6px">NOWA</span>' : '';
+        return '<div class="home-card" style="padding:12px 16px;' + borderStyle + '">'
+            + '<div style="display:flex;align-items:center;gap:8px">'
+            + '<div style="flex:1;min-width:0">'
+            + '<div style="font-weight:700;font-size:.92rem">' + item.title + tag + '</div>'
+            + '<div style="font-size:.73rem;color:var(--muted)">' + item.category + (hasCustom && !isNew ? ' · zmodyfikowana' : '') + '</div>'
+            + '</div>'
+            + '<button onclick="editSprawOpen('' + item.id + '')" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap">'
+            + '&#9998; Edytuj'
+            + '</button>'
+            + (isNew ? '<button onclick="editSprawDelete('' + item.id + '')" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem;font-weight:600">&#128465;</button>' : '')
+            + '</div>'
+            + '</div>';
+    }).join('');
+}
+
+
+function editSprawNew() {
+    var old = document.getElementById('editSprawModal');
+    if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'editSprawModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<h3 style="margin:0 0 16px">+ Nowa Sprawnosc</h3>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Tytuł *</label>'
+        + '<input id="nsTitle" placeholder="np. Programista/Programistka" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Kategoria *</label>'
+        + '<select id="nsCategory" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+        + ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'].map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('')
+        + '</select>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zadania (każde w nowej linii)</label>'
+        + '<textarea id="nsTasks" rows="7" placeholder="✶ | Zadanie na 1 gwiazdkę&#10;✶✶ | Zadanie na 2 gwiazdki&#10;✶✶✶ | Zadanie na 3 gwiazdki" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px"></textarea>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
+        + '<textarea id="nsImages" rows="2" placeholder="https://przyklad.pl/zdjecie.jpg" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:16px"></textarea>'
+
+        + '<p id="nsMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+        + '<button onclick="document.getElementById('editSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="editSprawCreate()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--f4);color:#fff;font-weight:700;cursor:pointer">Stwórz sprawnosc</button>'
+        + '</div>'
+        + '</div>';
+    document.body.appendChild(overlay);
+}
+
+async function editSprawCreate() {
+    var title = (document.getElementById('nsTitle').value || '').trim();
+    var category = document.getElementById('nsCategory').value;
+    var tasksRaw = document.getElementById('nsTasks').value || '';
+    var imagesRaw = document.getElementById('nsImages').value || '';
+    var msg = document.getElementById('nsMsg');
+
+    if (!title) { msg.style.color = '#f87171'; msg.textContent = 'Wpisz tytuł sprawnosci.'; return; }
+
+    var tasks = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
+    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
+
+    // Generuj unikalne ID z tytułu
+    var itemId = 'custom_' + title.toLowerCase()
+        .replace(/[ąćęłńóśźż]/g, function(c){ return {ą:'a',ć:'c',ę:'e',ł:'l',ń:'n',ó:'o',ś:'s',ź:'z',ż:'z'}[c]||c; })
+        .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g,'') + '_' + Date.now().toString(36);
+
+    var groups = tasks.length ? [{ name: 'Zadania', tasks: tasks }] : [];
+
+    msg.textContent = 'Tworzenie...';
+    var r = await apiFetch('/custom-spraw', {
+        method: 'POST',
+        body: JSON.stringify({ itemId: itemId, title: title, category: category, isNew: true, groups: groups, images: images, extraTasks: [] })
+    });
+
+    if (r.ok) {
+        _customSpraw[itemId] = r.data;
+        applyCustomSpraw();
+        window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
+        msg.style.color = '#4ade80';
+        msg.textContent = '✓ Stworzono: ' + title;
+        setTimeout(function() {
+            document.getElementById('editSprawModal').remove();
+            editSprawFilter();
+        }, 800);
+    } else {
+        msg.style.color = '#f87171';
+        msg.textContent = (r.data && r.data.error) || 'Blad tworzenia.';
+    }
+}
+
+async function editSprawDelete(itemId) {
+    var item = db.find(function(x){ return x.id === itemId; });
+    var name = item ? item.title : itemId;
+    if (!confirm('Usunac sprawnosc "' + name + '"?')) return;
+    var r = await apiFetch('/custom-spraw/' + itemId, { method: 'DELETE' });
+    if (r.ok) {
+        delete _customSpraw[itemId];
+        // Usun z db
+        var idx = db.findIndex(function(x){ return x.id === itemId; });
+        if (idx !== -1) db.splice(idx, 1);
+        window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
+        editSprawFilter();
+    } else {
+        alert((r.data && r.data.error) || 'Blad usuwania.');
+    }
+}
+
+function editSprawOpen(itemId) {
+    var item = db.find(function(x){ return x.id === itemId; });
+    if (!item) return;
+    var c = _customSpraw[itemId] || {};
+    var extraTasksStr = (c.extraTasks || []).join('\n');
+    var imagesStr = (c.images || []).join('\n');
+
+    var old = document.getElementById('editSprawModal');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'editSprawModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<h3 style="margin:0 0 4px">&#9998; ' + item.title + '</h3>'
+        + '<p style="color:var(--muted);font-size:.8rem;margin:0 0 16px">' + item.category + ' &middot; ' + itemId + '</p>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Nowy tytuł (zostaw puste = bez zmian)</label>'
+        + '<input id="esTitle" value="' + (c.title || '') + '" placeholder="' + item.title + '" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Dodatkowe zadania (każde w nowej linii)</label>'
+        + '<textarea id="esTasks" rows="5" placeholder="✶ | Nowe zadanie&#10;✶✶ | Trudniejsze zadanie" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">'
+        + extraTasksStr + '</textarea>'
+
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
+        + '<textarea id="esImages" rows="3" placeholder="https://przyklad.pl/zdjecie.jpg" '
+        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:16px">'
+        + imagesStr + '</textarea>'
+
+        + '<p id="esMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+        + '<button onclick="document.getElementById('editSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="editSprawSave('' + itemId + '')" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
+        + '</div>'
+        + '</div>';
+    document.body.appendChild(overlay);
+}
+
+async function editSprawSave(itemId) {
+    var title = (document.getElementById('esTitle').value || '').trim();
+    var tasksRaw = document.getElementById('esTasks').value || '';
+    var imagesRaw = document.getElementById('esImages').value || '';
+    var msg = document.getElementById('esMsg');
+
+    var extraTasks = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
+    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
+
+    msg.textContent = 'Zapisywanie...';
+    var r = await apiFetch('/custom-spraw', {
+        method: 'POST',
+        body: JSON.stringify({ itemId: itemId, title: title || null, extraTasks: extraTasks, images: images })
+    });
+
+    if (r.ok) {
+        _customSpraw[itemId] = r.data;
+        applyCustomSpraw();
+        msg.style.color = '#4ade80';
+        msg.textContent = '✓ Zapisano!';
+        setTimeout(function() {
+            document.getElementById('editSprawModal').remove();
+            editSprawFilter();
+        }, 800);
+    } else {
+        msg.style.color = '#f87171';
+        msg.textContent = (r.data && r.data.error) || 'Blad zapisu.';
+    }
+}
+
 
 // ================================================================
 // PANEL DRUZYN (tylko superadmin)
@@ -6119,12 +6603,14 @@ async function renderCategoryItems(cat) {
 
         var leg = _legendaryStats[item.id];
         var isLegendary = leg && leg.active;
-        var legBadge = isLegendary ? '<div class="legendary-badge">&#9876;&#65039; LEGENDA</div>' : '';
+        var legBadge = isLegendary ? '<div class="legendary-badge">&#9876; LEGENDA</div>' : '';
         var legClass = isLegendary ? 'legendary-card' : '';
-        if (isLegendary) { border = '2px solid #f59e0b'; opacity = '1'; }
+        // Gdy legendarny — nie ustawiaj border inline (klasa CSS ma !important)
+        if (isLegendary) { opacity = '1'; }
 
         html += '<div onclick="loadContent(\''+item.id+'\')" class="'+legClass+'" data-leg-id="'+item.id+'" style="'
-              + 'position:relative;background:var(--panel2);border:'+border+';border-radius:12px;'
+              + 'position:relative;background:var(--panel2);border-radius:12px;'
+              + (isLegendary ? '' : 'border:'+border+';')
               + 'padding:10px 6px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:4px;'
               + 'opacity:'+opacity+';transition:.15s" '
@@ -6186,6 +6672,9 @@ function renderSidebar(filterText) {
             if (item.id && item.id.startsWith('st_')) {
                 // Stopień — pokaż badge statusu
                 leftHtml = getStopienNavBadge(item);
+            } else if (item._isPrivate) {
+                // Prywatna sprawnosc — kłódka
+                leftHtml = '<span style="font-size:1rem;margin-right:4px;flex-shrink:0">&#128274;</span>';
             } else {
                 // Sprawność — pokaż kółko
                 var opacity = getSprawOpacity(item, cachedProgress);
