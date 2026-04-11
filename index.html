@@ -2428,7 +2428,7 @@ var sprawnosciData = [
                 name: "Zadania",
                 tasks: [
                     "✶ | Rozpocznie śpiew kilku piosenek harcerskich na ognisku lub świecowisku. Nauczy zastęp 1 nowej piosenki harcerskiej.",
-                    "✶✶ | Przygotuje i poprowadzi tematyczne ognisko lub świecowisko, proponuj ąc odpowiedni zestaw piosenek harcerskich. Nauczy zastęp lub drużynę kolejnej nowej piosenki harcerskiej, przedstawiając jej historię.",
+                    "✶✶ | Przygotuje i poprowadzi tematyczne ognisko lub świecowisko, proponuj ąc odpowiedni zestaw piosenek harcerskich. Nauczy zastęp lub drużynę kolejnej nowej piosenki harcerskiej, przedstawiając jej historię.",
                     "✶✶✶ | Aktywnie włączy się w organizację harcerskiego wydarzenia muzycznego (np. festiwalu piosenki harcerskiej), podczas którego będzie akompaniować na dowolnym instrumencie ."
                 ]
             }
@@ -5902,8 +5902,8 @@ async function renderPrivateSprawPanel() {
                 + '</div>'
                 + '</div>'
                 + '<div style="display:flex;gap:6px;flex-shrink:0">'
-                + '<button onclick="privSprawEdit('' + ps.itemId + '')" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600">&#9998; Edytuj</button>'
-                + '<button onclick="privSprawDelete('' + ps.itemId + '','' + ps.title.replace(/'/g,"\'") + '')" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem">&#128465;</button>'
+                + '<button data-id="' + ps.itemId + '" onclick="privSprawEdit(this.dataset.id)" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600">&#9998; Edytuj</button>'
+                + '<button data-id="' + ps.itemId + '" data-name="' + (ps.title||'').replace(/"/g,'&quot;') + '" onclick="privSprawDelete(this.dataset.id,this.dataset.name)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem">&#128465;</button>'
                 + '</div></div></div>';
         });
         html += '</div>';
@@ -5913,6 +5913,7 @@ async function renderPrivateSprawPanel() {
     window._privItems = privItems;
 }
 
+function privSprawCloseModal() { var m = document.getElementById('privSprawModal'); if(m) m.remove(); }
 function privSprawNew() { privSprawOpenModal(null); }
 function privSprawEdit(itemId) {
     var ps = (window._privItems || []).find(function(x){ return x.itemId === itemId; });
@@ -5926,10 +5927,10 @@ function privSprawOpenModal(ps) {
     var isEdit = !!ps;
     var title   = ps ? ps.title : '';
     var cat     = ps ? (ps.category||'Prywatne') : 'Prywatne';
-    var tasks   = ps && ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).join('
-') : '';
-    var images  = ps ? (ps.images||[]).join('
-') : '';
+    var tasks   = ps && ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).join('\n') : '';
+
+    var images  = ps ? (ps.images||[]).join('\n') : '';
+
     var allowed = ps ? (ps.allowedUsers || []) : [];
 
     var usersHtml = (window._privAllUsers || []).map(function(u) {
@@ -5968,8 +5969,8 @@ function privSprawOpenModal(ps) {
 
         + '<p id="psMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="document.getElementById('privSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-        + '<button onclick="privSprawSave('' + (ps ? ps.itemId : '') + '')" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
+        + '<button onclick="privSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="privSprawSave(this.dataset.id)" data-id="' + (ps ? ps.itemId : '') + '" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
         + '</div></div>';
     document.body.appendChild(overlay);
 }
@@ -5983,10 +5984,10 @@ async function privSprawSave(existingItemId) {
 
     if (!title) { msg.style.color='#f87171'; msg.textContent='Wpisz tytuł.'; return; }
 
-    var tasks  = tasksRaw.split('
-').map(function(t){ return t.trim(); }).filter(Boolean);
-    var images = imagesRaw.split('
-').map(function(u){ return u.trim(); }).filter(Boolean);
+    var tasks  = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
+
+    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
+
     var groups = tasks.length ? [{ name: 'Zadania', tasks: tasks }] : [];
 
     var checkboxes = document.querySelectorAll('#privSprawModal input[type=checkbox]');
@@ -6113,10 +6114,10 @@ function editSprawFilter() {
             + '<div style="font-weight:700;font-size:.92rem">' + item.title + tag + '</div>'
             + '<div style="font-size:.73rem;color:var(--muted)">' + item.category + (hasCustom && !isNew ? ' · zmodyfikowana' : '') + '</div>'
             + '</div>'
-            + '<button onclick="editSprawOpen('' + item.id + '')" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap">'
+            + '<button data-id="' + item.id + '" onclick="editSprawOpen(this.dataset.id)" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap">'
             + '&#9998; Edytuj'
             + '</button>'
-            + (isNew ? '<button onclick="editSprawDelete('' + item.id + '')" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem;font-weight:600">&#128465;</button>' : '')
+            + (isNew ? '<button data-id="' + item.id + '" onclick="editSprawDelete(this.dataset.id)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem;font-weight:600">&#128465;</button>' : '')
             + '</div>'
             + '</div>';
     }).join('');
@@ -6151,7 +6152,7 @@ function editSprawNew() {
 
         + '<p id="nsMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="document.getElementById('editSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="editSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
         + '<button onclick="editSprawCreate()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--f4);color:#fff;font-weight:700;cursor:pointer">Stwórz sprawnosc</button>'
         + '</div>'
         + '</div>';
@@ -6249,8 +6250,8 @@ function editSprawOpen(itemId) {
 
         + '<p id="esMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
         + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="document.getElementById('editSprawModal').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-        + '<button onclick="editSprawSave('' + itemId + '')" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
+        + '<button onclick="editSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button data-id="' + itemId + '" onclick="editSprawSave(this.dataset.id)" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
         + '</div>'
         + '</div>';
     document.body.appendChild(overlay);
