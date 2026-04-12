@@ -1118,11 +1118,10 @@ body.neon-mode .btn-main {
           <div class="filter-label">Gwiazdki</div>
           <div class="filter-stars-row">
             <button class="filter-star-btn active" data-stars="-1" onclick="setStarFilter(this,-1)">Wszystkie</button>
-            <button class="filter-star-btn" data-stars="0"  onclick="setStarFilter(this,0)">&#9734; 0</button>
-            <button class="filter-star-btn" data-stars="1"  onclick="setStarFilter(this,1)">&#9733; 1</button>
-            <button class="filter-star-btn" data-stars="2"  onclick="setStarFilter(this,2)">&#9733;&#9733; 2</button>
-            <button class="filter-star-btn" data-stars="3"  onclick="setStarFilter(this,3)">&#9733;&#9733;&#9733; 3</button>
-            <button class="filter-star-btn" data-stars="4"  onclick="setStarFilter(this,4)">&#9733;&#9733;&#9733;&#9733; 4</button>
+            <button class="filter-star-btn" data-stars="1"  onclick="setStarFilter(this,1)">&#10022; 1</button>
+            <button class="filter-star-btn" data-stars="2"  onclick="setStarFilter(this,2)">&#10022;&#10022; 2</button>
+            <button class="filter-star-btn" data-stars="3"  onclick="setStarFilter(this,3)">&#10022;&#10022;&#10022; 3</button>
+            <button class="filter-star-btn" data-stars="4"  onclick="setStarFilter(this,4)">&#10022;&#10022;&#10022;&#10022; 4</button>
           </div>
           <div class="filter-label">Status</div>
           <div class="filter-status-row">
@@ -6758,10 +6757,16 @@ function renderSidebar(filterText) {
             if (filterText && item.title.toLowerCase().indexOf(filterText.toLowerCase()) === -1) return false;
             // Stopnie — nie filtruj gwiazdkami/statusem
             if (item.id && item.id.startsWith('st_')) return true;
-            // Filtr gwiazdkowy — sprawdz ile gwiazdek ma sprawnosc
+            // Filtr gwiazdkowy — sprawdz jaki max poziom gwiazdek MA sprawnosc w zadaniach
             if (_filterStars >= 0) {
-                var level = getSprawLevel(item, cachedProgress);
-                if (level !== _filterStars) return false;
+                var maxStars = 0;
+                (item.groups || []).forEach(function(g) {
+                    (g.tasks || []).forEach(function(t) {
+                        var m = (t.match(/^✶+/) || [''])[0].length;
+                        if (m > maxStars) maxStars = m;
+                    });
+                });
+                if (maxStars !== _filterStars) return false;
             }
             // Filtr statusu
             if (_filterStatus === 'done') {
