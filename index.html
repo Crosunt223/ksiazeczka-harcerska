@@ -5097,7 +5097,7 @@ let authToken         = null;
 let currentViewUserId = null;
 let cachedProgress    = {};
 var _legendaryStats   = {};
-var _filterStars  = -1;  // -1 = wszystkie, 0-4 = konkretna ilosc
+var _filterStars  = new Set(); // pusty = wszystkie, inaczej Set liczb gwiazdek
 var _filterStatus = 'all'; // all / done / undone // itemId -> {threshold, owners, active}
 var _customSpraw      = {}; // itemId -> {title, extraTasks, images, disabled}
 var _privateSpraw     = []; // prywatne sprawnosci dostepne dla mnie
@@ -6715,9 +6715,24 @@ function toggleFilterPanel() {
 }
 
 function setStarFilter(el, stars) {
-    _filterStars = stars;
-    document.querySelectorAll('.filter-star-btn').forEach(function(b){ b.classList.remove('active'); });
-    el.classList.add('active');
+    if (stars === -1) {
+        // "Wszystkie" — wyczysc zaznaczenie
+        _filterStars = new Set();
+        document.querySelectorAll('.filter-star-btn').forEach(function(b){
+            b.classList.toggle('active', b.dataset.stars === '-1');
+        });
+    } else {
+        // Toggle konkretnej gwiazdki
+        if (_filterStars.has(stars)) {
+            _filterStars.delete(stars);
+        } else {
+            _filterStars.add(stars);
+        }
+        // Jesli nic nie zaznaczone — aktywuj "Wszystkie"
+        var allBtn = document.querySelector('.filter-star-btn[data-stars="-1"]');
+        if (allBtn) allBtn.classList.toggle('active', _filterStars.size === 0);
+        el.classList.toggle('active', _filterStars.has(stars));
+    }
     filterNav();
 }
 
@@ -6729,7 +6744,7 @@ function setStatusFilter(el, status) {
 }
 
 function clearFilters() {
-    _filterStars  = -1;
+    _filterStars  = new Set();
     _filterStatus = 'all';
     document.getElementById('searchInput').value = '';
     document.querySelectorAll('.filter-star-btn').forEach(function(b){
@@ -6757,16 +6772,16 @@ function renderSidebar(filterText) {
             if (filterText && item.title.toLowerCase().indexOf(filterText.toLowerCase()) === -1) return false;
             // Stopnie — nie filtruj gwiazdkami/statusem
             if (item.id && item.id.startsWith('st_')) return true;
-            // Filtr gwiazdkowy — sprawdz jaki max poziom gwiazdek MA sprawnosc w zadaniach
-            if (_filterStars >= 0) {
-                var maxStars = 0;
+            // Filtr gwiazdkowy — sprawdz czy sprawnosc MA zadania z DOWOLNA z zaznaczonych gwiazdek
+            if (_filterStars.size > 0) {
+                var hasMatch = false;
                 (item.groups || []).forEach(function(g) {
                     (g.tasks || []).forEach(function(t) {
-                        var m = (t.match(/^✶+/) || [''])[0].length;
-                        if (m > maxStars) maxStars = m;
+                        var cnt = (t.match(/^✶+/) || [''])[0].length;
+                        if (_filterStars.has(cnt)) hasMatch = true;
                     });
                 });
-                if (maxStars !== _filterStars) return false;
+                if (!hasMatch) return false;
             }
             // Filtr statusu
             if (_filterStatus === 'done') {
