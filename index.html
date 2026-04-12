@@ -1120,6 +1120,16 @@ body.neon-mode .btn-main {
           <button class="filter-gear-btn" id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry">&#9881;</button>
         </div>
         <div class="filter-panel" id="filterPanel">
+          <div class="filter-label">Kategoria</div>
+          <div class="filter-stars-row">
+            <button class="filter-star-btn active" data-cat="" onclick="setCatFilter(this,'')">Wszystkie</button>
+            <button class="filter-star-btn" data-cat="Bielik"       onclick="setCatFilter(this,'Bielik')">&#129413; Bielik</button>
+            <button class="filter-star-btn" data-cat="Lilijka"      onclick="setCatFilter(this,'Lilijka')">&#9884; Lilijka</button>
+            <button class="filter-star-btn" data-cat="Róża Wiatrów" onclick="setCatFilter(this,'Róża Wiatrów')">&#129517; R.W.</button>
+            <button class="filter-star-btn" data-cat="Robinson"     onclick="setCatFilter(this,'Robinson')">&#127956; Robinson</button>
+            <button class="filter-star-btn" data-cat="Las"          onclick="setCatFilter(this,'Las')">&#127794; Las</button>
+            <button class="filter-star-btn" data-cat="Plaster"      onclick="setCatFilter(this,'Plaster')">&#129657; Plaster</button>
+          </div>
           <div class="filter-label">Gwiazdki</div>
           <div class="filter-stars-row">
             <button class="filter-star-btn active" data-stars="-1" onclick="setStarFilter(this,-1)">Wszystkie</button>
@@ -5103,7 +5113,8 @@ let currentViewUserId = null;
 let cachedProgress    = {};
 var _legendaryStats   = {};
 var _filterStars  = new Set(); // pusty = wszystkie, inaczej Set liczb gwiazdek
-var _filterStatus = 'all'; // all / done / undone // itemId -> {threshold, owners, active}
+var _filterStatus = 'all'; // all / done / undone
+var _filterCat    = '';    // '' = wszystkie, inaczej nazwa kategorii
 var _customSpraw      = {}; // itemId -> {title, extraTasks, images, disabled}
 var _privateSpraw     = []; // prywatne sprawnosci dostepne dla mnie
 
@@ -6719,6 +6730,12 @@ function toggleFilterPanel() {
     btn.classList.toggle('active', open);
 }
 
+function setCatFilter(el, cat) {
+    _filterCat = cat;
+    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('active', b.dataset.cat === cat); });
+    filterNav();
+}
+
 function setStarFilter(el, stars) {
     if (stars === -1) {
         // "Wszystkie" — wyczysc zaznaczenie
@@ -6751,10 +6768,12 @@ function setStatusFilter(el, status) {
 function clearFilters() {
     _filterStars  = new Set();
     _filterStatus = 'all';
+    _filterCat    = '';
     document.getElementById('searchInput').value = '';
     document.querySelectorAll('.filter-star-btn').forEach(function(b){
         b.classList.toggle('active', b.dataset.stars === '-1');
     });
+    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('active', b.dataset.cat === ''); });
     document.querySelectorAll('.filter-status-btn').forEach(function(b){
         b.classList.toggle('active', b.dataset.status === 'all');
     });
@@ -6791,8 +6810,10 @@ function renderSidebar(filterText) {
         var filtered = grouped[cat].filter(function(item) {
             // Filtr tekstowy
             if (filterText && item.title.toLowerCase().indexOf(filterText.toLowerCase()) === -1) return false;
-            // Stopnie — nie filtruj gwiazdkami/statusem
+            // Stopnie — nie filtruj gwiazdkami/statusem/kategoria
             if (item.id && item.id.startsWith('st_')) return true;
+            // Filtr kategorii
+            if (_filterCat && item.category !== _filterCat) return false;
             // Filtr gwiazdkowy — sprawdz czy sprawnosc MA zadania z DOWOLNA z zaznaczonych gwiazdek
             if (_filterStars.size > 0) {
                 var hasMatch = false;
@@ -7722,6 +7743,15 @@ async function loadKadraForAsk() {
     var kadraList = document.getElementById('askKadraList');
     if (!kadraList) return;
     kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
+
+    // Sprawdz ile gwiazdek ma wybrane zadanie
+    var taskStars = 0;
+    if (_askTaskText) {
+        var starMatch = _askTaskText.match(/^[✶★]+/);
+        taskStars = starMatch ? starMatch[0].length : 0;
+    }
+    var isHighLevel = taskStars >= 3; // 3 i 4 gwiazdki → tylko ksis/superadmin
+
     apiFetch('/my-kadra').then(function(r) {
         var kadra = r.ok ? r.data : [];
         if (!kadra.length) {
@@ -7732,8 +7762,31 @@ async function loadKadraForAsk() {
         var inZastep = currentUser && currentUser.zastepId;
         var filtered;
 
+        if (isHighLevel) {
+            // 3★/4★ → tylko ksis i superadmin
+            filtered = kadra.filter(function(k) {
+                return k.role === 'ksis' || k.role === 'superadmin';
+            });
+            var header = '<div style="padding:6px 10px;background:rgba(168,85,247,.12);border-radius:var(--rs);border:1px solid rgba(168,85,247,.3);margin-bottom:8px">'
+                + '<p style="color:#c084fc;font-size:.78rem;font-weight:700;margin:0">'
+                + '✶'.repeat(taskStars) + ' Zadanie wymaga zatwierdzenia przez Ksis lub Admina</p></div>';
+            if (!filtered.length) {
+                kadraList.innerHTML = header + '<p style="color:var(--muted);font-size:.82rem">Brak ksis/admina w drużynie. Skontaktuj sie bezposrednio.</p>';
+                return;
+            }
+            kadraList.innerHTML = header + filtered.map(function(k) {
+                var rColor = ROLE_COLORS[k.role] || '#546e7a';
+                return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
+                    + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+                    + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
+                    + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
+                    + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
+                    + '</div>';
+            }).join('');
+            return;
+        }
+
         if (inZastep) {
-            // W zastępie: druzynowy/przyboczny z drużyny + zastepowy/podzastepowy TYLKO z MOJEGO zastępu
             filtered = kadra.filter(function(k) {
                 var isGlobal = (k.role === 'druzynowy' || k.role === 'przyboczny');
                 var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
@@ -7741,7 +7794,6 @@ async function loadKadraForAsk() {
                 return isGlobal || isMyZastep;
             });
         } else {
-            // Bez zastępu: tylko druzynowy i przyboczny
             filtered = kadra.filter(function(k) {
                 return k.role === 'druzynowy' || k.role === 'przyboczny';
             });
