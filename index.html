@@ -366,6 +366,11 @@ body.dark .login-box h2{color:var(--f2);}
   background:transparent;color:#4a6a4a;font-size:.72rem;cursor:pointer;
 }
 .filter-clear-btn:hover{color:var(--f2);}
+.fcount{
+  display:inline-block;background:rgba(255,255,255,.15);
+  border-radius:10px;padding:0 5px;font-size:.68rem;margin-left:3px;
+  font-weight:700;min-width:16px;text-align:center;
+}
 .nav-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px 20px;}
 .nav-list::-webkit-scrollbar{width:3px}
 .nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:#456645;font-weight:700;}
@@ -1125,9 +1130,9 @@ body.neon-mode .btn-main {
           </div>
           <div class="filter-label">Status</div>
           <div class="filter-status-row">
-            <button class="filter-status-btn active" data-status="all"    onclick="setStatusFilter(this,'all')">Wszystkie</button>
-            <button class="filter-status-btn" data-status="done"   onclick="setStatusFilter(this,'done')">&#10003; Zdane</button>
-            <button class="filter-status-btn" data-status="undone" onclick="setStatusFilter(this,'undone')">&#9711; Niezdane</button>
+            <button class="filter-status-btn active" data-status="all"    onclick="setStatusFilter(this,'all')">Wszystkie <span id="fcount-all" class="fcount"></span></button>
+            <button class="filter-status-btn" data-status="done"   onclick="setStatusFilter(this,'done')">&#10003; Zdane <span id="fcount-done" class="fcount"></span></button>
+            <button class="filter-status-btn" data-status="undone" onclick="setStatusFilter(this,'undone')">&#9711; Niezdane <span id="fcount-undone" class="fcount"></span></button>
           </div>
           <button class="filter-clear-btn" onclick="clearFilters()">&#10005; Wyczysc filtry</button>
         </div>
@@ -6756,6 +6761,22 @@ function clearFilters() {
     filterNav();
 }
 
+
+function updateFilterCounts() {
+    var items = db.filter(function(x){ return !x.id.startsWith('st_') && !x._isPrivate; });
+    var done   = 0, undone = 0;
+    items.forEach(function(item) {
+        var s = getSprawDone(item, cachedProgress);
+        if (s.done > 0) done++; else undone++;
+    });
+    var elAll    = document.getElementById('fcount-all');
+    var elDone   = document.getElementById('fcount-done');
+    var elUndone = document.getElementById('fcount-undone');
+    if (elAll)    elAll.textContent    = items.length;
+    if (elDone)   elDone.textContent   = done;
+    if (elUndone) elUndone.textContent = undone;
+}
+
 function renderSidebar(filterText) {
     patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
@@ -6840,6 +6861,7 @@ function renderSidebar(filterText) {
         });
     });
     updateUIStats();
+    updateFilterCounts();
 
     // Przycisk nap na dole listy
     var napLi = document.createElement('li');
