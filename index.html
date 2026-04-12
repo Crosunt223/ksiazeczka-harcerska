@@ -6775,10 +6775,23 @@ function renderSidebar(filterText) {
             // Filtr gwiazdkowy — sprawdz czy sprawnosc MA zadania z DOWOLNA z zaznaczonych gwiazdek
             if (_filterStars.size > 0) {
                 var hasMatch = false;
+                var STAR_CHARS = ['\u2736','\u2605','\u2605','\u273b','\u2734','*'];
                 (item.groups || []).forEach(function(g) {
                     (g.tasks || []).forEach(function(t) {
-                        var cnt = (t.match(/^✶+/) || [''])[0].length;
-                        if (_filterStars.has(cnt)) hasMatch = true;
+                        if (typeof t !== 'string') return;
+                        var trimmed = t.replace(/^\s+/, '');
+                        var cnt = 0;
+                        // Licz gwiazdki od poczatku stringa
+                        var i = 0;
+                        while (i < trimmed.length) {
+                            var ch = trimmed[i];
+                            // ✶ (U+2736), ★ (U+2605), * (U+002A)
+                            if (ch === '\u2736' || ch === '\u2605' || ch === '*' || ch === '\u2734' || ch === '\u273b') {
+                                cnt++;
+                                i++;
+                            } else break;
+                        }
+                        if (cnt > 0 && _filterStars.has(cnt)) hasMatch = true;
                     });
                 });
                 if (!hasMatch) return false;
