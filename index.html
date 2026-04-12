@@ -326,14 +326,46 @@ body.dark .login-box h2{color:var(--f2);}
   .sidebar.open{transform:translateX(0);}
 }
 .sidebar-search{padding:12px 12px 6px;}
+.sidebar-search-row{display:flex;align-items:center;gap:6px;}
 .sidebar-search input{
-  width:100%;padding:9px 13px;border-radius:30px;border:none;
+  flex:1;padding:9px 13px;border-radius:30px;border:none;
   background:rgba(255,255,255,.08);color:var(--f1);
   font-size:.86rem;outline:none;transition:.2s;
   font-family:"Barlow", sans-serif;
 }
 .sidebar-search input::placeholder{color:#4a6a4a;}
 .sidebar-search input:focus{background:rgba(255,255,255,.14);}
+.filter-gear-btn{
+  flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;
+  background:rgba(255,255,255,.08);color:var(--f1);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;transition:.2s;
+}
+.filter-gear-btn:hover,.filter-gear-btn.active{background:var(--f5);color:#fff;}
+.filter-panel{
+  display:none;padding:8px 12px 10px;
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(0,0,0,.15);
+}
+.filter-panel.open{display:block;}
+.filter-label{font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:8px 0 5px;}
+.filter-stars-row{display:flex;gap:4px;flex-wrap:wrap;}
+.filter-star-btn{
+  padding:3px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:var(--f2);font-size:.75rem;cursor:pointer;transition:.15s;
+}
+.filter-star-btn.active{background:var(--amber);color:#1a0a00;border-color:var(--amber);font-weight:700;}
+.filter-status-row{display:flex;gap:4px;margin-top:4px;}
+.filter-status-btn{
+  flex:1;padding:4px 0;border-radius:20px;border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);color:var(--f2);font-size:.75rem;cursor:pointer;text-align:center;transition:.15s;
+}
+.filter-status-btn.active{background:var(--f5);color:#fff;border-color:var(--f5);}
+.filter-clear-btn{
+  width:100%;margin-top:8px;padding:4px;border-radius:20px;border:1px solid rgba(255,255,255,.1);
+  background:transparent;color:#4a6a4a;font-size:.72rem;cursor:pointer;
+}
+.filter-clear-btn:hover{color:var(--f2);}
 .nav-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px 20px;}
 .nav-list::-webkit-scrollbar{width:3px}
 .nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:#456645;font-weight:700;}
@@ -1078,7 +1110,28 @@ body.neon-mode .btn-main {
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-search">
-        <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
+        <div class="sidebar-search-row">
+          <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
+          <button class="filter-gear-btn" id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry">&#9881;</button>
+        </div>
+        <div class="filter-panel" id="filterPanel">
+          <div class="filter-label">Gwiazdki</div>
+          <div class="filter-stars-row">
+            <button class="filter-star-btn active" data-stars="-1" onclick="setStarFilter(this,-1)">Wszystkie</button>
+            <button class="filter-star-btn" data-stars="0"  onclick="setStarFilter(this,0)">&#9734; 0</button>
+            <button class="filter-star-btn" data-stars="1"  onclick="setStarFilter(this,1)">&#9733; 1</button>
+            <button class="filter-star-btn" data-stars="2"  onclick="setStarFilter(this,2)">&#9733;&#9733; 2</button>
+            <button class="filter-star-btn" data-stars="3"  onclick="setStarFilter(this,3)">&#9733;&#9733;&#9733; 3</button>
+            <button class="filter-star-btn" data-stars="4"  onclick="setStarFilter(this,4)">&#9733;&#9733;&#9733;&#9733; 4</button>
+          </div>
+          <div class="filter-label">Status</div>
+          <div class="filter-status-row">
+            <button class="filter-status-btn active" data-status="all"    onclick="setStatusFilter(this,'all')">Wszystkie</button>
+            <button class="filter-status-btn" data-status="done"   onclick="setStatusFilter(this,'done')">&#10003; Zdane</button>
+            <button class="filter-status-btn" data-status="undone" onclick="setStatusFilter(this,'undone')">&#9711; Niezdane</button>
+          </div>
+          <button class="filter-clear-btn" onclick="clearFilters()">&#10005; Wyczysc filtry</button>
+        </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
     </nav>
@@ -5044,7 +5097,9 @@ let currentUser       = null;
 let authToken         = null;
 let currentViewUserId = null;
 let cachedProgress    = {};
-var _legendaryStats   = {}; // itemId -> {threshold, owners, active}
+var _legendaryStats   = {};
+var _filterStars  = -1;  // -1 = wszystkie, 0-4 = konkretna ilosc
+var _filterStatus = 'all'; // all / done / undone // itemId -> {threshold, owners, active}
 var _customSpraw      = {}; // itemId -> {title, extraTasks, images, disabled}
 var _privateSpraw     = []; // prywatne sprawnosci dostepne dla mnie
 
@@ -6648,6 +6703,45 @@ function goHome() {
     updateUIStats();
 }
 
+
+// ================================================================
+// FILTRY SIDEBARA
+// ================================================================
+function toggleFilterPanel() {
+    var panel = document.getElementById('filterPanel');
+    var btn   = document.getElementById('filterGearBtn');
+    if (!panel) return;
+    var open = panel.classList.toggle('open');
+    btn.classList.toggle('active', open);
+}
+
+function setStarFilter(el, stars) {
+    _filterStars = stars;
+    document.querySelectorAll('.filter-star-btn').forEach(function(b){ b.classList.remove('active'); });
+    el.classList.add('active');
+    filterNav();
+}
+
+function setStatusFilter(el, status) {
+    _filterStatus = status;
+    document.querySelectorAll('.filter-status-btn').forEach(function(b){ b.classList.remove('active'); });
+    el.classList.add('active');
+    filterNav();
+}
+
+function clearFilters() {
+    _filterStars  = -1;
+    _filterStatus = 'all';
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.filter-star-btn').forEach(function(b){
+        b.classList.toggle('active', b.dataset.stars === '-1');
+    });
+    document.querySelectorAll('.filter-status-btn').forEach(function(b){
+        b.classList.toggle('active', b.dataset.status === 'all');
+    });
+    filterNav();
+}
+
 function renderSidebar(filterText) {
     patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
@@ -6659,7 +6753,26 @@ function renderSidebar(filterText) {
         grouped[item.category].push(item);
     });
     Object.keys(grouped).forEach(function(cat) {
-        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
+        var filtered = grouped[cat].filter(function(item) {
+            // Filtr tekstowy
+            if (filterText && item.title.toLowerCase().indexOf(filterText.toLowerCase()) === -1) return false;
+            // Stopnie — nie filtruj gwiazdkami/statusem
+            if (item.id && item.id.startsWith('st_')) return true;
+            // Filtr gwiazdkowy — sprawdz ile gwiazdek ma sprawnosc
+            if (_filterStars >= 0) {
+                var level = getSprawLevel(item, cachedProgress);
+                if (level !== _filterStars) return false;
+            }
+            // Filtr statusu
+            if (_filterStatus === 'done') {
+                var s = getSprawDone(item, cachedProgress);
+                if (s.done === 0) return false;
+            } else if (_filterStatus === 'undone') {
+                var s2 = getSprawDone(item, cachedProgress);
+                if (s2.done > 0) return false;
+            }
+            return true;
+        });
         if (!filtered.length) return;
         var head = document.createElement('li');
         head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
