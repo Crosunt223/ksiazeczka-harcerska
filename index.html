@@ -38,56 +38,89 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 
 
 /* ══ LEGENDARNE SPRAWNOSCI ══════════════════════════ */
-@keyframes legendary-glow {
-    0%   { box-shadow: 0 0 6px 2px #f59e0b, 0 0 18px 4px #f59e0b44; border-color: #f59e0b; }
-    50%  { box-shadow: 0 0 14px 4px #fbbf24, 0 0 32px 8px #f59e0b66; border-color: #fbbf24; }
-    100% { box-shadow: 0 0 6px 2px #f59e0b, 0 0 18px 4px #f59e0b44; border-color: #f59e0b; }
+/* ══════════════════════════════════════════
+   LEGENDARNE SPRAWNOSCI — Steam achievement style
+══════════════════════════════════════════ */
+@keyframes leg-pulse {
+    0%,100% {
+        box-shadow:
+            0 0 0 2px #f59e0b,
+            0 0 8px 2px #f59e0b,
+            0 0 20px 4px #b4530966,
+            0 0 40px 6px #f59e0b22;
+    }
+    50% {
+        box-shadow:
+            0 0 0 2px #fbbf24,
+            0 0 16px 4px #fbbf24,
+            0 0 36px 8px #f59e0b88,
+            0 0 60px 12px #f59e0b33;
+    }
 }
-@keyframes legendary-shine {
-    0%   { opacity: 0; transform: translateX(-100%) rotate(25deg); }
-    18%  { opacity: .45; }
-    35%  { opacity: 0; transform: translateX(160%) rotate(25deg); }
-    100% { opacity: 0; }
+@keyframes leg-sweep {
+    0%   { left: -60%; }
+    100% { left: 160%; }
 }
+@keyframes leg-img-pulse {
+    0%,100% {
+        filter: drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 10px #f59e0b88);
+    }
+    50% {
+        filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 20px #fbbf2488) drop-shadow(0 0 0px #fff2);
+    }
+}
+
+/* Kafelek sprawnosci */
 .legendary-card {
     position: relative;
     border: 2px solid #f59e0b !important;
-    box-shadow: 0 0 0 1px #f59e0b44, 0 0 18px 2px #f59e0b33 !important;
-    animation: legendary-glow 2.2s ease-in-out infinite !important;
-    overflow: visible !important;
+    border-radius: 12px;
+    animation: leg-pulse 2s ease-in-out infinite !important;
+    overflow: hidden !important;
+    background: linear-gradient(135deg, #1a1200 0%, var(--panel2) 40%, #1a1200 100%) !important;
 }
-.legendary-card::after {
+/* Złoty sweep przez kafelek */
+.legendary-card::before {
     content: '';
     position: absolute;
-    inset: -2px;
-    border-radius: 13px;
+    top: -20%; left: -60%;
+    width: 40%; height: 140%;
+    background: linear-gradient(105deg,
+        transparent 0%,
+        rgba(251,191,36,.08) 40%,
+        rgba(251,191,36,.22) 50%,
+        rgba(251,191,36,.08) 60%,
+        transparent 100%);
+    animation: leg-sweep 3s ease-in-out infinite;
     pointer-events: none;
-    background: linear-gradient(105deg, transparent 35%, rgba(251,191,36,.25) 50%, transparent 65%);
-    background-size: 200% 100%;
-    animation: legendary-sweep 2.5s linear infinite;
-    z-index: 2;
+    z-index: 1;
 }
-@keyframes legendary-sweep {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
+/* Badge LEGENDA na górze kafelka */
 .legendary-badge {
     position: absolute;
-    top: -8px; left: 50%; transform: translateX(-50%);
-    background: linear-gradient(135deg, #b45309, #f59e0b, #fbbf24);
+    top: -1px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(90deg, #92400e, #f59e0b, #fbbf24, #f59e0b, #92400e);
+    background-size: 200% auto;
+    animation: leg-badge-shine 2s linear infinite;
     color: #1a0a00;
-    font-size: .58rem;
+    font-size: .52rem;
     font-weight: 900;
-    padding: 2px 8px;
-    border-radius: 20px;
-    letter-spacing: .06em;
+    padding: 1px 8px;
+    border-radius: 0 0 8px 8px;
+    letter-spacing: .08em;
     z-index: 10;
-    box-shadow: 0 2px 8px #f59e0b88;
     white-space: nowrap;
+    text-transform: uppercase;
 }
-.legendary-nav-glow {
-    box-shadow: inset 0 0 0 2px #f59e0b88;
-    border-radius: var(--rs);
+@keyframes leg-badge-shine {
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+}
+/* Ikona sprawnosci swieci */
+.legendary-card img {
+    animation: leg-img-pulse 2s ease-in-out infinite !important;
+    position: relative;
+    z-index: 2;
 }
 
 .sidebar.hidden-area { display: none !important; }
@@ -98,43 +131,6 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 }
 .role-filter-btn.active {
     background: var(--primary); color: #fff; border-color: var(--primary);
-}
-
-/* ══ LEGENDARNE SPRAWNOSCI ══════════════════════════════ */
-.legendary-glow {
-    box-shadow: 0 0 8px #ffd700, 0 0 20px #b8860b, 0 0 40px rgba(255,215,0,.4) !important;
-    border-radius: 50%;
-    animation: legendary-pulse 2.5s ease-in-out infinite;
-}
-@keyframes legendary-pulse {
-    0%,100% { box-shadow: 0 0 8px #ffd700, 0 0 20px #b8860b, 0 0 40px rgba(255,215,0,.3); }
-    50%      { box-shadow: 0 0 14px #ffd700, 0 0 30px #b8860b, 0 0 60px rgba(255,215,0,.6); }
-}
-.legendary-item {
-    background: linear-gradient(90deg, rgba(255,215,0,.06) 0%, transparent 100%) !important;
-    border-left: 3px solid #ffd700 !important;
-}
-.legendary-item .nav-item-title {
-    color: #ffd700 !important;
-    text-shadow: 0 0 8px rgba(255,215,0,.5);
-}
-.legendary-badge {
-    display: inline-block;
-    margin-top: 6px;
-    padding: 4px 12px;
-    background: linear-gradient(135deg, #b8860b, #ffd700, #b8860b);
-    background-size: 200% auto;
-    animation: legendary-shine 3s linear infinite;
-    border-radius: 20px;
-    font-size: .72rem;
-    font-weight: 700;
-    color: #1a1000;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-}
-@keyframes legendary-shine {
-    0%   { background-position: 0% center; }
-    100% { background-position: 200% center; }
 }
 </style>
 <style>
@@ -5781,10 +5777,23 @@ async function renderLegendaryPanel() {
     document.getElementById('navList').innerHTML = '';
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
 
-    var r = await apiFetch('/legendary');
+    // Pobierz konfiguracje I swieże staty jednocześnie
+    var [r, rStats] = await Promise.all([
+        apiFetch('/legendary'),
+        apiFetch('/legendary-stats')
+    ]);
     var saved = (r.ok && Array.isArray(r.data)) ? r.data : [];
     var savedMap = {};
     saved.forEach(function(s) { savedMap[s.itemId] = s; });
+
+    // Zaktualizuj globalne staty
+    _legendaryStats = {};
+    if (rStats.ok && Array.isArray(rStats.data)) {
+        rStats.data.forEach(function(s) {
+            s.active = s.owners >= 1;
+            _legendaryStats[s.itemId] = s;
+        });
+    }
 
     var html = '<div class="welcome-header">'
         + '<h2>&#9876;&#65039; Legendarne Sprawnosci</h2>'
@@ -5866,18 +5875,11 @@ async function legToggle(itemId, enable) {
         body: JSON.stringify({ itemId: itemId, enabled: enable, threshold: threshold })
     });
     if (!r.ok) { alert((r.data && r.data.error) || 'Blad zapisu.'); return; }
-    // Odswierz globalne staty
-    window._legSavedMap[itemId] = { enabled: enable, threshold: threshold };
-    if (enable) {
-        if (!_legendaryStats[itemId]) _legendaryStats[itemId] = {};
-        _legendaryStats[itemId].threshold = threshold;
-    } else {
-        delete _legendaryStats[itemId];
-    }
-    // Odswierz panel
+
+    // Pobierz swieże staty z serwera żeby miec poprawne owners i active
+    await refreshLegendaryStats();
     renderLegendaryPanel();
 }
-
 
 async function legToggleAll(enable) {
     var items = window._legAllItems || db.filter(function(x){ return !x.id.startsWith('st_'); });
@@ -5885,25 +5887,33 @@ async function legToggleAll(enable) {
     btns.forEach(function(b){ b.disabled = true; b.textContent = 'Czekaj...'; });
 
     var promises = items.map(function(item) {
-        var threshold = 10;
         return apiFetch('/legendary', {
             method: 'POST',
-            body: JSON.stringify({ itemId: item.id, enabled: enable, threshold: threshold })
-        }).then(function(r) {
-            if (r.ok) {
-                if (!window._legSavedMap) window._legSavedMap = {};
-                window._legSavedMap[item.id] = { enabled: enable, threshold: threshold };
-                if (enable) {
-                    if (!_legendaryStats[item.id]) _legendaryStats[item.id] = {};
-                } else {
-                    delete _legendaryStats[item.id];
-                }
-            }
+            body: JSON.stringify({ itemId: item.id, enabled: enable, threshold: 10 })
         });
     });
 
     await Promise.all(promises);
+    await refreshLegendaryStats();
     renderLegendaryPanel();
+}
+
+// Pobiera swieże legendarne staty i aktualizuje _legendaryStats
+async function refreshLegendaryStats() {
+    var r = await apiFetch('/legendary-stats');
+    _legendaryStats = {};
+    if (r.ok && Array.isArray(r.data)) {
+        r.data.forEach(function(s) {
+            s.active = s.owners >= 1;
+            _legendaryStats[s.itemId] = s;
+        });
+    }
+    // Zaktualizuj _legSavedMap rowniez
+    var r2 = await apiFetch('/legendary');
+    window._legSavedMap = {};
+    if (r2.ok && Array.isArray(r2.data)) {
+        r2.data.forEach(function(c) { window._legSavedMap[c.itemId] = c; });
+    }
 }
 
 
@@ -6673,7 +6683,9 @@ async function renderCategoryItems(cat) {
         var opacity = level > 0 ? '1' : '0.5';
 
         var leg = _legendaryStats[item.id];
-        var isLegendary = leg && leg.active;
+        // Legendarny jesli: wlaczone (leg istnieje) I (ktokolwiek ma postep LUB ja mam postep)
+        var myDone = getSprawDone(item, cachedProgress);
+        var isLegendary = leg && (leg.active || myDone.done > 0);
         var legBadge = isLegendary ? '<div class="legendary-badge">&#9876; LEGENDA</div>' : '';
         var legClass = isLegendary ? 'legendary-card' : '';
         // Gdy legendarny — nie ustawiaj border inline (klasa CSS ma !important)
