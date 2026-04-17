@@ -852,39 +852,19 @@ body.neon-mode .btn-main {
   box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent);
 }
 
-/* ── FILTER BUTTONS ── */
+/* ═══ LEGENDARNE SPRAWNOSCI — Steam style ═══ */
+@keyframes leg-pulse{0%,100%{box-shadow:0 0 0 2px #f59e0b,0 0 8px 2px #f59e0b,0 0 20px 4px #b4530966;}50%{box-shadow:0 0 0 2px #fbbf24,0 0 16px 4px #fbbf24,0 0 36px 8px #f59e0b88;}}
+@keyframes leg-sweep{0%{left:-60%;}100%{left:160%;}}
+@keyframes leg-img-glow{0%,100%{filter:drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 10px #f59e0b88);}50%{filter:drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 20px #fbbf2488);}}
+@keyframes leg-badge-shine{0%{background-position:0% center;}100%{background-position:200% center;}}
+.legendary-card{position:relative;border:2px solid #f59e0b!important;border-radius:12px;animation:leg-pulse 2s ease-in-out infinite!important;overflow:hidden!important;background:linear-gradient(135deg,#1a1200 0%,var(--panel2) 40%,#1a1200 100%)!important;}
+.legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent 0%,rgba(251,191,36,.22) 50%,transparent 100%);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1;}
+.legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase;}
+.legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2;}
+
+/* ═══ FILTER BUTTONS ═══ */
 .flt-btn{padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--f2);font-size:.75rem;cursor:pointer;transition:.15s;}
 .flt-active{background:var(--f5)!important;color:#fff!important;border-color:var(--f5)!important;font-weight:700;}
-
-/* ── LEGENDARY STEAM STYLE ── */
-@keyframes leg-pulse{
-  0%,100%{box-shadow:0 0 0 2px #f59e0b,0 0 8px 2px #f59e0b,0 0 20px 4px #b4530966;}
-  50%{box-shadow:0 0 0 2px #fbbf24,0 0 16px 4px #fbbf24,0 0 36px 8px #f59e0b88;}
-}
-@keyframes leg-sweep{0%{left:-60%;}100%{left:160%;}}
-@keyframes leg-img-glow{
-  0%,100%{filter:drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 10px #f59e0b88);}
-  50%{filter:drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 20px #fbbf2488);}
-}
-@keyframes leg-badge-shine{0%{background-position:0% center;}100%{background-position:200% center;}}
-.legendary-card{
-  position:relative;border:2px solid #f59e0b!important;border-radius:12px;
-  animation:leg-pulse 2s ease-in-out infinite!important;overflow:hidden!important;
-  background:linear-gradient(135deg,#1a1200 0%,var(--panel2) 40%,#1a1200 100%)!important;
-}
-.legendary-card::before{
-  content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;
-  background:linear-gradient(105deg,transparent 0%,rgba(251,191,36,.08) 40%,rgba(251,191,36,.22) 50%,rgba(251,191,36,.08) 60%,transparent 100%);
-  animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1;
-}
-.legendary-badge{
-  position:absolute;top:-1px;left:50%;transform:translateX(-50%);
-  background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);
-  background-size:200% auto;animation:leg-badge-shine 2s linear infinite;
-  color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;
-  border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase;
-}
-.legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2;}
 </style>
 </head>
 <body>
@@ -983,7 +963,7 @@ body.neon-mode .btn-main {
       <span>Duzy tekst</span>
       <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
     </div>
-
+    
     
     <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
     <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
@@ -1018,39 +998,14 @@ body.neon-mode .btn-main {
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-search">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()" style="flex:1">
-          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--f1);cursor:pointer;font-size:.9rem;transition:.2s;" onmouseenter="this.style.background='var(--f5)'" onmouseleave="this.style.background='rgba(255,255,255,.08)'">&#9881;</button>
-        </div>
-        <div id="filterPanel" style="display:none;padding:8px 0 4px;">
-          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:6px 0 4px;">Kategoria</div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button class="flt-btn flt-active" data-cat="" onclick="setCatFilter(this,'')">Wszystkie</button>
-            <button class="flt-btn" data-cat="Bielik"       onclick="setCatFilter(this,'Bielik')">&#129413;</button>
-            <button class="flt-btn" data-cat="Lilijka"      onclick="setCatFilter(this,'Lilijka')">&#9884;</button>
-            <button class="flt-btn" data-cat="Róża Wiatrów" onclick="setCatFilter(this,'Róża Wiatrów')">&#129517;</button>
-            <button class="flt-btn" data-cat="Robinson"     onclick="setCatFilter(this,'Robinson')">&#127956;</button>
-            <button class="flt-btn" data-cat="Las"          onclick="setCatFilter(this,'Las')">&#127794;</button>
-            <button class="flt-btn" data-cat="Plaster"      onclick="setCatFilter(this,'Plaster')">&#129657;</button>
-          </div>
-          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:8px 0 4px;">Gwiazdki</div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button class="flt-btn flt-active" data-stars="-1" onclick="setStarFilter(this,-1)">Wszystkie</button>
-            <button class="flt-btn" data-stars="1" onclick="setStarFilter(this,1)">&#10022;1</button>
-            <button class="flt-btn" data-stars="2" onclick="setStarFilter(this,2)">&#10022;2</button>
-            <button class="flt-btn" data-stars="3" onclick="setStarFilter(this,3)">&#10022;3</button>
-            <button class="flt-btn" data-stars="4" onclick="setStarFilter(this,4)">&#10022;4</button>
-          </div>
-          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:8px 0 4px;">Status</div>
-          <div style="display:flex;gap:4px;">
-            <button class="flt-btn flt-active" style="flex:1" data-status="all"    onclick="setStatusFilter(this,'all')">Wszystkie <span id="fcount-all" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
-            <button class="flt-btn" style="flex:1" data-status="done"   onclick="setStatusFilter(this,'done')">&#10003; Zdane <span id="fcount-done" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
-            <button class="flt-btn" style="flex:1" data-status="undone" onclick="setStatusFilter(this,'undone')">&#9711; Niezdane <span id="fcount-undone" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
-          </div>
-          <button onclick="clearFilters()" style="width:100%;margin-top:6px;padding:3px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#4a6a4a;font-size:.72rem;cursor:pointer;">&#10005; Wyczysc filtry</button>
-        </div>
+        <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
       </div>
       <ul class="nav-list" id="navList"></ul>
+      <div style="padding:10px 10px 14px;border-top:1px solid rgba(255,255,255,.07)">
+        <button onclick="playNap()" style="width:100%;padding:9px;border-radius:30px;cursor:pointer;background:linear-gradient(135deg,#1a3a2a,#2d6a3f);border:1.5px solid #4ade80;color:#d1fae5;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s" onmouseenter="this.style.boxShadow='0 0 28px rgba(74,222,128,.5)'" onmouseleave="this.style.boxShadow='0 0 14px rgba(74,222,128,.2)'">
+          <span style="font-size:1.2rem">&#127925;</span> nap
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT -->
@@ -5014,12 +4969,6 @@ let currentUser       = null;
 let authToken         = null;
 let currentViewUserId = null;
 let cachedProgress    = {};
-var _legendaryStats   = {};
-var _filterStars  = new Set(); // pusty = wszystkie, inaczej Set liczb gwiazdek
-var _filterStatus = 'all'; // all / done / undone
-var _filterCat    = '';    // '' = wszystkie, inaczej nazwa kategorii
-var _customSpraw      = {}; // itemId -> {title, extraTasks, images, disabled}
-var _privateSpraw     = []; // prywatne sprawnosci dostepne dla mnie
 
 // ================================================================
 // INICJALIZACJA
@@ -5253,57 +5202,6 @@ function initAppAfterLogin() {
         if (active && active.id === 'nav-board') renderBoard();
     }).catch(function(){});
 
-    // Zaladuj legendarne sprawnosci — po załadowaniu odswierz aktywny widok
-    apiFetch('/legendary-stats').then(function(r) {
-        _legendaryStats = {};
-        if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(s) {
-                s.active = s.owners >= 1;
-                _legendaryStats[s.itemId] = s;
-            });
-        }
-        // Odswierz kafelki jesli widoczne
-        var legItems = document.querySelectorAll('[data-leg-id]');
-        legItems.forEach(function(el) {
-            var id = el.getAttribute('data-leg-id');
-            var leg = _legendaryStats[id];
-            var isLeg = leg && leg.active;
-            if (isLeg) {
-                el.classList.add('legendary-card');
-                el.style.border = '2px solid #f59e0b';
-                el.style.opacity = '1';
-                if (!el.querySelector('.legendary-badge')) {
-                    var b = document.createElement('div');
-                    b.className = 'legendary-badge';
-                    b.innerHTML = '&#9876;&#65039; LEGENDA';
-                    el.insertBefore(b, el.firstChild);
-                }
-            } else {
-                el.classList.remove('legendary-card');
-                var badge = el.querySelector('.legendary-badge');
-                if (badge) badge.remove();
-            }
-        });
-    }).catch(function(){});
-
-    // Zaladuj prywatne sprawnosci
-    apiFetch('/private-spraw').then(function(r) {
-        _privateSpraw = [];
-        if (r.ok && Array.isArray(r.data)) {
-            _privateSpraw = r.data;
-            applyPrivateSpraw();
-        }
-    }).catch(function(){});
-
-    // Zaladuj customizacje sprawnosci
-    apiFetch('/custom-spraw').then(function(r) {
-        _customSpraw = {};
-        if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(c) { _customSpraw[c.itemId] = c; });
-            applyCustomSpraw();
-        }
-    }).catch(function(){});
-
     // Progress jest już załadowany z localStorage — odśwież w tle przez _backgroundRefreshProgress
     // (wywoływane z window.onload)
 }
@@ -5455,7 +5353,7 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
-function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
+async function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
     var role = currentUser.role;
     var myRank = rankIndex(role);
     var html = '<div class="member-row">'
@@ -5521,21 +5419,30 @@ async function renderAdminDashboard() {
         + (role === 'superadmin'
             ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
             : '')
+        + (role === 'superadmin'
+            ? '<button onclick="renderBugReportsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128027; Zgloszenia bledow</button>'
+            : '')
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
-        + (['superadmin'].includes(role)
-            ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne sprawnosci</button>'
-            : '')
-        + (['superadmin'].includes(role)
-            ? '<button onclick="renderEditSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--primary-dark);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9998; Edytuj sprawnosci</button>'
-            : '')
-        + (['superadmin'].includes(role)
-            ? '<button onclick="renderPrivateSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128274; Prywatne sprawnosci</button>'
-            : '')
         + '</div>';
 
-    // (wyszukiwarka jest przy liście aktywnych poniżej)
+    // ── Wyszukiwarka ──
+    html += '<div class="home-card" style="padding:12px 16px">'
+          + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj osoby (imię lub login)..." '
+          + 'style="flex:1;min-width:200px;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);'
+          + 'background:var(--panel);color:var(--f1);font-size:.9rem;outline:none">'
+          + '</div>'
+          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="adminRoleFilter">'
+          + '<button onclick="adminSetRoleFilter(this,\'\');" class="role-filter-btn active" data-role="">Wszyscy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'druzynowy\');" class="role-filter-btn" data-role="druzynowy">Dru&#380;ynowy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'przyboczny\');" class="role-filter-btn" data-role="przyboczny">Przyboczny</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'zastepowy\');" class="role-filter-btn" data-role="zastepowy">Zast&#281;powy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'podzastepowy\');" class="role-filter-btn" data-role="podzastepowy">Podzast&#281;powy</button>'
+          + '<button onclick="adminSetRoleFilter(this,\'user\');" class="role-filter-btn" data-role="user">Harcerz</button>'
+          + '</div>'
+          + '</div>';
 
     // ── Oczekujące — tylko superadmin i druzynowy ──
     var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
@@ -5579,21 +5486,24 @@ async function renderAdminDashboard() {
     }
 
     // ── Aktywni ──
-    var roleFilterBtns = '<button onclick="adminSetRoleFilter(this,\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
+    window._adminAllMembers = active;
+    window._adminRoleFilter = '';
+    var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
-        roleFilterBtns += '<button onclick="adminSetRoleFilter(this,\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
+        roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
-          + '<h3 style="margin:0 0 10px">&#128101; Druchy (' + active.length + ')</h3>'
-          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj po imieniu, loginie lub zastępie..." '
-          + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;'
-          + 'border:1.5px solid var(--border);background:var(--panel);color:var(--text);'
+          + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
+          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="Szukaj po imieniu lub loginie..." '
+          + 'style="width:100%;box-sizing:border-box;padding:8px 14px;border-radius:20px;'
+          + 'border:1.5px solid var(--border);background:var(--panel);color:var(--f1);'
           + 'font-size:.9rem;outline:none;margin-bottom:10px">'
           + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="adminRoleFilter">'
           + roleFilterBtns
           + '</div>'
           + '<div id="adminMembersList" style="display:grid;gap:8px"></div>'
           + '</div>';
+    adminRenderMembersList(active);
 
 // ── Odrzuceni — tylko superadmin ──
     if (role === 'superadmin' && rejected.length > 0) {
@@ -5612,8 +5522,6 @@ async function renderAdminDashboard() {
 
     document.getElementById('contentArea').innerHTML = html;
     window._adminAllMembers = active;
-    window._adminRoleFilter = '';
-    adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
@@ -5621,10 +5529,7 @@ function adminFilterMembers() {
     q = q.toLowerCase().trim();
     var role = window._adminRoleFilter || '';
     var list = (window._adminAllMembers || []).filter(function(u) {
-        var matchQ = !q
-            || u.name.toLowerCase().includes(q)
-            || (u.username||'').toLowerCase().includes(q)
-            || (u.zastepName||'').toLowerCase().includes(q);
+        var matchQ = !q || u.name.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q);
         var matchR = !role || u.role === role;
         return matchQ && matchR;
     });
@@ -5643,637 +5548,23 @@ function adminRenderMembersList(list) {
     if (!el) return;
     var role   = currentUser.role;
     var myRank = rankIndex(role);
-    if (!list || !list.length) {
+    if (!list.length) {
         el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wyników.</p>';
         return;
     }
-    var html = '';
-    for (var i = 0; i < list.length; i++) {
-        var u      = list[i];
-        var esc    = u.name.replace(/'/g, "\\'");
+    el.innerHTML = list.map(function(u) {
+        var esc    = u.name.replace(/'/g, "\'");
         var uRank  = rankIndex(u.role);
-        var isLower  = (role === 'superadmin') || (myRank < uRank);
-        var rLabel   = ROLE_LABELS[u.role] || u.role;
-        var rColor   = ROLE_COLORS[u.role] || '#546e7a';
+        var isLower = (role === 'superadmin') || (myRank < uRank);
+        var rLabel  = ROLE_LABELS[u.role] || u.role;
+        var rColor  = ROLE_COLORS[u.role] || '#546e7a';
         var canSpraw = isLower;
-        var row = '<div class="member-row">'
-            + '<div>'
-            + '<strong>' + u.name + '</strong>'
-            + '<span style="color:var(--muted);font-size:.82em;margin-left:8px">@' + (u.username||'') + '</span>'
-            + (u.zastepName ? '<span style="font-size:.7rem;color:var(--muted);margin-left:4px">&#128101; ' + u.zastepName + '</span>' : '')
-            + '<br><span style="font-size:.72rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + rLabel + '</span>'
-            + '</div>'
-            + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-            + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
-            + (isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
-            + ((role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
-                ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
-            + ((role === 'superadmin' || (role === 'druzynowy' && isLower))
-                ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
-            + '</div>'
-            + '</div>';
-        html += row;
-    }
-    el.innerHTML = html;
-}
+        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
 
-// ================================================================
-// PANEL LEGENDARNYCH SPRAWNOSCI
-// ================================================================
-async function renderLegendaryPanel() {
-    document.getElementById('navList').innerHTML = '';
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
-
-    // Pobierz konfiguracje I swieże staty jednocześnie
-    var [r, rStats] = await Promise.all([
-        apiFetch('/legendary'),
-        apiFetch('/legendary-stats')
-    ]);
-    var saved = (r.ok && Array.isArray(r.data)) ? r.data : [];
-    var savedMap = {};
-    saved.forEach(function(s) { savedMap[s.itemId] = s; });
-
-    // Zaktualizuj globalne staty
-    _legendaryStats = {};
-    if (rStats.ok && Array.isArray(rStats.data)) {
-        rStats.data.forEach(function(s) {
-            s.active = s.owners >= 1;
-            _legendaryStats[s.itemId] = s;
-        });
-    }
-
-    var html = '<div class="welcome-header">'
-        + '<h2>&#9876;&#65039; Legendarne Sprawnosci</h2>'
-        + '<p style="color:var(--muted);font-size:.9rem">Oznaczone sprawnosci swiecą złotą obramówką gdy chociaz 1 osoba ma jakiekolwiek zadanie zdane.</p>'
-        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
-        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
-        + '<button onclick="legToggleAll(true)" style="padding:8px 18px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#9876;&#65039; Włącz wszystkie</button>'
-        + '<button onclick="legToggleAll(false)" style="padding:8px 18px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--muted);font-weight:600;cursor:pointer">&#10007; Wyłącz wszystkie</button>'
-        + '</div>'
-        + '</div>';
-
-    // Wyszukiwarka
-    html += '<div class="home-card" style="padding:14px 16px">'
-        + '<input id="legSearch" oninput="legFilterItems()" placeholder="&#128269; Szukaj sprawnosci..." '
-        + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.9rem;outline:none;margin-bottom:10px">'
-        + '<div id="legList" style="display:grid;gap:8px;max-height:60vh;overflow-y:auto"></div>'
-        + '</div>';
-
-    document.getElementById('contentArea').innerHTML = html;
-
-    // Zaladuj wszystkie sprawnosci do panelu
-    window._legSavedMap = savedMap;
-    window._legAllItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
-    legFilterItems();
-}
-
-function legFilterItems() {
-    var q = ((document.getElementById('legSearch') || {}).value || '').toLowerCase();
-    var el = document.getElementById('legList');
-    if (!el) return;
-    var items = (window._legAllItems || []).filter(function(x){
-        return !q || x.title.toLowerCase().includes(q) || x.category.toLowerCase().includes(q);
-    });
-    if (!items.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wynikow.</p>'; return; }
-
-    var rows = items.map(function(item) {
-        var saved = window._legSavedMap[item.id] || {};
-        var enabled = !!saved.enabled;
-        var threshold = saved.threshold || 10;
-        var stat = _legendaryStats[item.id] || {};
-        var owners = stat.owners || 0;
-        var active = stat.active || false;
-        var borderStyle = active ? 'border:1.5px solid #f59e0b;box-shadow:0 0 8px #f59e0b44' : 'border:1.5px solid var(--border)';
-        var btnStyle = enabled
-            ? 'background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none'
-            : 'background:var(--panel2);color:var(--muted);border:1.5px solid var(--border)';
-        var btnText = enabled ? '&#9876;&#65039; Wlaczona' : 'Wylaczona';
-        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:var(--rs);' + borderStyle + '">'
-            + '<div style="flex:1">'
-            + '<div style="font-weight:600;font-size:.9rem">' + item.title + '</div>'
-            + '<div style="font-size:.75rem;color:var(--muted)">' + item.category
-            + (stat.owners !== undefined ? ' &nbsp;&middot;&nbsp; <span style="color:' + (active ? '#f59e0b' : 'var(--muted)') + '">' + owners + ' posiadaczy</span>' : '')
-            + (active ? ' &nbsp;<span style="color:#f59e0b;font-weight:700">&#10024; AKTYWNA</span>' : '')
-            + '</div></div>'
-            + '<input type="number" min="1" max="9999" value="' + threshold + '" id="leg-thr-' + item.id + '" '
-            + 'style="width:60px;padding:5px 8px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.85rem;text-align:center" '
-            + 'title="Prog posiadaczy">'
-            + '<button data-id="' + item.id + '" data-enabled="' + (!enabled) + '" onclick="legToggleBtn(this)" '
-            + 'style="padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:700;' + btnStyle + '">'
-            + btnText
-            + '</button>'
-            + '</div>';
-    });
-    el.innerHTML = rows.join('');
-}
-
-
-function legToggleBtn(btn) {
-    var itemId = btn.getAttribute('data-id');
-    var enable = btn.getAttribute('data-enabled') === 'true';
-    legToggle(itemId, enable);
-}
-
-async function legToggle(itemId, enable) {
-    var thrEl = document.getElementById('leg-thr-' + itemId);
-    var threshold = thrEl ? parseInt(thrEl.value) || 10 : 10;
-    var r = await apiFetch('/legendary', {
-        method: 'POST',
-        body: JSON.stringify({ itemId: itemId, enabled: enable, threshold: threshold })
-    });
-    if (!r.ok) { alert((r.data && r.data.error) || 'Blad zapisu.'); return; }
-
-    // Pobierz swieże staty z serwera żeby miec poprawne owners i active
-    await refreshLegendaryStats();
-    renderLegendaryPanel();
-}
-
-async function legToggleAll(enable) {
-    var items = window._legAllItems || db.filter(function(x){ return !x.id.startsWith('st_'); });
-    var btns = document.querySelectorAll('[onclick*="legToggleAll"]');
-    btns.forEach(function(b){ b.disabled = true; b.textContent = 'Czekaj...'; });
-
-    var promises = items.map(function(item) {
-        return apiFetch('/legendary', {
-            method: 'POST',
-            body: JSON.stringify({ itemId: item.id, enabled: enable, threshold: 10 })
-        });
-    });
-
-    await Promise.all(promises);
-    await refreshLegendaryStats();
-    renderLegendaryPanel();
-}
-
-// Pobiera swieże legendarne staty i aktualizuje _legendaryStats
-async function refreshLegendaryStats() {
-    var r = await apiFetch('/legendary-stats');
-    _legendaryStats = {};
-    if (r.ok && Array.isArray(r.data)) {
-        r.data.forEach(function(s) {
-            s.active = s.owners >= 1;
-            _legendaryStats[s.itemId] = s;
-        });
-    }
-    // Zaktualizuj _legSavedMap rowniez
-    var r2 = await apiFetch('/legendary');
-    window._legSavedMap = {};
-    if (r2.ok && Array.isArray(r2.data)) {
-        r2.data.forEach(function(c) { window._legSavedMap[c.itemId] = c; });
-    }
-}
-
-
-// ================================================================
-// PRYWATNE SPRAWNOSCI — nakładanie na db
-// ================================================================
-function applyPrivateSpraw() {
-    _privateSpraw.forEach(function(ps) {
-        var exists = db.find(function(x){ return x.id === ps.itemId; });
-        if (exists) return;
-        db.push({
-            id:            ps.itemId,
-            title:         ps.title,
-            category:      ps.category || 'Prywatne',
-            images:        ps.images || [],
-            circleVariants:0,
-            groups:        ps.groups && ps.groups.length ? ps.groups : [{ name: 'Zadania', tasks: [] }],
-            _isPrivate:    true
-        });
-    });
-}
-
-// ================================================================
-// PANEL PRYWATNYCH SPRAWNOSCI (tylko superadmin)
-// ================================================================
-async function renderPrivateSprawPanel() {
-    document.getElementById('navList').innerHTML = '';
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
-
-    var [rPriv, rUsers] = await Promise.all([
-        apiFetch('/private-spraw/all'),
-        apiFetch('/team-members')
-    ]);
-
-    var privItems = (rPriv.ok && Array.isArray(rPriv.data)) ? rPriv.data : [];
-    window._privAllUsers = (rUsers.ok && Array.isArray(rUsers.data))
-        ? rUsers.data.filter(function(u){ return u.status === 'active'; })
-        : [];
-
-    var html = '<div class="welcome-header">'
-        + '<h2>&#128274; Prywatne Sprawnosci</h2>'
-        + '<p style="color:var(--muted);font-size:.9rem">Sprawnosci widoczne tylko dla wybranych harcerzy.</p>'
-        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
-        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
-        + '<button onclick="privSprawNew()" style="padding:8px 18px;background:var(--f4);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">+ Nowa prywatna</button>'
-        + '</div></div>';
-
-    if (!privItems.length) {
-        html += '<div class="home-card"><p style="color:var(--muted);text-align:center">Brak prywatnych sprawnosci. Kliknij "+ Nowa prywatna".</p></div>';
-    } else {
-        html += '<div style="display:grid;gap:10px;padding-bottom:20px">';
-        privItems.forEach(function(ps) {
-            var assignedNames = (ps.allowedUsers || []).map(function(uid) {
-                var u = (window._privAllUsers || []).find(function(x){ return x._id === uid || x._id.toString() === uid; });
-                return u ? u.name : uid;
-            });
-            html += '<div class="home-card" style="padding:14px 16px;border-left:3px solid #a855f7">'
-                + '<div style="display:flex;align-items:flex-start;gap:10px">'
-                + '<div style="flex:1">'
-                + '<div style="font-weight:700;font-size:.95rem">&#128274; ' + ps.title + '</div>'
-                + '<div style="font-size:.75rem;color:var(--muted);margin-top:2px">' + (ps.category||'Prywatne')
-                + ' &middot; ' + (ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).length : 0) + ' zadań'
-                + '</div>'
-                + '<div style="font-size:.78rem;color:#c084fc;margin-top:6px">'
-                + (assignedNames.length ? '&#128100; ' + assignedNames.join(', ') : '<em style="color:var(--muted)">Brak przypisanych</em>')
-                + '</div>'
-                + '</div>'
-                + '<div style="display:flex;gap:6px;flex-shrink:0">'
-                + '<button data-id="' + ps.itemId + '" onclick="privSprawEdit(this.dataset.id)" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600">&#9998; Edytuj</button>'
-                + '<button data-id="' + ps.itemId + '" data-name="' + (ps.title||'').replace(/"/g,'&quot;') + '" onclick="privSprawDelete(this.dataset.id,this.dataset.name)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem">&#128465;</button>'
-                + '</div></div></div>';
-        });
-        html += '</div>';
-    }
-
-    document.getElementById('contentArea').innerHTML = html;
-    window._privItems = privItems;
-}
-
-function privSprawCloseModal() { var m = document.getElementById('privSprawModal'); if(m) m.remove(); }
-function privSprawNew() { privSprawOpenModal(null); }
-function privSprawEdit(itemId) {
-    var ps = (window._privItems || []).find(function(x){ return x.itemId === itemId; });
-    privSprawOpenModal(ps);
-}
-
-function privSprawOpenModal(ps) {
-    var old = document.getElementById('privSprawModal');
-    if (old) old.remove();
-
-    var isEdit = !!ps;
-    var title   = ps ? ps.title : '';
-    var cat     = ps ? (ps.category||'Prywatne') : 'Prywatne';
-    var tasks   = ps && ps.groups && ps.groups[0] ? (ps.groups[0].tasks||[]).join('\n') : '';
-
-    var images  = ps ? (ps.images||[]).join('\n') : '';
-
-    var allowed = ps ? (ps.allowedUsers || []) : [];
-
-    var usersHtml = (window._privAllUsers || []).map(function(u) {
-        var checked = allowed.includes(u._id) || allowed.includes(u._id.toString());
-        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--rs);cursor:pointer;background:var(--panel2);border:1px solid var(--border)">'
-            + '<input type="checkbox" value="' + u._id + '" ' + (checked ? 'checked' : '') + ' style="width:16px;height:16px;accent-color:var(--primary)">'
-            + '<span style="font-size:.88rem">' + u.name + '</span>'
-            + '<span style="font-size:.7rem;color:var(--muted);margin-left:auto">' + (ROLE_LABELS[u.role]||u.role) + '</span>'
-            + '</label>';
-    }).join('');
-
-    var overlay = document.createElement('div');
-    overlay.id = 'privSprawModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
-        + '<h3 style="margin:0 0 16px">&#128274; ' + (isEdit ? 'Edytuj' : 'Nowa') + ' prywatna sprawnosc</h3>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Tytuł *</label>'
-        + '<input id="psTitle" value="' + title + '" placeholder="np. Tajny Agent" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Kategoria</label>'
-        + '<input id="psCategory" value="' + cat + '" placeholder="Prywatne" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zadania (każde w nowej linii)</label>'
-        + '<textarea id="psTasks" rows="6" placeholder="✶ | Pierwsze zadanie&#10;✶✶ | Drugie zadanie" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">' + tasks + '</textarea>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
-        + '<textarea id="psImages" rows="2" placeholder="https://..." '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">' + images + '</textarea>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:8px">Przypisz do harcerzy</label>'
-        + '<div style="display:grid;gap:5px;max-height:200px;overflow-y:auto;margin-bottom:16px;padding:4px">' + usersHtml + '</div>'
-
-        + '<p id="psMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
-        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="privSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-        + '<button onclick="privSprawSave(this.dataset.id)" data-id="' + (ps ? ps.itemId : '') + '" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
-        + '</div></div>';
-    document.body.appendChild(overlay);
-}
-
-async function privSprawSave(existingItemId) {
-    var title    = (document.getElementById('psTitle').value||'').trim();
-    var category = (document.getElementById('psCategory').value||'Prywatne').trim();
-    var tasksRaw = document.getElementById('psTasks').value || '';
-    var imagesRaw= document.getElementById('psImages').value || '';
-    var msg      = document.getElementById('psMsg');
-
-    if (!title) { msg.style.color='#f87171'; msg.textContent='Wpisz tytuł.'; return; }
-
-    var tasks  = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
-
-    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
-
-    var groups = tasks.length ? [{ name: 'Zadania', tasks: tasks }] : [];
-
-    var checkboxes = document.querySelectorAll('#privSprawModal input[type=checkbox]');
-    var allowedUsers = [];
-    checkboxes.forEach(function(cb){ if (cb.checked) allowedUsers.push(cb.value); });
-
-    msg.textContent = 'Zapisywanie...';
-    var r = await apiFetch('/private-spraw', {
-        method: 'POST',
-        body: JSON.stringify({ itemId: existingItemId || null, title: title, category: category, groups: groups, images: images, allowedUsers: allowedUsers })
-    });
-
-    if (r.ok) {
-        msg.style.color = '#4ade80';
-        msg.textContent = '✓ Zapisano!';
-        setTimeout(function() {
-            document.getElementById('privSprawModal').remove();
-            renderPrivateSprawPanel();
-        }, 700);
-    } else {
-        msg.style.color = '#f87171';
-        msg.textContent = (r.data && r.data.error) || 'Blad zapisu.';
-    }
-}
-
-async function privSprawDelete(itemId, name) {
-    if (!confirm('Usunac prywatna sprawnosc "' + name + '"?')) return;
-    var r = await apiFetch('/private-spraw/' + itemId, { method: 'DELETE' });
-    if (r.ok) { renderPrivateSprawPanel(); }
-    else { alert((r.data && r.data.error) || 'Blad usuwania.'); }
-}
-
-// ================================================================
-// APPLY CUSTOM SPRAW — nakłada customizacje na db
-// ================================================================
-function applyCustomSpraw() {
-    // Nakładaj modyfikacje na istniejące sprawnosci
-    db.forEach(function(item) {
-        var c = _customSpraw[item.id];
-        if (!c) return;
-        if (c.title)    item.title    = c.title;
-        if (c.category) item.category = c.category;
-        if (c.images && c.images.length) {
-            if (!item.images) item.images = [];
-            c.images.forEach(function(img) { if (!item.images.includes(img)) item.images.push(img); });
-        }
-        if (c.extraTasks && c.extraTasks.length) {
-            if (!item.groups) item.groups = [];
-            if (!item.groups[0]) item.groups[0] = { name: 'Zadania', tasks: [] };
-            c.extraTasks.forEach(function(t) { if (!item.groups[0].tasks.includes(t)) item.groups[0].tasks.push(t); });
-        }
-        if (c.disabled) item._hidden = true;
-    });
-    // Dodaj nowe sprawnosci stworzone przez admina
-    Object.keys(_customSpraw).forEach(function(itemId) {
-        var c = _customSpraw[itemId];
-        if (!c.isNew || c.disabled) return;
-        var exists = db.find(function(x){ return x.id === itemId; });
-        if (exists) return; // juz jest
-        db.push({
-            id:             itemId,
-            title:          c.title || itemId,
-            category:       c.category || 'Bielik',
-            images:         c.images || [],
-            circleVariants: c.circleVariants || 0,
-            groups:         c.groups && c.groups.length ? c.groups : [{ name: 'Zadania', tasks: [] }],
-            _isCustom:      true
-        });
-    });
-}
-
-// ================================================================
-// PANEL EDYCJI SPRAWNOSCI (tylko superadmin)
-// ================================================================
-async function renderEditSprawPanel() {
-    document.getElementById('navList').innerHTML = '';
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
-
-    var r = await apiFetch('/custom-spraw');
-    _customSpraw = {};
-    if (r.ok && Array.isArray(r.data)) {
-        r.data.forEach(function(c) { _customSpraw[c.itemId] = c; });
-        applyCustomSpraw();
-    }
-
-    var html = '<div class="welcome-header">'
-        + '<h2>&#9998; Edycja Sprawnosci</h2>'
-        + '<p style="color:var(--muted);font-size:.9rem">Edytuj istniejace lub dodaj nowe sprawnosci.</p>'
-        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
-        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
-        + '<button onclick="editSprawNew()" style="padding:8px 18px;background:var(--f4);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">+ Nowa sprawnosc</button>'
-        + '</div>'
-        + '</div>';
-
-    html += '<div class="home-card" style="padding:14px 16px">'
-        + '<input id="editSprawSearch" oninput="editSprawFilter()" placeholder="&#128269; Szukaj po nazwie lub kategorii..." '
-        + 'style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.9rem;outline:none">'
-        + '</div>'
-        + '<div id="editSprawList" style="display:grid;gap:10px;padding:0 0 20px"></div>';
-
-    document.getElementById('contentArea').innerHTML = html;
-    window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
-    editSprawFilter();
-}
-
-function editSprawFilter() {
-    var q = ((document.getElementById('editSprawSearch')||{}).value||'').toLowerCase();
-    var items = (window._editSprawItems||[]).filter(function(x){
-        return !q || x.title.toLowerCase().includes(q) || x.category.toLowerCase().includes(q);
-    });
-    var el = document.getElementById('editSprawList');
-    if (!el) return;
-    if (!items.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center;padding:20px">Brak wynikow.</p>'; return; }
-
-    el.innerHTML = items.map(function(item) {
-        var c = _customSpraw[item.id] || {};
-        var isNew = !!c.isNew;
-        var hasCustom = isNew || c.extraTasks && c.extraTasks.length || c.images && c.images.length || c.title;
-        var borderStyle = isNew ? 'border-left:3px solid var(--f4)' : hasCustom ? 'border-left:3px solid var(--primary)' : '';
-        var tag = isNew ? '<span style="font-size:.68rem;background:var(--f4);color:#fff;padding:1px 7px;border-radius:20px;margin-left:6px">NOWA</span>' : '';
-        return '<div class="home-card" style="padding:12px 16px;' + borderStyle + '">'
-            + '<div style="display:flex;align-items:center;gap:8px">'
-            + '<div style="flex:1;min-width:0">'
-            + '<div style="font-weight:700;font-size:.92rem">' + item.title + tag + '</div>'
-            + '<div style="font-size:.73rem;color:var(--muted)">' + item.category + (hasCustom && !isNew ? ' · zmodyfikowana' : '') + '</div>'
-            + '</div>'
-            + '<button data-id="' + item.id + '" onclick="editSprawOpen(this.dataset.id)" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap">'
-            + '&#9998; Edytuj'
-            + '</button>'
-            + (isNew ? '<button data-id="' + item.id + '" onclick="editSprawDelete(this.dataset.id)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem;font-weight:600">&#128465;</button>' : '')
-            + '</div>'
-            + '</div>';
+        // Pobierz HTML wiersza z istniejącego renderowania
+        return adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete);
     }).join('');
 }
-
-
-function editSprawNew() {
-    var old = document.getElementById('editSprawModal');
-    if (old) old.remove();
-    var overlay = document.createElement('div');
-    overlay.id = 'editSprawModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
-        + '<h3 style="margin:0 0 16px">+ Nowa Sprawnosc</h3>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Tytuł *</label>'
-        + '<input id="nsTitle" placeholder="np. Programista/Programistka" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Kategoria *</label>'
-        + '<select id="nsCategory" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
-        + ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'].map(function(c){ return '<option value="'+c+'">'+c+'</option>'; }).join('')
-        + '</select>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zadania (każde w nowej linii)</label>'
-        + '<textarea id="nsTasks" rows="7" placeholder="✶ | Zadanie na 1 gwiazdkę&#10;✶✶ | Zadanie na 2 gwiazdki&#10;✶✶✶ | Zadanie na 3 gwiazdki" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px"></textarea>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
-        + '<textarea id="nsImages" rows="2" placeholder="https://przyklad.pl/zdjecie.jpg" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:16px"></textarea>'
-
-        + '<p id="nsMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
-        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="editSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-        + '<button onclick="editSprawCreate()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--f4);color:#fff;font-weight:700;cursor:pointer">Stwórz sprawnosc</button>'
-        + '</div>'
-        + '</div>';
-    document.body.appendChild(overlay);
-}
-
-async function editSprawCreate() {
-    var title = (document.getElementById('nsTitle').value || '').trim();
-    var category = document.getElementById('nsCategory').value;
-    var tasksRaw = document.getElementById('nsTasks').value || '';
-    var imagesRaw = document.getElementById('nsImages').value || '';
-    var msg = document.getElementById('nsMsg');
-
-    if (!title) { msg.style.color = '#f87171'; msg.textContent = 'Wpisz tytuł sprawnosci.'; return; }
-
-    var tasks = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
-    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
-
-    // Generuj unikalne ID z tytułu
-    var itemId = 'custom_' + title.toLowerCase()
-        .replace(/[ąćęłńóśźż]/g, function(c){ return {ą:'a',ć:'c',ę:'e',ł:'l',ń:'n',ó:'o',ś:'s',ź:'z',ż:'z'}[c]||c; })
-        .replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g,'') + '_' + Date.now().toString(36);
-
-    var groups = tasks.length ? [{ name: 'Zadania', tasks: tasks }] : [];
-
-    msg.textContent = 'Tworzenie...';
-    var r = await apiFetch('/custom-spraw', {
-        method: 'POST',
-        body: JSON.stringify({ itemId: itemId, title: title, category: category, isNew: true, groups: groups, images: images, extraTasks: [] })
-    });
-
-    if (r.ok) {
-        _customSpraw[itemId] = r.data;
-        applyCustomSpraw();
-        window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
-        msg.style.color = '#4ade80';
-        msg.textContent = '✓ Stworzono: ' + title;
-        setTimeout(function() {
-            document.getElementById('editSprawModal').remove();
-            editSprawFilter();
-        }, 800);
-    } else {
-        msg.style.color = '#f87171';
-        msg.textContent = (r.data && r.data.error) || 'Blad tworzenia.';
-    }
-}
-
-async function editSprawDelete(itemId) {
-    var item = db.find(function(x){ return x.id === itemId; });
-    var name = item ? item.title : itemId;
-    if (!confirm('Usunac sprawnosc "' + name + '"?')) return;
-    var r = await apiFetch('/custom-spraw/' + itemId, { method: 'DELETE' });
-    if (r.ok) {
-        delete _customSpraw[itemId];
-        // Usun z db
-        var idx = db.findIndex(function(x){ return x.id === itemId; });
-        if (idx !== -1) db.splice(idx, 1);
-        window._editSprawItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
-        editSprawFilter();
-    } else {
-        alert((r.data && r.data.error) || 'Blad usuwania.');
-    }
-}
-
-function editSprawOpen(itemId) {
-    var item = db.find(function(x){ return x.id === itemId; });
-    if (!item) return;
-    var c = _customSpraw[itemId] || {};
-    var extraTasksStr = (c.extraTasks || []).join('\n');
-    var imagesStr = (c.images || []).join('\n');
-
-    var old = document.getElementById('editSprawModal');
-    if (old) old.remove();
-
-    var overlay = document.createElement('div');
-    overlay.id = 'editSprawModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
-        + '<h3 style="margin:0 0 4px">&#9998; ' + item.title + '</h3>'
-        + '<p style="color:var(--muted);font-size:.8rem;margin:0 0 16px">' + item.category + ' &middot; ' + itemId + '</p>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Nowy tytuł (zostaw puste = bez zmian)</label>'
-        + '<input id="esTitle" value="' + (c.title || '') + '" placeholder="' + item.title + '" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Dodatkowe zadania (każde w nowej linii)</label>'
-        + '<textarea id="esTasks" rows="5" placeholder="✶ | Nowe zadanie&#10;✶✶ | Trudniejsze zadanie" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">'
-        + extraTasksStr + '</textarea>'
-
-        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zdjęcia — URL (każde w nowej linii)</label>'
-        + '<textarea id="esImages" rows="3" placeholder="https://przyklad.pl/zdjecie.jpg" '
-        + 'style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:16px">'
-        + imagesStr + '</textarea>'
-
-        + '<p id="esMsg" style="font-size:.82rem;margin:0 0 10px;color:var(--primary)"></p>'
-        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-        + '<button onclick="editSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-        + '<button data-id="' + itemId + '" onclick="editSprawSave(this.dataset.id)" style="padding:8px 20px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
-        + '</div>'
-        + '</div>';
-    document.body.appendChild(overlay);
-}
-
-async function editSprawSave(itemId) {
-    var title = (document.getElementById('esTitle').value || '').trim();
-    var tasksRaw = document.getElementById('esTasks').value || '';
-    var imagesRaw = document.getElementById('esImages').value || '';
-    var msg = document.getElementById('esMsg');
-
-    var extraTasks = tasksRaw.split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
-    var images = imagesRaw.split('\n').map(function(u){ return u.trim(); }).filter(Boolean);
-
-    msg.textContent = 'Zapisywanie...';
-    var r = await apiFetch('/custom-spraw', {
-        method: 'POST',
-        body: JSON.stringify({ itemId: itemId, title: title || null, extraTasks: extraTasks, images: images })
-    });
-
-    if (r.ok) {
-        _customSpraw[itemId] = r.data;
-        applyCustomSpraw();
-        msg.style.color = '#4ade80';
-        msg.textContent = '✓ Zapisano!';
-        setTimeout(function() {
-            document.getElementById('editSprawModal').remove();
-            editSprawFilter();
-        }, 800);
-    } else {
-        msg.style.color = '#f87171';
-        msg.textContent = (r.data && r.data.error) || 'Blad zapisu.';
-    }
-}
-
 
 // ================================================================
 // PANEL DRUZYN (tylko superadmin)
@@ -6394,74 +5685,6 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
-
-// ================================================================
-// ZMIANA ROLI — modal
-// ================================================================
-function changeRolePrompt(userId, userName, currentRole) {
-    var roles = availableRoles(currentUser.role);
-    if (!roles.length) { alert('Nie masz uprawnien do zmiany roli.'); return; }
-    var old = document.getElementById('changeRoleOverlay');
-    if (old) old.remove();
-    var opts = roles.map(function(r) {
-        return '<option value="' + r + '"' + (r === currentRole ? ' selected' : '') + '>' + (ROLE_LABELS[r]||r) + '</option>';
-    }).join('');
-    var overlay = document.createElement('div');
-    overlay.id = 'changeRoleOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg)">'
-      + '<h3 style="margin:0 0 4px">&#9998; Zmien role</h3>'
-      + '<p style="color:var(--muted);font-size:.88rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
-      + '<select id="changeRoleSelect" style="width:100%;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:16px">' + opts + '</select>'
-      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-      + '<button onclick="document.getElementById(\'changeRoleOverlay\').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-      + '<button onclick="doChangeRole(\'' + userId + '\')" style="padding:8px 18px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer">Zapisz</button>'
-      + '</div></div>';
-    document.body.appendChild(overlay);
-}
-async function doChangeRole(userId) {
-    var newRole = document.getElementById('changeRoleSelect').value;
-    if (!newRole) return;
-    var r = await apiFetch('/users/' + userId + '/promote', { method: 'POST', body: JSON.stringify({ newRole: newRole }) });
-    document.getElementById('changeRoleOverlay').remove();
-    if (r.ok) { renderAdminDashboard(); }
-    else { alert((r.data && r.data.error) || 'Blad zmiany roli.'); }
-}
-
-// ================================================================
-// ZMIANA ZASTEPU — modal
-// ================================================================
-async function changeZastepPrompt(userId, userName) {
-    var old = document.getElementById('changeZastepOverlay');
-    if (old) old.remove();
-    var rz = await apiFetch('/zastepy');
-    var zastepy = (rz.ok && Array.isArray(rz.data)) ? rz.data : [];
-    var opts = '<option value="">— Brak zastepu —</option>';
-    zastepy.forEach(function(z) { opts += '<option value="' + z.zastepId + '">' + z.name + '</option>'; });
-    var overlay = document.createElement('div');
-    overlay.id = 'changeZastepOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;width:100%;max-width:340px;box-shadow:var(--shadow-lg)">'
-      + '<h3 style="margin:0 0 4px">&#128101; Przypisz do zastepu</h3>'
-      + '<p style="color:var(--muted);font-size:.88rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
-      + (zastepy.length === 0
-          ? '<p style="color:var(--muted);font-size:.88rem">Brak zastepow w druzynie.</p>'
-          : '<select id="changeZastepSelect" style="width:100%;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:16px">' + opts + '</select>')
-      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-      + '<button onclick="document.getElementById(\'changeZastepOverlay\').remove()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-      + (zastepy.length > 0 ? '<button onclick="doChangeZastep(\'' + userId + '\')" style="padding:8px 18px;border-radius:var(--rs);border:none;background:var(--f5);color:#fff;font-weight:600;cursor:pointer">Zapisz</button>' : '')
-      + '</div></div>';
-    document.body.appendChild(overlay);
-}
-async function doChangeZastep(userId) {
-    var sel = document.getElementById('changeZastepSelect');
-    var zastepId = sel ? sel.value : null;
-    var r = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
-    document.getElementById('changeZastepOverlay').remove();
-    if (r.ok) { renderAdminDashboard(); }
-    else { alert((r.data && r.data.error) || 'Blad przypisania zastepu.'); }
-}
-
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
     window._currentViewUserRole = userRole || 'user';
@@ -6536,43 +5759,15 @@ function renderCategoryGrid() {
               + '</div>';
     });
 
-    html += '</div>';
+    html += '</div></div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
 }
 
-function playNap() {
-    var existing = document.getElementById('napAudio');
-    if (existing) {
-        existing.currentTime = 0;
-        existing.play().catch(function(e){ alert('Nie mozna odtworzyc nap.mp3 — upewnij sie ze plik jest w repo GitHub.'); });
-        return;
-    }
-    var audio = document.createElement('audio');
-    audio.id = 'napAudio';
-    audio.src = 'nap.mp3';
-    audio.preload = 'auto';
-    document.body.appendChild(audio);
-    audio.play().catch(function(e){ alert('Nie mozna odtworzyc nap.mp3 — upewnij sie ze plik jest w repo GitHub.\n' + e.message); });
-}
-
-
-async function renderCategoryItems(cat) {
+function renderCategoryItems(cat) {
     showSidebarArea();
     var items = db.filter(function(x){ return x.category === cat && !x.id.startsWith('st_'); });
     var meta  = CAT_META[cat] || { icon:'📋', color:'#888' };
-
-    // Zawsze pobierz aktualne staty legendarnych przed renderem
-    try {
-        var r = await apiFetch('/legendary-stats');
-        if (r.ok && Array.isArray(r.data)) {
-            _legendaryStats = {};
-            r.data.forEach(function(s) {
-                s.active = s.owners >= 1;
-                _legendaryStats[s.itemId] = s;
-            });
-        }
-    } catch(e) {}
 
     var html = '<div style="padding:16px">';
     html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">';
@@ -6589,24 +5784,13 @@ async function renderCategoryItems(cat) {
         var border = level > 0 ? '2px solid '+meta.color : '2px solid var(--border)';
         var opacity = level > 0 ? '1' : '0.5';
 
-        var leg = _legendaryStats[item.id];
-        // Legendarny jesli: wlaczone (leg istnieje) I (ktokolwiek ma postep LUB ja mam postep)
-        var myDone = getSprawDone(item, cachedProgress);
-        var isLegendary = leg && (leg.active || myDone.done > 0);
-        var legBadge = isLegendary ? '<div class="legendary-badge">&#9876; LEGENDA</div>' : '';
-        var legClass = isLegendary ? 'legendary-card' : '';
-        // Gdy legendarny — nie ustawiaj border inline (klasa CSS ma !important)
-        if (isLegendary) { opacity = '1'; }
-
-        html += '<div onclick="loadContent(\''+item.id+'\')" class="'+legClass+'" data-leg-id="'+item.id+'" style="'
-              + 'position:relative;background:var(--panel2);border-radius:12px;'
-              + (isLegendary ? '' : 'border:'+border+';')
+        html += '<div onclick="loadContent(\''+item.id+'\')" style="'
+              + 'background:var(--panel2);border:'+border+';border-radius:12px;'
               + 'padding:10px 6px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:4px;'
               + 'opacity:'+opacity+';transition:.15s" '
               + 'onmouseenter="this.style.opacity=\'1\';this.style.transform=\'scale(1.04)\'" '
               + 'onmouseleave="this.style.opacity=\''+opacity+'\';this.style.transform=\'scale(1)\'">'
-              + legBadge
               + (imgSrc ? '<img src="'+imgSrc+'" style="width:52px;height:52px;object-fit:contain">' : '<div style="width:52px;height:52px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem">'+meta.icon+'</div>')
               + '<div style="font-size:.72rem;color:var(--f1);line-height:1.2">'+item.title+'</div>'
               + stars
@@ -6637,84 +5821,6 @@ function goHome() {
     updateUIStats();
 }
 
-
-// ================================================================
-// FILTRY SIDEBARA
-// ================================================================
-function toggleFilterPanel() {
-    var panel = document.getElementById('filterPanel');
-    var btn   = document.getElementById('filterGearBtn');
-    if (!panel) return;
-    var open = panel.classList.toggle('open');
-    btn.classList.toggle('active', open);
-}
-
-function setCatFilter(el, cat) {
-    _filterCat = cat;
-    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('active', b.dataset.cat === cat); });
-    filterNav();
-}
-
-function setStarFilter(el, stars) {
-    if (stars === -1) {
-        // "Wszystkie" — wyczysc zaznaczenie
-        _filterStars = new Set();
-        document.querySelectorAll('.filter-star-btn').forEach(function(b){
-            b.classList.toggle('active', b.dataset.stars === '-1');
-        });
-    } else {
-        // Toggle konkretnej gwiazdki
-        if (_filterStars.has(stars)) {
-            _filterStars.delete(stars);
-        } else {
-            _filterStars.add(stars);
-        }
-        // Jesli nic nie zaznaczone — aktywuj "Wszystkie"
-        var allBtn = document.querySelector('.filter-star-btn[data-stars="-1"]');
-        if (allBtn) allBtn.classList.toggle('active', _filterStars.size === 0);
-        el.classList.toggle('active', _filterStars.has(stars));
-    }
-    filterNav();
-}
-
-function setStatusFilter(el, status) {
-    _filterStatus = status;
-    document.querySelectorAll('.filter-status-btn').forEach(function(b){ b.classList.remove('active'); });
-    el.classList.add('active');
-    filterNav();
-}
-
-function clearFilters() {
-    _filterStars  = new Set();
-    _filterStatus = 'all';
-    _filterCat    = '';
-    document.getElementById('searchInput').value = '';
-    document.querySelectorAll('.filter-star-btn').forEach(function(b){
-        b.classList.toggle('active', b.dataset.stars === '-1');
-    });
-    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('active', b.dataset.cat === ''); });
-    document.querySelectorAll('.filter-status-btn').forEach(function(b){
-        b.classList.toggle('active', b.dataset.status === 'all');
-    });
-    filterNav();
-}
-
-
-function updateFilterCounts() {
-    var items = db.filter(function(x){ return !x.id.startsWith('st_') && !x._isPrivate; });
-    var done   = 0, undone = 0;
-    items.forEach(function(item) {
-        var s = getSprawDone(item, cachedProgress);
-        if (s.done > 0) done++; else undone++;
-    });
-    var elAll    = document.getElementById('fcount-all');
-    var elDone   = document.getElementById('fcount-done');
-    var elUndone = document.getElementById('fcount-undone');
-    if (elAll)    elAll.textContent    = items.length;
-    if (elDone)   elDone.textContent   = done;
-    if (elUndone) elUndone.textContent = undone;
-}
-
 function renderSidebar(filterText) {
     patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
@@ -6726,47 +5832,7 @@ function renderSidebar(filterText) {
         grouped[item.category].push(item);
     });
     Object.keys(grouped).forEach(function(cat) {
-        var filtered = grouped[cat].filter(function(item) {
-            // Filtr tekstowy
-            if (filterText && item.title.toLowerCase().indexOf(filterText.toLowerCase()) === -1) return false;
-            // Stopnie — nie filtruj gwiazdkami/statusem/kategoria
-            if (item.id && item.id.startsWith('st_')) return true;
-            // Filtr kategorii
-            if (_filterCat && item.category !== _filterCat) return false;
-            // Filtr gwiazdkowy — sprawdz czy sprawnosc MA zadania z DOWOLNA z zaznaczonych gwiazdek
-            if (_filterStars.size > 0) {
-                var hasMatch = false;
-                var STAR_CHARS = ['\u2736','\u2605','\u2605','\u273b','\u2734','*'];
-                (item.groups || []).forEach(function(g) {
-                    (g.tasks || []).forEach(function(t) {
-                        if (typeof t !== 'string') return;
-                        var trimmed = t.replace(/^\s+/, '');
-                        var cnt = 0;
-                        // Licz gwiazdki od poczatku stringa
-                        var i = 0;
-                        while (i < trimmed.length) {
-                            var ch = trimmed[i];
-                            // ✶ (U+2736), ★ (U+2605), * (U+002A)
-                            if (ch === '\u2736' || ch === '\u2605' || ch === '*' || ch === '\u2734' || ch === '\u273b') {
-                                cnt++;
-                                i++;
-                            } else break;
-                        }
-                        if (cnt > 0 && _filterStars.has(cnt)) hasMatch = true;
-                    });
-                });
-                if (!hasMatch) return false;
-            }
-            // Filtr statusu
-            if (_filterStatus === 'done') {
-                var s = getSprawDone(item, cachedProgress);
-                if (s.done === 0) return false;
-            } else if (_filterStatus === 'undone') {
-                var s2 = getSprawDone(item, cachedProgress);
-                if (s2.done > 0) return false;
-            }
-            return true;
-        });
+        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
         if (!filtered.length) return;
         var head = document.createElement('li');
         head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
@@ -6780,9 +5846,6 @@ function renderSidebar(filterText) {
             if (item.id && item.id.startsWith('st_')) {
                 // Stopień — pokaż badge statusu
                 leftHtml = getStopienNavBadge(item);
-            } else if (item._isPrivate) {
-                // Prywatna sprawnosc — kłódka
-                leftHtml = '<span style="font-size:1rem;margin-right:4px;flex-shrink:0">&#128274;</span>';
             } else {
                 // Sprawność — pokaż kółko
                 var opacity = getSprawOpacity(item, cachedProgress);
@@ -6801,24 +5864,6 @@ function renderSidebar(filterText) {
         });
     });
     updateUIStats();
-    updateFilterCounts();
-
-    // Przycisk nap na dole listy
-    var napLi = document.createElement('li');
-    napLi.style.cssText = 'padding:14px 10px 10px;list-style:none';
-    napLi.innerHTML = '<button onclick="playNap()" style="'
-        + 'width:100%;padding:10px;border-radius:30px;cursor:pointer;'
-        + 'background:linear-gradient(135deg,#1a3a2a,#2d6a3f);'
-        + 'border:1.5px solid #4ade80;color:#d1fae5;'
-        + 'font-weight:700;font-size:.88rem;letter-spacing:.03em;'
-        + 'display:flex;align-items:center;justify-content:center;gap:8px;'
-        + 'box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s" '
-        + 'onmouseenter="this.style.boxShadow=\'0 0 28px rgba(74,222,128,.5)\';this.style.transform=\'scale(1.03)\'" '
-        + 'onmouseleave="this.style.boxShadow=\'0 0 14px rgba(74,222,128,.2)\';this.style.transform=\'scale(1)\'">'
-        + '<span style="font-size:1.2rem">&#127925;</span> nap'
-        + '</button>';
-    list.appendChild(napLi);
-
     // Pokaz druzyne zalogowanego usera
     if (currentUser && currentUser.teamId) {
         apiFetch('/my-team').then(function(r) {
@@ -7662,15 +6707,6 @@ async function loadKadraForAsk() {
     var kadraList = document.getElementById('askKadraList');
     if (!kadraList) return;
     kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
-
-    // Sprawdz ile gwiazdek ma wybrane zadanie
-    var taskStars = 0;
-    if (_askTaskText) {
-        var starMatch = _askTaskText.match(/^[✶★]+/);
-        taskStars = starMatch ? starMatch[0].length : 0;
-    }
-    var isHighLevel = taskStars >= 3; // 3 i 4 gwiazdki → tylko ksis/superadmin
-
     apiFetch('/my-kadra').then(function(r) {
         var kadra = r.ok ? r.data : [];
         if (!kadra.length) {
@@ -7681,38 +6717,16 @@ async function loadKadraForAsk() {
         var inZastep = currentUser && currentUser.zastepId;
         var filtered;
 
-        if (isHighLevel) {
-            // 3★/4★ → tylko ksis i superadmin
-            filtered = kadra.filter(function(k) {
-                return k.role === 'ksis' || k.role === 'superadmin';
-            });
-            var header = '<div style="padding:6px 10px;background:rgba(168,85,247,.12);border-radius:var(--rs);border:1px solid rgba(168,85,247,.3);margin-bottom:8px">'
-                + '<p style="color:#c084fc;font-size:.78rem;font-weight:700;margin:0">'
-                + '✶'.repeat(taskStars) + ' Zadanie wymaga zatwierdzenia przez Ksis lub Admina</p></div>';
-            if (!filtered.length) {
-                kadraList.innerHTML = header + '<p style="color:var(--muted);font-size:.82rem">Brak ksis/admina w drużynie. Skontaktuj sie bezposrednio.</p>';
-                return;
-            }
-            kadraList.innerHTML = header + filtered.map(function(k) {
-                var rColor = ROLE_COLORS[k.role] || '#546e7a';
-                return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
-                    + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
-                    + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
-                    + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
-                    + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
-                    + '</div>';
-            }).join('');
-            return;
-        }
-
         if (inZastep) {
+            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
             filtered = kadra.filter(function(k) {
-                var isGlobal = (k.role === 'druzynowy' || k.role === 'przyboczny');
+                var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
                 var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
-                               && k.zastepId && String(k.zastepId) === String(currentUser.zastepId);
+                               && k.zastepId && k.zastepId === currentUser.zastepId;
                 return isGlobal || isMyZastep;
             });
         } else {
+            // Bez zastępu: tylko druzynowy i przyboczny
             filtered = kadra.filter(function(k) {
                 return k.role === 'druzynowy' || k.role === 'przyboczny';
             });
@@ -7752,20 +6766,14 @@ function backToTaskPick() {
 }
 
 async function sendAskRequest(kadraId, kadraName) {
-    // Cooldown 5 minut — per sprawność (nie per zadanie)
-    var cdKey = 'hk_ask_cd_' + _askItemId;
+    // Cooldown 5 minut
+    var cdKey = 'hk_ask_cd_' + _askItemId + '_' + _askTaskId;
     try {
         var lastSent = parseInt(localStorage.getItem(cdKey) || '0');
         var diff = Date.now() - lastSent;
-        var CD_MS = 5 * 60 * 1000;
-        if (diff < CD_MS) {
-            var leftMs = CD_MS - diff;
-            var leftMin = Math.floor(leftMs / 60000);
-            var leftSec = Math.ceil((leftMs % 60000) / 1000);
-            var leftStr = leftMin > 0
-                ? leftMin + ' min ' + leftSec + ' sek'
-                : leftSec + ' sek';
-            document.getElementById('askModalStatus').textContent = '⏳ Poczekaj jeszcze ' + leftStr + ' przed ponownym wysłaniem.';
+        if (diff < 5 * 60 * 1000) {
+            var left = Math.ceil((5 * 60 * 1000 - diff) / 60000);
+            document.getElementById('askModalStatus').textContent = 'Poczekaj jeszcze ' + left + ' min przed ponownym wysłaniem.';
             document.getElementById('askModalStatus').style.color = '#f59e0b';
             return;
         }
@@ -8397,12 +7405,230 @@ async function pickMember(userId, userName, userRole) {
     }
 }
 
-
-
 // ══════════════════════════════════════════════════════
 // WAKE UP SERVER
 // ══════════════════════════════════════════════════════
 fetch('https://harcerze-backend.onrender.com/api/ping').catch(function(){});
+
+
+// ================================================================
+// PLAY NAP
+// ================================================================
+function playNap() {
+    var a = document.getElementById('napAudio');
+    if (!a) {
+        a = document.createElement('audio');
+        a.id = 'napAudio';
+        a.src = 'nap.mp3';
+        document.body.appendChild(a);
+    }
+    a.currentTime = 0;
+    a.play().catch(function(){});
+}
+
+// ================================================================
+// LEGENDARNE SPRAWNOSCI
+// ================================================================
+var _legendaryStats = {};
+
+function refreshLegendaryStats() {
+    return apiFetch('/legendary-stats').then(function(r) {
+        _legendaryStats = {};
+        if (r.ok && Array.isArray(r.data)) {
+            r.data.forEach(function(s) {
+                s.active = s.owners >= 1;
+                _legendaryStats[s.itemId] = s;
+            });
+        }
+    }).catch(function(){});
+}
+
+// ================================================================
+// FILTRY SIDEBARA
+// ================================================================
+var _filterStars  = new Set();
+var _filterStatus = 'all';
+var _filterCat    = '';
+
+function toggleFilterPanel() {
+    var p = document.getElementById('filterPanel');
+    var b = document.getElementById('filterGearBtn');
+    if (!p) return;
+    var open = p.style.display === 'none' ? true : false;
+    p.style.display = open ? 'block' : 'none';
+    if (b) b.style.background = open ? 'var(--f5)' : 'rgba(255,255,255,.08)';
+}
+
+function setCatFilter(el, cat) {
+    _filterCat = cat;
+    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.cat === cat); });
+    filterNav();
+}
+
+function setStarFilter(el, stars) {
+    if (stars === -1) {
+        _filterStars = new Set();
+        document.querySelectorAll('[data-stars]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.stars === '-1'); });
+    } else {
+        if (_filterStars.has(stars)) _filterStars.delete(stars); else _filterStars.add(stars);
+        var allBtn = document.querySelector('[data-stars="-1"]');
+        if (allBtn) allBtn.classList.toggle('flt-active', _filterStars.size === 0);
+        el.classList.toggle('flt-active', _filterStars.has(stars));
+    }
+    filterNav();
+}
+
+function setStatusFilter(el, status) {
+    _filterStatus = status;
+    document.querySelectorAll('[data-status]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.status === status); });
+    filterNav();
+}
+
+function clearFilters() {
+    _filterStars = new Set(); _filterStatus = 'all'; _filterCat = '';
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('[data-stars]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.stars === '-1'); });
+    document.querySelectorAll('[data-status]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.status === 'all'); });
+    document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.cat === ''); });
+    filterNav();
+}
+
+function updateFilterCounts() {
+    var items = db.filter(function(x){ return !x.id.startsWith('st_'); });
+    var done = 0, undone = 0;
+    items.forEach(function(item) {
+        var s = getSprawDone(item, cachedProgress);
+        if (s.done > 0) done++; else undone++;
+    });
+    var ea = document.getElementById('fcount-all');
+    var ed = document.getElementById('fcount-done');
+    var eu = document.getElementById('fcount-undone');
+    if (ea) ea.textContent = items.length;
+    if (ed) ed.textContent = done;
+    if (eu) eu.textContent = undone;
+}
+
+// ================================================================
+// ZGŁOŚ BŁĄD
+// ================================================================
+function bugCloseModal()    { var m=document.getElementById('bugReportModal'); if(m) m.remove(); }
+function bugClickScreenshot(){ var e=document.getElementById('bugScreenshotInput'); if(e) e.click(); }
+function bugDragOver(el)    { event.preventDefault(); el.style.borderColor='var(--primary)'; }
+function bugDragLeave(el)   { el.style.borderColor='var(--border)'; }
+
+function openBugReport() {
+    toggleSettingsModal(false);
+    var old = document.getElementById('bugReportModal');
+    if (old) old.remove();
+    window._bugScreenshotData = null;
+    var overlay = document.createElement('div');
+    overlay.id = 'bugReportModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML =
+        '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+      + '<h3 style="margin:0 0 4px">&#128027; Zglos blad</h3>'
+      + '<p style="color:var(--muted);font-size:.82rem;margin:0 0 14px">Opisz co sie stalo. Mozesz dodac screenshot.</p>'
+      + '<textarea id="bugDesc" rows="5" placeholder="Opisz blad — co robiles, co sie stalo..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;resize:vertical;margin-bottom:12px"></textarea>'
+      + '<div id="bugSSArea" ondragover="bugDragOver(this)" ondragleave="bugDragLeave(this)" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
+      + '<div id="bugSSPreview" style="color:var(--muted);font-size:.85rem">&#128247; Kliknij lub przeciagnij screenshot</div>'
+      + '</div>'
+      + '<input type="file" id="bugScreenshotInput" accept="image/*" style="display:none" onchange="bugHandleFile(this.files[0])">'
+      + '<p id="bugMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
+      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+      + '<button onclick="bugCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+      + '<button onclick="submitBugReport()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">&#128027; Wyslij</button>'
+      + '</div></div>';
+    document.body.appendChild(overlay);
+}
+
+function bugHandleFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        window._bugScreenshotData = e.target.result;
+        document.getElementById('bugSSPreview').innerHTML =
+            '<img src="' + e.target.result + '" style="max-width:100%;max-height:140px;border-radius:var(--rs);object-fit:contain"><div style="font-size:.73rem;color:var(--muted);margin-top:4px">' + file.name + '</div>';
+    };
+    reader.readAsDataURL(file);
+}
+
+function bugHandleDrop(e) {
+    e.preventDefault();
+    document.getElementById('bugSSArea').style.borderColor = 'var(--border)';
+    var file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) bugHandleFile(file);
+}
+
+async function submitBugReport() {
+    var desc = (document.getElementById('bugDesc').value || '').trim();
+    var msg  = document.getElementById('bugMsg');
+    if (!desc) { msg.style.color='#f87171'; msg.textContent='Napisz opis bledu.'; return; }
+    msg.style.color='var(--muted)'; msg.textContent='Wysylanie...';
+    var r = await apiFetch('/bug-report', { method:'POST', body: JSON.stringify({ description: desc, screenshot: window._bugScreenshotData||null }) });
+    if (r.ok) {
+        msg.style.color='#4ade80'; msg.textContent='✓ Wyslano! Dziekujemy.';
+        setTimeout(bugCloseModal, 1400);
+    } else {
+        msg.style.color='#f87171'; msg.textContent=(r.data&&r.data.error)||'Blad wysylania.';
+    }
+}
+
+// ================================================================
+// PANEL ZGŁOSZEŃ (superadmin)
+// ================================================================
+async function renderBugReportsPanel() {
+    document.getElementById('navList').innerHTML = '';
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+    var r = await apiFetch('/bug-reports');
+    var reports = (r.ok && Array.isArray(r.data)) ? r.data : [];
+    var newCount = reports.filter(function(x){ return x.status==='new'; }).length;
+    var html = '<div class="welcome-header"><h2>&#128027; Zgloszenia bledow'
+        + (newCount>0 ? ' <span style="background:#ef4444;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:20px;vertical-align:middle">'+newCount+' nowych</span>' : '')
+        + '</h2><button onclick="renderAdminDashboard()" style="margin-top:10px;padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button></div>';
+    if (!reports.length) {
+        html += '<div class="home-card"><p style="color:var(--muted);text-align:center">Brak zgloszen.</p></div>';
+    } else {
+        var SC = {new:'#ef4444',read:'#f59e0b',resolved:'#22c55e'};
+        var SL = {new:'Nowe',read:'Odczytane',resolved:'Rozwiazane'};
+        reports.forEach(function(rep, ri) {
+            var date = new Date(rep.createdAt).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+            html += '<div class="home-card" style="padding:14px 16px;border-left:3px solid '+SC[rep.status]+'">'
+                + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">'
+                + '<div style="flex:1"><div style="font-weight:700;font-size:.9rem">'+rep.fromUserName
+                + ' <span style="font-size:.72rem;color:var(--muted)">@'+(rep.fromRole||'')+'</span>'
+                + ' <span style="font-size:.68rem;color:var(--muted)">'+date+'</span></div>'
+                + '<div style="font-size:.85rem;color:var(--text);margin-top:6px;white-space:pre-wrap;word-break:break-word">'+rep.description.replace(/</g,'&lt;')+'</div></div>'
+                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:'+SC[rep.status]+'22;color:'+SC[rep.status]+';font-weight:700;white-space:nowrap;flex-shrink:0">'+SL[rep.status]+'</span>'
+                + '</div>'
+                + (rep.screenshot ? '<img data-ri="'+ri+'" class="bug-ss-img" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;cursor:pointer;margin-bottom:8px" onerror="this.style.display=\'none\'">' : '')
+                + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+                + (rep.status!=='read'     ? '<button data-id="'+rep._id+'" data-status="read"     onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.78rem">&#128065; Odczytaj</button>' : '')
+                + (rep.status!=='resolved' ? '<button data-id="'+rep._id+'" data-status="resolved" onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:none;background:#15803d;color:#fff;cursor:pointer;font-size:.78rem">&#10003; Rozwiaz</button>' : '')
+                + '<button data-id="'+rep._id+'" onclick="bugDelete(this)" style="padding:4px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.78rem">&#128465;</button>'
+                + '</div></div>';
+        });
+    }
+    document.getElementById('contentArea').innerHTML = html;
+    // Set screenshot images (avoid inline onclick with single quotes)
+    var imgs = document.querySelectorAll('.bug-ss-img');
+    reports.forEach(function(rep, ri) {
+        if (rep.screenshot && imgs[ri]) {
+            imgs[ri].src = rep.screenshot;
+            imgs[ri].onclick = function(){ openPhoto(rep.screenshot); };
+        }
+    });
+}
+
+async function bugSetStatus(btn) {
+    var r = await apiFetch('/bug-reports/'+btn.dataset.id+'/status', { method:'POST', body:JSON.stringify({ status:btn.dataset.status }) });
+    if (r.ok) renderBugReportsPanel(); else alert((r.data&&r.data.error)||'Blad');
+}
+async function bugDelete(btn) {
+    if (!confirm('Usunac zgloszenie?')) return;
+    var r = await apiFetch('/bug-reports/'+btn.dataset.id, { method:'DELETE' });
+    if (r.ok) renderBugReportsPanel();
+}
+
 </script>
 </body>
 </html>
