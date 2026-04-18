@@ -852,19 +852,19 @@ body.neon-mode .btn-main {
   box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent);
 }
 
-/* ═══ LEGENDARNE SPRAWNOSCI — Steam style ═══ */
-@keyframes leg-pulse{0%,100%{box-shadow:0 0 0 2px #f59e0b,0 0 8px 2px #f59e0b,0 0 20px 4px #b4530966;}50%{box-shadow:0 0 0 2px #fbbf24,0 0 16px 4px #fbbf24,0 0 36px 8px #f59e0b88;}}
-@keyframes leg-sweep{0%{left:-60%;}100%{left:160%;}}
-@keyframes leg-img-glow{0%,100%{filter:drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 10px #f59e0b88);}50%{filter:drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 20px #fbbf2488);}}
-@keyframes leg-badge-shine{0%{background-position:0% center;}100%{background-position:200% center;}}
-.legendary-card{position:relative;border:2px solid #f59e0b!important;border-radius:12px;animation:leg-pulse 2s ease-in-out infinite!important;overflow:hidden!important;background:linear-gradient(135deg,#1a1200 0%,var(--panel2) 40%,#1a1200 100%)!important;}
-.legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent 0%,rgba(251,191,36,.22) 50%,transparent 100%);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1;}
-.legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase;}
-.legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2;}
-
 /* ═══ FILTER BUTTONS ═══ */
-.flt-btn{padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--f2);font-size:.75rem;cursor:pointer;transition:.15s;}
-.flt-active{background:var(--f5)!important;color:#fff!important;border-color:var(--f5)!important;font-weight:700;}
+.flt-btn{padding:3px 8px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:var(--f2);font-size:.75rem;cursor:pointer;transition:.15s}
+.flt-active{background:var(--f5)!important;color:#fff!important;border-color:var(--f5)!important;font-weight:700}
+
+/* ═══ LEGENDARNE - Steam style ═══ */
+@keyframes leg-pulse{0%,100%{box-shadow:0 0 0 2px #f59e0b,0 0 8px 2px #f59e0b,0 0 20px 4px #b4530966}50%{box-shadow:0 0 0 2px #fbbf24,0 0 16px 4px #fbbf24,0 0 36px 8px #f59e0b88}}
+@keyframes leg-sweep{0%{left:-60%}100%{left:160%}}
+@keyframes leg-img-glow{0%,100%{filter:drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 10px #f59e0b88)}50%{filter:drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 20px #fbbf2488)}}
+@keyframes leg-badge-shine{0%{background-position:0% center}100%{background-position:200% center}}
+.legendary-card{position:relative;border:2px solid #f59e0b!important;border-radius:12px;animation:leg-pulse 2s ease-in-out infinite!important;overflow:hidden!important;background:linear-gradient(135deg,#1a1200 0%,var(--panel2) 40%,#1a1200 100%)!important}
+.legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(251,191,36,.22) 50%,transparent);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1}
+.legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase}
+.legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2}
 </style>
 </head>
 <body>
@@ -998,12 +998,42 @@ body.neon-mode .btn-main {
     <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
       <div class="sidebar-search">
-        <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()">
+        <div style="display:flex;align-items:center;gap:6px">
+          <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()" style="flex:1">
+          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--f1);cursor:pointer;font-size:.9rem">&#9881;</button>
+        </div>
+        <div id="filterPanel" style="display:none;padding:8px 0 4px">
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:6px 0 4px">Kategoria</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="flt-btn flt-active" data-cat="" onclick="setCatFilter(this,'')">Wszystkie</button>
+            <button class="flt-btn" data-cat="Bielik" onclick="setCatFilter(this,'Bielik')">&#129413;</button>
+            <button class="flt-btn" data-cat="Lilijka" onclick="setCatFilter(this,'Lilijka')">&#9884;</button>
+            <button class="flt-btn" data-cat="Róża Wiatrów" onclick="setCatFilter(this,'Róża Wiatrów')">&#129517;</button>
+            <button class="flt-btn" data-cat="Robinson" onclick="setCatFilter(this,'Robinson')">&#127956;</button>
+            <button class="flt-btn" data-cat="Las" onclick="setCatFilter(this,'Las')">&#127794;</button>
+            <button class="flt-btn" data-cat="Plaster" onclick="setCatFilter(this,'Plaster')">&#129657;</button>
+          </div>
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:8px 0 4px">Gwiazdki</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="flt-btn flt-active" data-stars="-1" onclick="setStarFilter(this,-1)">Wszystkie</button>
+            <button class="flt-btn" data-stars="1" onclick="setStarFilter(this,1)">&#10022;1</button>
+            <button class="flt-btn" data-stars="2" onclick="setStarFilter(this,2)">&#10022;2</button>
+            <button class="flt-btn" data-stars="3" onclick="setStarFilter(this,3)">&#10022;3</button>
+            <button class="flt-btn" data-stars="4" onclick="setStarFilter(this,4)">&#10022;4</button>
+          </div>
+          <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:8px 0 4px">Status</div>
+          <div style="display:flex;gap:4px">
+            <button class="flt-btn flt-active" style="flex:1" data-status="all" onclick="setStatusFilter(this,'all')">Wszystkie <span id="fcount-all" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
+            <button class="flt-btn" style="flex:1" data-status="done" onclick="setStatusFilter(this,'done')">&#10003; Zdane <span id="fcount-done" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
+            <button class="flt-btn" style="flex:1" data-status="undone" onclick="setStatusFilter(this,'undone')">&#9711; Niezdane <span id="fcount-undone" style="background:rgba(255,255,255,.15);border-radius:10px;padding:0 5px;font-size:.68rem;font-weight:700"></span></button>
+          </div>
+          <button onclick="clearFilters()" style="width:100%;margin-top:6px;padding:3px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:transparent;color:#4a6a4a;font-size:.72rem;cursor:pointer">&#10005; Wyczysc filtry</button>
+        </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
       <div style="padding:10px 10px 14px;border-top:1px solid rgba(255,255,255,.07)">
-        <button onclick="playNap()" style="width:100%;padding:9px;border-radius:30px;cursor:pointer;background:linear-gradient(135deg,#1a3a2a,#2d6a3f);border:1.5px solid #4ade80;color:#d1fae5;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 14px rgba(74,222,128,.2);transition:.2s" onmouseenter="this.style.boxShadow='0 0 28px rgba(74,222,128,.5)'" onmouseleave="this.style.boxShadow='0 0 14px rgba(74,222,128,.2)'">
-          <span style="font-size:1.2rem">&#127925;</span> nap
+        <button onclick="playNap()" style="width:100%;padding:9px;border-radius:30px;cursor:pointer;background:linear-gradient(135deg,#1a3a2a,#2d6a3f);border:1.5px solid #4ade80;color:#d1fae5;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 14px rgba(74,222,128,.2);">
+          <span>&#127925;</span> nap
         </button>
       </div>
     </nav>
@@ -5419,8 +5449,14 @@ async function renderAdminDashboard() {
         + (role === 'superadmin'
             ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
             : '')
-        + (role === 'superadmin'
-            ? '<button onclick="renderBugReportsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128027; Zgloszenia bledow</button>'
+        + (['superadmin'].includes(role)
+            ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne</button>'
+            : '')
+        + (['superadmin'].includes(role)
+            ? '<button onclick="renderPrivateSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128274; Prywatne sprawnosci</button>'
+            : '')
+        + (['superadmin'].includes(role)
+            ? '<button onclick="renderBugReportsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#dc2626;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128027; Zgloszenia bledow</button>'
             : '')
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
@@ -7410,37 +7446,14 @@ async function pickMember(userId, userName, userRole) {
 // ══════════════════════════════════════════════════════
 fetch('https://harcerze-backend.onrender.com/api/ping').catch(function(){});
 
-
 // ================================================================
-// PLAY NAP
+// NAP
 // ================================================================
 function playNap() {
     var a = document.getElementById('napAudio');
-    if (!a) {
-        a = document.createElement('audio');
-        a.id = 'napAudio';
-        a.src = 'nap.mp3';
-        document.body.appendChild(a);
-    }
+    if (!a) { a = document.createElement('audio'); a.id = 'napAudio'; a.src = 'nap.mp3'; document.body.appendChild(a); }
     a.currentTime = 0;
     a.play().catch(function(){});
-}
-
-// ================================================================
-// LEGENDARNE SPRAWNOSCI
-// ================================================================
-var _legendaryStats = {};
-
-function refreshLegendaryStats() {
-    return apiFetch('/legendary-stats').then(function(r) {
-        _legendaryStats = {};
-        if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(s) {
-                s.active = s.owners >= 1;
-                _legendaryStats[s.itemId] = s;
-            });
-        }
-    }).catch(function(){});
 }
 
 // ================================================================
@@ -7454,36 +7467,32 @@ function toggleFilterPanel() {
     var p = document.getElementById('filterPanel');
     var b = document.getElementById('filterGearBtn');
     if (!p) return;
-    var open = p.style.display === 'none' ? true : false;
+    var open = p.style.display === 'none';
     p.style.display = open ? 'block' : 'none';
     if (b) b.style.background = open ? 'var(--f5)' : 'rgba(255,255,255,.08)';
 }
-
 function setCatFilter(el, cat) {
     _filterCat = cat;
     document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.cat === cat); });
     filterNav();
 }
-
 function setStarFilter(el, stars) {
     if (stars === -1) {
         _filterStars = new Set();
         document.querySelectorAll('[data-stars]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.stars === '-1'); });
     } else {
         if (_filterStars.has(stars)) _filterStars.delete(stars); else _filterStars.add(stars);
-        var allBtn = document.querySelector('[data-stars="-1"]');
-        if (allBtn) allBtn.classList.toggle('flt-active', _filterStars.size === 0);
+        var ab = document.querySelector('[data-stars="-1"]');
+        if (ab) ab.classList.toggle('flt-active', _filterStars.size === 0);
         el.classList.toggle('flt-active', _filterStars.has(stars));
     }
     filterNav();
 }
-
 function setStatusFilter(el, status) {
     _filterStatus = status;
     document.querySelectorAll('[data-status]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.status === status); });
     filterNav();
 }
-
 function clearFilters() {
     _filterStars = new Set(); _filterStatus = 'all'; _filterCat = '';
     document.getElementById('searchInput').value = '';
@@ -7492,143 +7501,285 @@ function clearFilters() {
     document.querySelectorAll('[data-cat]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.cat === ''); });
     filterNav();
 }
-
 function updateFilterCounts() {
     var items = db.filter(function(x){ return !x.id.startsWith('st_'); });
     var done = 0, undone = 0;
-    items.forEach(function(item) {
-        var s = getSprawDone(item, cachedProgress);
-        if (s.done > 0) done++; else undone++;
-    });
-    var ea = document.getElementById('fcount-all');
-    var ed = document.getElementById('fcount-done');
-    var eu = document.getElementById('fcount-undone');
+    items.forEach(function(item) { var s = getSprawDone(item, cachedProgress); if (s.done > 0) done++; else undone++; });
+    var ea = document.getElementById('fcount-all'), ed = document.getElementById('fcount-done'), eu = document.getElementById('fcount-undone');
     if (ea) ea.textContent = items.length;
     if (ed) ed.textContent = done;
     if (eu) eu.textContent = undone;
 }
 
 // ================================================================
-// ZGŁOŚ BŁĄD
+// LEGENDARNE SPRAWNOSCI
 // ================================================================
-function bugCloseModal()    { var m=document.getElementById('bugReportModal'); if(m) m.remove(); }
-function bugClickScreenshot(){ var e=document.getElementById('bugScreenshotInput'); if(e) e.click(); }
-function bugDragOver(el)    { event.preventDefault(); el.style.borderColor='var(--primary)'; }
-function bugDragLeave(el)   { el.style.borderColor='var(--border)'; }
+var _legendaryStats = {};
 
-function openBugReport() {
-    toggleSettingsModal(false);
-    var old = document.getElementById('bugReportModal');
-    if (old) old.remove();
-    window._bugScreenshotData = null;
-    var overlay = document.createElement('div');
-    overlay.id = 'bugReportModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
-    overlay.innerHTML =
-        '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
-      + '<h3 style="margin:0 0 4px">&#128027; Zglos blad</h3>'
-      + '<p style="color:var(--muted);font-size:.82rem;margin:0 0 14px">Opisz co sie stalo. Mozesz dodac screenshot.</p>'
-      + '<textarea id="bugDesc" rows="5" placeholder="Opisz blad — co robiles, co sie stalo..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;resize:vertical;margin-bottom:12px"></textarea>'
-      + '<div id="bugSSArea" ondragover="bugDragOver(this)" ondragleave="bugDragLeave(this)" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
-      + '<div id="bugSSPreview" style="color:var(--muted);font-size:.85rem">&#128247; Kliknij lub przeciagnij screenshot</div>'
-      + '</div>'
-      + '<input type="file" id="bugScreenshotInput" accept="image/*" style="display:none" onchange="bugHandleFile(this.files[0])">'
-      + '<p id="bugMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
-      + '<div style="display:flex;gap:8px;justify-content:flex-end">'
-      + '<button onclick="bugCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
-      + '<button onclick="submitBugReport()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">&#128027; Wyslij</button>'
-      + '</div></div>';
-    document.body.appendChild(overlay);
+function refreshLegendaryStats() {
+    return apiFetch('/legendary-stats').then(function(r) {
+        _legendaryStats = {};
+        if (r.ok && Array.isArray(r.data)) {
+            r.data.forEach(function(s) { s.active = s.owners >= 1; _legendaryStats[s.itemId] = s; });
+        }
+    }).catch(function(){});
 }
 
-function bugHandleFile(file) {
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        window._bugScreenshotData = e.target.result;
-        document.getElementById('bugSSPreview').innerHTML =
-            '<img src="' + e.target.result + '" style="max-width:100%;max-height:140px;border-radius:var(--rs);object-fit:contain"><div style="font-size:.73rem;color:var(--muted);margin-top:4px">' + file.name + '</div>';
-    };
-    reader.readAsDataURL(file);
-}
-
-function bugHandleDrop(e) {
-    e.preventDefault();
-    document.getElementById('bugSSArea').style.borderColor = 'var(--border)';
-    var file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) bugHandleFile(file);
-}
-
-async function submitBugReport() {
-    var desc = (document.getElementById('bugDesc').value || '').trim();
-    var msg  = document.getElementById('bugMsg');
-    if (!desc) { msg.style.color='#f87171'; msg.textContent='Napisz opis bledu.'; return; }
-    msg.style.color='var(--muted)'; msg.textContent='Wysylanie...';
-    var r = await apiFetch('/bug-report', { method:'POST', body: JSON.stringify({ description: desc, screenshot: window._bugScreenshotData||null }) });
-    if (r.ok) {
-        msg.style.color='#4ade80'; msg.textContent='✓ Wyslano! Dziekujemy.';
-        setTimeout(bugCloseModal, 1400);
-    } else {
-        msg.style.color='#f87171'; msg.textContent=(r.data&&r.data.error)||'Blad wysylania.';
-    }
-}
-
-// ================================================================
-// PANEL ZGŁOSZEŃ (superadmin)
-// ================================================================
-async function renderBugReportsPanel() {
+async function renderLegendaryPanel() {
     document.getElementById('navList').innerHTML = '';
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
-    var r = await apiFetch('/bug-reports');
-    var reports = (r.ok && Array.isArray(r.data)) ? r.data : [];
-    var newCount = reports.filter(function(x){ return x.status==='new'; }).length;
-    var html = '<div class="welcome-header"><h2>&#128027; Zgloszenia bledow'
-        + (newCount>0 ? ' <span style="background:#ef4444;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:20px;vertical-align:middle">'+newCount+' nowych</span>' : '')
-        + '</h2><button onclick="renderAdminDashboard()" style="margin-top:10px;padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button></div>';
-    if (!reports.length) {
-        html += '<div class="home-card"><p style="color:var(--muted);text-align:center">Brak zgloszen.</p></div>';
+    var r1 = await apiFetch('/legendary');
+    var r2 = await apiFetch('/legendary-stats');
+    var saved = (r1.ok && Array.isArray(r1.data)) ? r1.data : [];
+    var savedMap = {}; saved.forEach(function(s){ savedMap[s.itemId] = s; });
+    _legendaryStats = {};
+    if (r2.ok && Array.isArray(r2.data)) r2.data.forEach(function(s){ s.active = s.owners >= 1; _legendaryStats[s.itemId] = s; });
+
+    var html = '<div class="welcome-header"><h2>&#9876;&#65039; Legendarne Sprawnosci</h2>'
+        + '<p style="color:var(--muted);font-size:.9rem">Sprawnosci swiecą złotą obramówką gdy choc 1 osoba ma zadanie zdane.</p>'
+        + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">'
+        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<button onclick="legToggleAll(true)" style="padding:8px 18px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#9876;&#65039; Wlacz wszystkie</button>'
+        + '<button onclick="legToggleAll(false)" style="padding:8px 18px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);color:var(--muted);font-weight:600;cursor:pointer">&#10007; Wyłącz wszystkie</button>'
+        + '</div></div>'
+        + '<div class="home-card" style="padding:14px 16px">'
+        + '<input id="legSearch" oninput="legFilterItems()" placeholder="&#128269; Szukaj..." style="width:100%;box-sizing:border-box;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.9rem;outline:none;margin-bottom:10px">'
+        + '<div id="legList" style="display:grid;gap:8px;max-height:60vh;overflow-y:auto"></div>'
+        + '</div>';
+    document.getElementById('contentArea').innerHTML = html;
+    window._legSavedMap = savedMap;
+    window._legAllItems = db.filter(function(x){ return !x.id.startsWith('st_'); });
+    legFilterItems();
+}
+
+function legFilterItems() {
+    var q = ((document.getElementById('legSearch')||{}).value||'').toLowerCase();
+    var el = document.getElementById('legList'); if (!el) return;
+    var items = (window._legAllItems||[]).filter(function(x){ return !q || x.title.toLowerCase().includes(q) || x.category.toLowerCase().includes(q); });
+    if (!items.length) { el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wynikow.</p>'; return; }
+    el.innerHTML = items.map(function(item) {
+        var saved = (window._legSavedMap||{})[item.id] || {};
+        var enabled = !!saved.enabled;
+        var threshold = saved.threshold || 10;
+        var stat = _legendaryStats[item.id] || {};
+        var owners = stat.owners || 0;
+        var active = stat.active || false;
+        var borderStyle = active ? 'border:1.5px solid #f59e0b;box-shadow:0 0 8px #f59e0b44' : 'border:1.5px solid var(--border)';
+        var btnStyle = enabled ? 'background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none' : 'background:var(--panel2);color:var(--muted);border:1.5px solid var(--border)';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:var(--rs);' + borderStyle + '">'
+            + '<div style="flex:1"><div style="font-weight:600;font-size:.9rem">' + item.title + '</div>'
+            + '<div style="font-size:.75rem;color:var(--muted)">' + item.category
+            + (stat.owners !== undefined ? ' &middot; <span style="color:' + (active?'#f59e0b':'var(--muted)') + '">' + owners + ' posiadaczy</span>' : '')
+            + (active ? ' <span style="color:#f59e0b;font-weight:700">&#10024; AKTYWNA</span>' : '') + '</div></div>'
+            + '<input type="number" min="1" max="9999" value="' + threshold + '" id="leg-thr-' + item.id + '" style="width:60px;padding:5px 8px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel);color:var(--text);font-size:.85rem;text-align:center">'
+            + '<button data-id="' + item.id + '" data-enabled="' + (!enabled) + '" onclick="legToggleBtn(this)" style="padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.8rem;font-weight:700;' + btnStyle + '">' + (enabled?'&#9876;&#65039; Wlaczona':'Wylaczona') + '</button>'
+            + '</div>';
+    }).join('');
+}
+function legToggleBtn(btn) { legToggle(btn.getAttribute('data-id'), btn.getAttribute('data-enabled')==='true'); }
+async function legToggle(itemId, enable) {
+    var thrEl = document.getElementById('leg-thr-' + itemId);
+    var threshold = thrEl ? parseInt(thrEl.value)||10 : 10;
+    var r = await apiFetch('/legendary', { method:'POST', body:JSON.stringify({ itemId:itemId, enabled:enable, threshold:threshold }) });
+    if (!r.ok) { alert((r.data&&r.data.error)||'Blad zapisu.'); return; }
+    await refreshLegendaryStats();
+    var r2 = await apiFetch('/legendary'); window._legSavedMap={};
+    if (r2.ok && Array.isArray(r2.data)) r2.data.forEach(function(c){ window._legSavedMap[c.itemId]=c; });
+    renderLegendaryPanel();
+}
+async function legToggleAll(enable) {
+    var items = window._legAllItems || db.filter(function(x){ return !x.id.startsWith('st_'); });
+    var btns = document.querySelectorAll('[onclick*="legToggleAll"]');
+    btns.forEach(function(b){ b.disabled=true; b.textContent='Czekaj...'; });
+    await Promise.all(items.map(function(item){ return apiFetch('/legendary',{method:'POST',body:JSON.stringify({itemId:item.id,enabled:enable,threshold:10})}); }));
+    await refreshLegendaryStats();
+    renderLegendaryPanel();
+}
+
+// ================================================================
+// PRYWATNE SPRAWNOSCI
+// ================================================================
+var _privateSpraw = [];
+function applyPrivateSpraw() {
+    _privateSpraw.forEach(function(ps) {
+        if (db.find(function(x){ return x.id===ps.itemId; })) return;
+        db.push({ id:ps.itemId, title:ps.title, category:ps.category||'Prywatne', images:ps.images||[], circleVariants:0, groups:ps.groups&&ps.groups.length?ps.groups:[{name:'Zadania',tasks:[]}], _isPrivate:true });
+    });
+}
+async function renderPrivateSprawPanel() {
+    document.getElementById('navList').innerHTML='';
+    document.getElementById('contentArea').innerHTML='<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+    var rp = await apiFetch('/private-spraw/all'), ru = await apiFetch('/team-members');
+    var privItems = (rp.ok&&Array.isArray(rp.data))?rp.data:[];
+    window._privAllUsers = (ru.ok&&Array.isArray(ru.data))?ru.data.filter(function(u){return u.status==='active';}):[];
+    var html = '<div class="welcome-header"><h2>&#128274; Prywatne Sprawnosci</h2>'
+        + '<div style="display:flex;gap:8px;margin-top:12px">'
+        + '<button onclick="renderAdminDashboard()" style="padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button>'
+        + '<button onclick="privSprawNew()" style="padding:8px 18px;background:var(--f4);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">+ Nowa prywatna</button>'
+        + '</div></div>';
+    if (!privItems.length) {
+        html += '<div class="home-card"><p style="color:var(--muted);text-align:center">Brak prywatnych sprawnosci.</p></div>';
     } else {
-        var SC = {new:'#ef4444',read:'#f59e0b',resolved:'#22c55e'};
-        var SL = {new:'Nowe',read:'Odczytane',resolved:'Rozwiazane'};
-        reports.forEach(function(rep, ri) {
-            var date = new Date(rep.createdAt).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-            html += '<div class="home-card" style="padding:14px 16px;border-left:3px solid '+SC[rep.status]+'">'
-                + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">'
-                + '<div style="flex:1"><div style="font-weight:700;font-size:.9rem">'+rep.fromUserName
-                + ' <span style="font-size:.72rem;color:var(--muted)">@'+(rep.fromRole||'')+'</span>'
-                + ' <span style="font-size:.68rem;color:var(--muted)">'+date+'</span></div>'
-                + '<div style="font-size:.85rem;color:var(--text);margin-top:6px;white-space:pre-wrap;word-break:break-word">'+rep.description.replace(/</g,'&lt;')+'</div></div>'
-                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:'+SC[rep.status]+'22;color:'+SC[rep.status]+';font-weight:700;white-space:nowrap;flex-shrink:0">'+SL[rep.status]+'</span>'
+        privItems.forEach(function(ps) {
+            var names = (ps.allowedUsers||[]).map(function(uid){ var u=(window._privAllUsers||[]).find(function(x){return x._id===uid||x._id.toString()===uid;}); return u?u.name:uid; });
+            html += '<div class="home-card" style="padding:14px 16px;border-left:3px solid #a855f7">'
+                + '<div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1">'
+                + '<div style="font-weight:700">&#128274; ' + ps.title + '</div>'
+                + '<div style="font-size:.75rem;color:var(--muted)">' + (ps.category||'Prywatne') + ' &middot; ' + ((ps.groups&&ps.groups[0])?(ps.groups[0].tasks||[]).length:0) + ' zadań</div>'
+                + '<div style="font-size:.78rem;color:#c084fc;margin-top:4px">' + (names.length?'&#128100; '+names.join(', '):'<em style="color:var(--muted)">Brak przypisanych</em>') + '</div>'
                 + '</div>'
-                + (rep.screenshot ? '<img data-ri="'+ri+'" class="bug-ss-img" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;cursor:pointer;margin-bottom:8px" onerror="this.style.display=\'none\'">' : '')
-                + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-                + (rep.status!=='read'     ? '<button data-id="'+rep._id+'" data-status="read"     onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.78rem">&#128065; Odczytaj</button>' : '')
-                + (rep.status!=='resolved' ? '<button data-id="'+rep._id+'" data-status="resolved" onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:none;background:#15803d;color:#fff;cursor:pointer;font-size:.78rem">&#10003; Rozwiaz</button>' : '')
-                + '<button data-id="'+rep._id+'" onclick="bugDelete(this)" style="padding:4px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.78rem">&#128465;</button>'
-                + '</div></div>';
+                + '<div style="display:flex;gap:6px">'
+                + '<button data-id="' + ps.itemId + '" onclick="privSprawEdit(this.dataset.id)" style="padding:5px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.8rem">&#9998; Edytuj</button>'
+                + '<button data-id="' + ps.itemId + '" data-name="' + (ps.title||'').replace(/"/g,'') + '" onclick="privSprawDelete(this.dataset.id,this.dataset.name)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.8rem">&#128465;</button>'
+                + '</div></div></div>';
         });
     }
     document.getElementById('contentArea').innerHTML = html;
-    // Set screenshot images (avoid inline onclick with single quotes)
-    var imgs = document.querySelectorAll('.bug-ss-img');
-    reports.forEach(function(rep, ri) {
-        if (rep.screenshot && imgs[ri]) {
-            imgs[ri].src = rep.screenshot;
-            imgs[ri].onclick = function(){ openPhoto(rep.screenshot); };
-        }
+    window._privItems = privItems;
+}
+function privSprawNew() { privSprawOpenModal(null); }
+function privSprawEdit(itemId) { var ps=(window._privItems||[]).find(function(x){return x.itemId===itemId;}); privSprawOpenModal(ps); }
+function privSprawCloseModal() { var m=document.getElementById('privSprawModal'); if(m) m.remove(); }
+function privSprawOpenModal(ps) {
+    var old=document.getElementById('privSprawModal'); if(old) old.remove();
+    var isEdit=!!ps, title=ps?ps.title:'', cat=ps?(ps.category||'Prywatne'):'Prywatne';
+    var tasks=ps&&ps.groups&&ps.groups[0]?(ps.groups[0].tasks||[]).join('\n'):'';
+    var images=ps?(ps.images||[]).join('\n'):'';
+    var allowed=ps?(ps.allowedUsers||[]):[];
+    var usersHtml=(window._privAllUsers||[]).map(function(u){
+        var checked=allowed.includes(u._id)||allowed.includes(u._id.toString());
+        return '<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--rs);cursor:pointer;background:var(--panel2);border:1px solid var(--border)">'
+            + '<input type="checkbox" value="' + u._id + '" ' + (checked?'checked':'') + ' style="width:16px;height:16px;accent-color:var(--primary)">'
+            + '<span style="font-size:.88rem">' + u.name + '</span>'
+            + '<span style="font-size:.7rem;color:var(--muted);margin-left:auto">' + (ROLE_LABELS[u.role]||u.role) + '</span></label>';
+    }).join('');
+    var overlay=document.createElement('div');
+    overlay.id='privSprawModal';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+    overlay.innerHTML='<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<h3 style="margin:0 0 16px">&#128274; '+(isEdit?'Edytuj':'Nowa')+' prywatna sprawnosc</h3>'
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Tytuł *</label>'
+        + '<input id="psTitle" value="'+title+'" placeholder="np. Tajny Agent" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Kategoria</label>'
+        + '<input id="psCategory" value="'+cat+'" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px">'
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:4px">Zadania (każde w nowej linii)</label>'
+        + '<textarea id="psTasks" rows="5" style="width:100%;box-sizing:border-box;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.85rem;resize:vertical;margin-bottom:14px">'+tasks+'</textarea>'
+        + '<label style="font-size:.82rem;font-weight:700;color:var(--muted);display:block;margin-bottom:8px">Przypisz do harcerzy</label>'
+        + '<div style="display:grid;gap:5px;max-height:180px;overflow-y:auto;margin-bottom:16px">'+usersHtml+'</div>'
+        + '<p id="psMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+        + '<button onclick="privSprawCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="privSprawSave(\''+(ps?ps.itemId:'')+'\''+')" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">Zapisz</button>'
+        + '</div></div>';
+    document.body.appendChild(overlay);
+}
+async function privSprawSave(existingId) {
+    var title=(document.getElementById('psTitle').value||'').trim();
+    var cat=(document.getElementById('psCategory').value||'Prywatne').trim();
+    var tasks=(document.getElementById('psTasks').value||'').split('\n').map(function(t){return t.trim();}).filter(Boolean);
+    var msg=document.getElementById('psMsg');
+    if (!title) { msg.style.color='#f87171'; msg.textContent='Wpisz tytuł.'; return; }
+    var cbs=document.querySelectorAll('#privSprawModal input[type=checkbox]');
+    var allowed=[]; cbs.forEach(function(cb){ if(cb.checked) allowed.push(cb.value); });
+    msg.textContent='Zapisywanie...';
+    var r=await apiFetch('/private-spraw',{method:'POST',body:JSON.stringify({itemId:existingId||null,title:title,category:cat,groups:tasks.length?[{name:'Zadania',tasks:tasks}]:[],images:[],allowedUsers:allowed})});
+    if (r.ok) { msg.style.color='#4ade80'; msg.textContent='✓ Zapisano!'; setTimeout(function(){ privSprawCloseModal(); renderPrivateSprawPanel(); }, 700); }
+    else { msg.style.color='#f87171'; msg.textContent=(r.data&&r.data.error)||'Blad.'; }
+}
+async function privSprawDelete(itemId, name) {
+    if (!confirm('Usunac "'+name+'"?')) return;
+    var r=await apiFetch('/private-spraw/'+itemId,{method:'DELETE'});
+    if (r.ok) renderPrivateSprawPanel();
+}
+
+// ================================================================
+// ZGŁOŚ BŁĄD
+// ================================================================
+function bugCloseModal() { var m=document.getElementById('bugReportModal'); if(m) m.remove(); }
+function bugClickScreenshot() { var e=document.getElementById('bugScreenshotInput'); if(e) e.click(); }
+function bugDragOver(el) { event.preventDefault(); el.style.borderColor='var(--primary)'; }
+function bugDragLeave(el) { el.style.borderColor='var(--border)'; }
+function openBugReport() {
+    toggleSettingsModal(false);
+    var old=document.getElementById('bugReportModal'); if(old) old.remove();
+    window._bugScreenshotData=null;
+    var overlay=document.createElement('div');
+    overlay.id='bugReportModal';
+    overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    overlay.innerHTML='<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<h3 style="margin:0 0 4px">&#128027; Zglos blad</h3>'
+        + '<p style="color:var(--muted);font-size:.82rem;margin:0 0 14px">Opisz co sie stalo. Mozesz dodac screenshot.</p>'
+        + '<textarea id="bugDesc" rows="5" placeholder="Opisz blad..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;resize:vertical;margin-bottom:12px"></textarea>'
+        + '<div id="bugSSArea" ondragover="bugDragOver(this)" ondragleave="bugDragLeave(this)" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
+        + '<div id="bugSSPreview" style="color:var(--muted);font-size:.85rem">&#128247; Kliknij lub przeciagnij screenshot</div></div>'
+        + '<input type="file" id="bugScreenshotInput" accept="image/*" style="display:none" onchange="bugHandleFile(this.files[0])">'
+        + '<p id="bugMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
+        + '<div style="display:flex;gap:8px;justify-content:flex-end">'
+        + '<button onclick="bugCloseModal()" style="padding:8px 18px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">Anuluj</button>'
+        + '<button onclick="submitBugReport()" style="padding:8px 20px;border-radius:var(--rs);border:none;background:#7c3aed;color:#fff;font-weight:700;cursor:pointer">&#128027; Wyslij</button>'
+        + '</div></div>';
+    document.body.appendChild(overlay);
+}
+function bugHandleFile(file) {
+    if (!file) return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+        window._bugScreenshotData=e.target.result;
+        document.getElementById('bugSSPreview').innerHTML='<img src="'+e.target.result+'" style="max-width:100%;max-height:140px;border-radius:var(--rs);object-fit:contain">';
+    };
+    reader.readAsDataURL(file);
+}
+function bugHandleDrop(e) {
+    e.preventDefault(); document.getElementById('bugSSArea').style.borderColor='var(--border)';
+    var file=e.dataTransfer.files[0]; if(file&&file.type.startsWith('image/')) bugHandleFile(file);
+}
+async function submitBugReport() {
+    var desc=(document.getElementById('bugDesc').value||'').trim();
+    var msg=document.getElementById('bugMsg');
+    if (!desc) { msg.style.color='#f87171'; msg.textContent='Napisz opis bledu.'; return; }
+    msg.style.color='var(--muted)'; msg.textContent='Wysylanie...';
+    var r=await apiFetch('/bug-report',{method:'POST',body:JSON.stringify({description:desc,screenshot:window._bugScreenshotData||null})});
+    if (r.ok) { msg.style.color='#4ade80'; msg.textContent='✓ Wyslano! Dziekujemy.'; setTimeout(bugCloseModal,1400); }
+    else { msg.style.color='#f87171'; msg.textContent=(r.data&&r.data.error)||'Blad wysylania.'; }
+}
+async function renderBugReportsPanel() {
+    document.getElementById('navList').innerHTML='';
+    document.getElementById('contentArea').innerHTML='<div class="welcome-header"><p style="color:var(--muted)">Ladowanie...</p></div>';
+    var r=await apiFetch('/bug-reports');
+    var reports=(r.ok&&Array.isArray(r.data))?r.data:[];
+    var newCount=reports.filter(function(x){return x.status==='new';}).length;
+    var SC={new:'#ef4444',read:'#f59e0b',resolved:'#22c55e'};
+    var SL={new:'Nowe',read:'Odczytane',resolved:'Rozwiazane'};
+    var html='<div class="welcome-header"><h2>&#128027; Zgloszenia'+(newCount>0?' <span style="background:#ef4444;color:#fff;font-size:.65rem;padding:2px 8px;border-radius:20px">'+newCount+' nowych</span>':'')+' bledow</h2>'
+        + '<button onclick="renderAdminDashboard()" style="margin-top:10px;padding:8px 18px;background:var(--primary);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer">&#8592; Wróc</button></div>';
+    if (!reports.length) html+='<div class="home-card"><p style="color:var(--muted);text-align:center">Brak zgloszen.</p></div>';
+    else reports.forEach(function(rep,ri){
+        var date=new Date(rep.createdAt).toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+        html+='<div class="home-card" style="padding:14px 16px;border-left:3px solid '+SC[rep.status]+'">'
+            + '<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px">'
+            + '<div style="flex:1"><div style="font-weight:700;font-size:.9rem">'+rep.fromUserName+' <span style="font-size:.72rem;color:var(--muted)">@'+(rep.fromRole||'')+'</span> <span style="font-size:.68rem;color:var(--muted)">'+date+'</span></div>'
+            + '<div style="font-size:.85rem;margin-top:6px;white-space:pre-wrap;word-break:break-word">'+rep.description.replace(/</g,'&lt;')+'</div></div>'
+            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:'+SC[rep.status]+'22;color:'+SC[rep.status]+';font-weight:700;flex-shrink:0">'+SL[rep.status]+'</span></div>'
+            + (rep.screenshot?'<img class="bug-ss-img" data-ri="'+ri+'" style="max-width:100%;max-height:200px;border-radius:var(--rs);object-fit:contain;cursor:pointer;margin-bottom:8px" onerror="this.style.display=\'none\'">':'')
+            + '<div style="display:flex;gap:6px">'
+            + (rep.status!=='read'?'<button data-id="'+rep._id+'" data-status="read" onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-size:.78rem">&#128065; Odczytaj</button>':'')
+            + (rep.status!=='resolved'?'<button data-id="'+rep._id+'" data-status="resolved" onclick="bugSetStatus(this)" style="padding:4px 12px;border-radius:var(--rs);border:none;background:#15803d;color:#fff;cursor:pointer;font-size:.78rem">&#10003; Rozwiaz</button>':'')
+            + '<button data-id="'+rep._id+'" onclick="bugDelete(this)" style="padding:4px 10px;border-radius:var(--rs);border:none;background:#7f1d1d;color:#fca5a5;cursor:pointer;font-size:.78rem">&#128465;</button>'
+            + '</div></div>';
     });
+    document.getElementById('contentArea').innerHTML=html;
+    var imgs=document.querySelectorAll('.bug-ss-img');
+    reports.forEach(function(rep,ri){ if(rep.screenshot&&imgs[ri]){ imgs[ri].src=rep.screenshot; imgs[ri].onclick=function(){openPhoto(rep.screenshot);}; } });
 }
-
-async function bugSetStatus(btn) {
-    var r = await apiFetch('/bug-reports/'+btn.dataset.id+'/status', { method:'POST', body:JSON.stringify({ status:btn.dataset.status }) });
-    if (r.ok) renderBugReportsPanel(); else alert((r.data&&r.data.error)||'Blad');
+async function bugSetStatus(btn){
+    var r=await apiFetch('/bug-reports/'+btn.dataset.id+'/status',{method:'POST',body:JSON.stringify({status:btn.dataset.status})});
+    if(r.ok) renderBugReportsPanel();
 }
-async function bugDelete(btn) {
-    if (!confirm('Usunac zgloszenie?')) return;
-    var r = await apiFetch('/bug-reports/'+btn.dataset.id, { method:'DELETE' });
-    if (r.ok) renderBugReportsPanel();
+async function bugDelete(btn){
+    if(!confirm('Usunac?')) return;
+    var r=await apiFetch('/bug-reports/'+btn.dataset.id,{method:'DELETE'});
+    if(r.ok) renderBugReportsPanel();
 }
-
 </script>
 </body>
 </html>
