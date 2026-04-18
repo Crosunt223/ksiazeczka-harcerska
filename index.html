@@ -5383,7 +5383,7 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
-async function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
+function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
     var role = currentUser.role;
     var myRank = rankIndex(role);
     var html = '<div class="member-row">'
@@ -5464,22 +5464,7 @@ async function renderAdminDashboard() {
         + '</div>';
 
     // ── Wyszukiwarka ──
-    html += '<div class="home-card" style="padding:12px 16px">'
-          + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
-          + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="&#128269; Szukaj osoby (imię lub login)..." '
-          + 'style="flex:1;min-width:200px;padding:9px 14px;border-radius:20px;border:1.5px solid var(--border);'
-          + 'background:var(--panel);color:var(--f1);font-size:.9rem;outline:none">'
-          + '</div>'
-          + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="adminRoleFilter">'
-          + '<button onclick="adminSetRoleFilter(this,\'\');" class="role-filter-btn active" data-role="">Wszyscy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'druzynowy\');" class="role-filter-btn" data-role="druzynowy">Dru&#380;ynowy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'przyboczny\');" class="role-filter-btn" data-role="przyboczny">Przyboczny</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'zastepowy\');" class="role-filter-btn" data-role="zastepowy">Zast&#281;powy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'podzastepowy\');" class="role-filter-btn" data-role="podzastepowy">Podzast&#281;powy</button>'
-          + '<button onclick="adminSetRoleFilter(this,\'user\');" class="role-filter-btn" data-role="user">Harcerz</button>'
-          + '</div>'
-          + '</div>';
-
+    
     // ── Oczekujące — tylko superadmin i druzynowy ──
     var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
     if (canApprove && pending.length > 0) {
@@ -5584,22 +5569,21 @@ function adminRenderMembersList(list) {
     if (!el) return;
     var role   = currentUser.role;
     var myRank = rankIndex(role);
-    if (!list.length) {
+    if (!list || !list.length) {
         el.innerHTML = '<p style="color:var(--muted);text-align:center">Brak wyników.</p>';
         return;
     }
-    el.innerHTML = list.map(function(u) {
-        var esc    = u.name.replace(/'/g, "\'");
-        var uRank  = rankIndex(u.role);
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+        var u = list[i];
+        var esc = u.name.replace(/'/g, "\'");
+        var uRank = rankIndex(u.role);
         var isLower = (role === 'superadmin') || (myRank < uRank);
-        var rLabel  = ROLE_LABELS[u.role] || u.role;
-        var rColor  = ROLE_COLORS[u.role] || '#546e7a';
-        var canSpraw = isLower;
-        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
-
-        // Pobierz HTML wiersza z istniejącego renderowania
-        return adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete);
-    }).join('');
+        var rLabel = ROLE_LABELS[u.role] || u.role;
+        var rColor = ROLE_COLORS[u.role] || '#546e7a';
+        html += adminMemberRowHtml(u, esc, isLower, rLabel, rColor, isLower, (role === 'superadmin') || (role === 'druzynowy' && isLower));
+    }
+    el.innerHTML = html;
 }
 
 // ================================================================
