@@ -41,7 +41,9 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 .role-filter-btn {
     padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border);
     background: var(--panel); color: var(--muted); font-size: .75rem; cursor: pointer;
+    transition: .15s;
 }
+.role-filter-btn:hover{border-color:var(--f4);color:var(--f5);}
 .role-filter-btn.active {
     background: var(--primary); color: #fff; border-color: var(--primary);
 }
@@ -50,28 +52,42 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 :root{
   --sq-bg:#ffffff;
   --sq-border-opacity:1;
+  /* Paleta zieleni — niezmieniana */
   --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
   --f4:#4e8a2a;--f3:#6aaa3d;--f2:#a8d080;--f1:#d4eab8;--f0:#eef7e2;
   --amber:#c97d1a;
-  --bg:#f5f7f0;--panel:#fff;--panel2:#eef2e8;
-  --text:#1a2e1d;--muted:#6b7c6e;--border:#dde8d0;
-  --shadow:0 2px 12px rgba(13,31,20,.07);--shadow-lg:0 8px 40px rgba(13,31,20,.14);
+  /* Light mode UI */
+  --bg:#f0f5eb;
+  --panel:#ffffff;
+  --panel2:#e8f0e0;
+  --text:#1a2e1d;--muted:#5a7060;--border:#c8dbb8;
+  --shadow:0 2px 12px rgba(13,31,20,.08);--shadow-lg:0 8px 40px rgba(13,31,20,.16);
   --r:14px;--rs:9px;
   --nav-h:70px;--topbar-h:54px;
-  --primary:#2e7d32;--primary-dark:#1b3a28;--primary-light:#4caf50;
-  --accent:#ff6f00;--bg-body:#f7f9f5;--bg-panel:#fff;--bg-input:#f8fafc;
-  --text-main:#2c3e50;--text-muted:#7f8c8d;--border-color:#e2e8f0;
+  --primary:#2e7d32;--primary-dark:#1b5e20;--primary-light:#4caf50;
+  --accent:#e65100;
+  /* Sidebar/topbar/bottom-nav w light mode — ciemnozielone jak zawsze */
+  --chrome-bg:#0d1f14;
+  --chrome-bg2:#1a3424;
+  --chrome-text:#d4eab8;
+  --chrome-muted:#4a6a4a;
+  --chrome-border:rgba(255,255,255,.07);
+  --chrome-item:#88b078;
+  --chrome-hover:rgba(255,255,255,.07);
 }
-body.dark{
-  --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
-  --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
-  --bg-body:#121212;--bg-panel:#1e1e1e;--bg-input:#2c2c2c;
-  --text-main:#e0e0e0;--text-muted:#a0a0a0;--border-color:#333;
-}
-body.dark-mode{
+body.dark,body.dark-mode{
   --sq-bg:#111111;
   --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
   --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
+  --shadow:0 2px 12px rgba(0,0,0,.25);--shadow-lg:0 8px 40px rgba(0,0,0,.4);
+  /* Dark mode chrome — tak samo ciemne */
+  --chrome-bg:#0d1f14;
+  --chrome-bg2:#1a3424;
+  --chrome-text:#d4eab8;
+  --chrome-muted:#4a6a4a;
+  --chrome-border:rgba(255,255,255,.07);
+  --chrome-item:#88b078;
+  --chrome-hover:rgba(255,255,255,.07);
 }
 body.large-text{font-size:20px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -203,12 +219,12 @@ body.dark .login-box h2{color:var(--f2);}
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;
-  height:var(--topbar-h);background:var(--f9);
+  height:var(--topbar-h);background:var(--chrome-bg);
   display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
 }
 .topbar-brand{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1rem;
-  color:#e8f5d0;flex:1;cursor:pointer;line-height:1.2;
+  color:var(--chrome-text);flex:1;cursor:pointer;line-height:1.2;
 }
 .topbar-brand small{display:block;font-size:.65rem;color:#6a9a6a;}
 
@@ -217,9 +233,9 @@ body.dark .login-box h2{color:var(--f2);}
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;background:var(--f9);color:var(--f1);
+  width:260px;background:var(--chrome-bg);color:var(--chrome-text);
   display:flex;flex-direction:column;flex-shrink:0;
-  border-right:1px solid rgba(255,255,255,.05);overflow:hidden;
+  border-right:1px solid var(--chrome-border);overflow:hidden;
   transition:width .25s, transform .25s;
 }
 /* PC: sidebar można zwinąć */
@@ -237,15 +253,15 @@ body.dark .login-box h2{color:var(--f2);}
 .sidebar-search{padding:12px 12px 6px;}
 .sidebar-search input{
   width:100%;padding:9px 13px;border-radius:30px;border:none;
-  background:rgba(255,255,255,.08);color:var(--f1);
+  background:rgba(255,255,255,.1);color:var(--chrome-text);
   font-size:.86rem;outline:none;transition:.2s;
   font-family:"Barlow", sans-serif;
 }
-.sidebar-search input::placeholder{color:#4a6a4a;}
-.sidebar-search input:focus{background:rgba(255,255,255,.14);}
+.sidebar-search input::placeholder{color:var(--chrome-muted);}
+.sidebar-search input:focus{background:rgba(255,255,255,.18);}
 .nav-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px 20px;}
 .nav-list::-webkit-scrollbar{width:3px}
-.nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:#456645;font-weight:700;}
+.nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--chrome-muted);font-weight:700;}
 .nav-circle-img{
   width:28px;height:28px;border-radius:50%;object-fit:contain;
   flex-shrink:0;margin-right:6px;
@@ -253,7 +269,7 @@ body.dark .login-box h2{color:var(--f2);}
 }
 .nav-circle-empty{
   width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-right:6px;
-  border:1.5px dashed rgba(255,255,255,.15);background:rgba(255,255,255,.03);
+  border:1.5px dashed rgba(255,255,255,.3);background:rgba(255,255,255,.06);
 }
 .nav-item-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .nav-item-locked{cursor:default;}
@@ -268,11 +284,11 @@ body.dark .login-box h2{color:var(--f2);}
 .nav-item{
   padding:9px 12px;border-radius:var(--rs);cursor:pointer;
   display:flex;align-items:center;gap:0;
-  color:#88b078;font-size:.87rem;transition:.15s;margin-bottom:2px;
+  color:var(--chrome-item);font-size:.87rem;transition:.15s;margin-bottom:2px;
 }
-.nav-item:hover{background:rgba(255,255,255,.07);color:var(--f1);}
+.nav-item:hover{background:rgba(255,255,255,.1);color:var(--chrome-text);}
 .nav-item.active{background:linear-gradient(90deg,var(--f4),var(--f3));color:#fff;font-weight:600;}
-.nav-progress{font-size:.67rem;font-weight:700;background:rgba(0,0,0,.25);padding:2px 7px;border-radius:20px;}
+.nav-progress{font-size:.67rem;font-weight:700;background:rgba(0,0,0,.3);padding:2px 7px;border-radius:20px;color:var(--chrome-text);}
 .nav-item.active .nav-progress{background:rgba(255,255,255,.2);}
 
 /* SIDEBAR OVERLAY (mobile) */
@@ -283,7 +299,7 @@ body.dark .login-box h2{color:var(--f2);}
 .sidebar-overlay.active{display:block;}
 
 /* CONTENT */
-.content-scroll{flex:1;overflow-y:auto;padding:24px 24px 90px;}
+.content-scroll{flex:1;overflow-y:auto;padding:24px 24px 90px;background:var(--bg);}
 .content-wrap{max-width:780px;margin:0 auto;}
 
 /* ══════════════════════════════════════════════
@@ -291,8 +307,8 @@ body.dark .login-box h2{color:var(--f2);}
 ══════════════════════════════════════════════ */
 .bottom-nav{
   height:var(--nav-h);
-  background:var(--f8);
-  border-top:1px solid rgba(255,255,255,.07);
+  background:var(--chrome-bg2);
+  border-top:1px solid var(--chrome-border);
   display:flex;align-items:center;justify-content:space-around;
   padding:0 8px;flex-shrink:0;
 }
@@ -300,11 +316,11 @@ body.dark .login-box h2{color:var(--f2);}
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:4px;
   cursor:pointer;padding:6px 4px;border-radius:var(--rs);
-  transition:.18s;color:#4a6a4a;border:none;background:none;
+  transition:.18s;color:var(--chrome-muted);border:none;background:none;
   font-family:"Barlow", sans-serif;
 }
-.bnav-btn:hover{color:var(--f2);}
-.bnav-btn.active{color:var(--f1);}
+.bnav-btn:hover{color:var(--chrome-text);}
+.bnav-btn.active{color:var(--chrome-text);}
 .bnav-icon{
   width:40px;height:40px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
@@ -447,6 +463,8 @@ body.dark .cat-badge{color:var(--f2);}
   border:1.5px solid var(--border);cursor:pointer;transition:.16s;
 }
 .cb-container:hover{border-color:var(--f3);box-shadow:var(--shadow);}
+body:not(.dark):not(.dark-mode) .cb-container{border-color:#c8dbb8;}
+body:not(.dark):not(.dark-mode) .cb-container:hover{border-color:var(--f4);background:#f8fbf4;}
 .cb-container input{display:none;}
 .checkmark{
   width:22px;height:22px;min-width:22px;border-radius:6px;
@@ -467,15 +485,20 @@ body.dark .cat-badge{color:var(--f2);}
 .welcome-header{text-align:center;padding:36px 20px 28px;}
 .welcome-header h2{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;
-  color:var(--f5);margin-bottom:6px;
+  color:var(--f4);margin-bottom:6px;
 }
 body.dark .welcome-header h2{color:var(--f2);}
+body:not(.dark):not(.dark-mode) .welcome-header h2{color:var(--f5);}
 .welcome-header p{color:var(--muted);}
 
 .home-card{
   background:var(--panel);border-radius:var(--r);
   box-shadow:var(--shadow);padding:24px;
   margin-bottom:18px;border:1px solid var(--border);
+}
+body:not(.dark):not(.dark-mode) .home-card{
+  box-shadow:0 2px 16px rgba(13,31,20,.1);
+  border-color:#bdd4aa;
 }
 .home-card h3{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.05rem;
@@ -490,6 +513,9 @@ body.dark .welcome-header h2{color:var(--f2);}
   padding:12px 14px;background:var(--panel2);
   border:1.5px solid var(--border);border-radius:var(--rs);
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+}
+body:not(.dark):not(.dark-mode) .member-row{
+  background:#f3f8ed;border-color:#bdd4aa;
 }
 .btn-sm{
   padding:7px 13px;border:none;border-radius:var(--rs);
@@ -1004,7 +1030,7 @@ body.neon-mode .btn-main {
       <div class="sidebar-search">
         <div style="display:flex;align-items:center;gap:6px">
           <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()" style="flex:1">
-          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--f1);cursor:pointer;font-size:.9rem">&#9881;</button>
+          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:var(--chrome-text);cursor:pointer;font-size:.9rem">&#9881;</button>
         </div>
         <div id="filterPanel" style="display:none;padding:8px 0 4px">
           <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:6px 0 4px">Kategoria</div>
@@ -1036,7 +1062,7 @@ body.neon-mode .btn-main {
       </div>
       <ul class="nav-list" id="navList"></ul>
       <div style="padding:8px 10px 12px;flex-shrink:0">
-        <button onclick="playNap()" style="width:100%;padding:9px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0f2a1a,#1a3d28);border:1.5px solid rgba(74,222,128,.4);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;letter-spacing:.5px" onmouseenter="this.style.borderColor='#4ade80';this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'" onmouseleave="this.style.borderColor='rgba(74,222,128,.4)';this.style.boxShadow='none'">
+        <button onclick="playNap()" style="width:100%;padding:9px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0a1f10,#163320);border:1.5px solid rgba(74,222,128,.5);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;letter-spacing:.5px" onmouseenter="this.style.borderColor='#4ade80';this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'" onmouseleave="this.style.borderColor='rgba(74,222,128,.4)';this.style.boxShadow='none'">
           <span style="font-size:1.1rem">&#127925;</span> Nap
         </button>
       </div>
@@ -5953,14 +5979,14 @@ function renderCategoryGrid() {
         var done  = items.filter(function(x){ return getSprawLevel(x, cachedProgress) > 0; }).length;
 
         html += '<div onclick="renderCategoryItems(\''+cat+'\')" style="'
-              + 'background:var(--panel2);border:2px solid '+meta.color+';border-radius:14px;'
+              + 'background:var(--panel);border:2px solid '+meta.color+';border-radius:14px;'
               + 'padding:18px 14px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:8px;'
               + 'transition:.15s;user-select:none" '
               + 'onmouseenter="this.style.transform=\'scale(1.03)\'" '
               + 'onmouseleave="this.style.transform=\'scale(1)\'">'
               + '<div style="font-size:2.4rem">'+meta.icon+'</div>'
-              + '<div style="font-weight:700;font-size:1rem;color:var(--f1)">'+cat+'</div>'
+              + '<div style="font-weight:700;font-size:1rem;color:var(--text)">'+cat+'</div>'
               + '<div style="font-size:.8rem;color:var(--muted)">'+done+' / '+items.length+' zdobytych</div>'
               + '</div>';
     });
