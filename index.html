@@ -4966,7 +4966,7 @@ var ROLE_LABELS = {
     'druzynowy':   '🦅 Drużynowy',
     'zastepowy':   '📋 Zastępowy',
     'podzastepowy':'🌿 Podzastępowy',
-    'user':        '🍀 Harcerz'
+    'user':        '🍀 Szeregowy'
 };
 var ROLE_COLORS = {
     'superadmin':   '#a855f7',
@@ -5559,9 +5559,14 @@ async function renderAdminDashboard() {
     }
 
     document.getElementById('contentArea').innerHTML = html;
-    window._adminAllMembers = active;
+    // ksis nie pokazuje się na liście drużyny (widzi go tylko superadmin)
+    var activeForDisplay = active.filter(function(u) {
+        if (currentUser.role === 'superadmin') return true;
+        return u.role !== 'ksis';
+    });
+    window._adminAllMembers = activeForDisplay;
     window._adminRoleFilter = '';
-    adminRenderMembersList(active);
+    adminRenderMembersList(activeForDisplay);
 }
 
 function adminFilterMembers() {
@@ -5727,46 +5732,76 @@ async function promoteUser(id, name, newRole, selectEl) {
 
 window.changeRolePrompt = function(userId, userName, currentRole) {
     var roles = availableRoles(currentUser.role);
-    if (roles.length === 0) { 
-        alert('Brak uprawnień do zmiany ról.'); 
-        return; 
-    }
-    
-    var roleList = roles.join(', ');
-    var newRole = prompt('Podaj nową rolę dla ' + userName + '.\n\nDostępne role: ' + roleList + '\nObecna rola: ' + currentRole);
-    
-    if (newRole && roles.includes(newRole.trim().toLowerCase())) {
-        promoteUser(userId, userName, newRole.trim().toLowerCase(), null);
-    } else if (newRole) {
-        alert('Nieprawidłowa rola. Wybierz jedną z: ' + roleList);
-    }
+    if (roles.length === 0) { alert('Brak uprawnień do zmiany ról.'); return; }
+
+    var old = document.getElementById('_roleModal'); if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = '_roleModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+
+    var btns = roles.map(function(r) {
+        var isActive = r === currentRole;
+        var col = (window.ROLE_COLORS && window.ROLE_COLORS[r]) || '#4e8a2a';
+        return '<button onclick="window._pickRole(\'' + r + '\')" style="'
+            + 'padding:12px 16px;border-radius:10px;border:2px solid ' + col + ';'
+            + 'background:' + (isActive ? col : 'transparent') + ';'
+            + 'color:' + (isActive ? '#fff' : col) + ';'
+            + 'font-weight:700;font-size:.9rem;cursor:pointer;text-align:left;transition:.15s;font-family:Barlow,sans-serif"'
+            + ' onmouseenter="this.style.background=\'' + col + '\';this.style.color=\'#fff\'"'
+            + ' onmouseleave="this.style.background=\'' + (isActive ? col : 'transparent') + '\';this.style.color=\'' + (isActive ? '#fff' : col) + '\'">'
+            + (window.ROLE_LABELS && window.ROLE_LABELS[r] ? window.ROLE_LABELS[r] : r)
+            + (isActive ? ' <span style="font-size:.7rem;opacity:.8">(obecna)</span>' : '')
+            + '</button>';
+    }).join('');
+
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
+        + '<h3 style="margin:0 0 4px;font-size:1.1rem">✏️ Zmień rolę</h3>'
+        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
+        + '<div style="display:grid;gap:8px;margin-bottom:16px">' + btns + '</div>'
+        + '<button onclick="document.getElementById('_roleModal').remove()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
+        + '</div>';
+
+    window._pickRole = function(role) {
+        overlay.remove();
+        promoteUser(userId, userName, role, null);
+    };
+    document.body.appendChild(overlay);
 };
 
 window.changeZastepPrompt = async function(userId, userName) {
     var r = await apiFetch('/zastepy');
     var zastepy = r.ok ? r.data : [];
-    
-    var text = 'Wpisz NUMER wybranego zastępu dla ' + userName + ':\n0. [Usuń z zastępu]\n';
-    zastepy.forEach(function(z, i) { 
-        text += (i + 1) + '. ' + z.name + '\n'; 
+
+    var old = document.getElementById('_zastepModal'); if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = '_zastepModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+
+    var items = '<button onclick="window._pickZastep(null)" style="padding:11px 16px;border-radius:10px;border:2px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif" onmouseenter="this.style.background='#ef4444';this.style.color='#fff'" onmouseleave="this.style.background='transparent';this.style.color='#ef4444'">🚫 Usuń z zastępu</button>';
+    zastepy.forEach(function(z) {
+        items += '<button onclick="window._pickZastep(\'' + z.zastepId + '\')" style="padding:11px 16px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif" onmouseenter="this.style.background='var(--f4)';this.style.color='#fff'" onmouseleave="this.style.background='transparent';this.style.color='var(--f3)'">👥 ' + z.name + '</button>';
     });
-    
-    var odp = prompt(text);
-    if (odp === null || odp === "") return;
-    
-    var idx = parseInt(odp) - 1;
-    var zastepId = (idx >= 0 && zastepy[idx]) ? zastepy[idx].zastepId : null;
-    
-    var r2 = await apiFetch('/users/' + userId + '/zastep', { 
-        method: 'POST', 
-        body: JSON.stringify({ zastepId: zastepId }) 
-    });
-    
-    if (r2.ok) {
-        renderAdminDashboard();
-    } else {
-        alert(r2.data.error || 'Błąd przypisywania do zastępu');
-    }
+    if (!zastepy.length) items += '<p style="color:var(--muted);font-size:.85rem">Brak zastępów w drużynie.</p>';
+
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
+        + '<h3 style="margin:0 0 4px;font-size:1.1rem">👥 Przypisz do zastępu</h3>'
+        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
+        + '<div style="display:grid;gap:8px;margin-bottom:16px">' + items + '</div>'
+        + '<button onclick="document.getElementById('_zastepModal').remove()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
+        + '</div>';
+
+    window._pickZastep = async function(zastepId) {
+        overlay.remove();
+        var r2 = await apiFetch('/users/' + userId + '/zastep', {
+            method: 'POST',
+            body: JSON.stringify({ zastepId: zastepId })
+        });
+        if (r2.ok) { renderAdminDashboard(); }
+        else { alert((r2.data && r2.data.error) || 'Błąd przypisywania do zastępu'); }
+    };
+    document.body.appendChild(overlay);
 };
 
 async function switchToUser(userId, userName, userRole) {
@@ -6033,9 +6068,10 @@ function loadContent(id) {
             + '</div>';
     }
 
-    // Przycisk "Poproś o sprawność" dla zwykłego usera
+    // Przycisk "Poproś o sprawność" — dla każdego kto ogląda swoje sprawności
     var askBtnHtml = '';
-    if (currentUser.role === 'user') {
+    var viewingOwn = (currentViewUserId === currentUser.id);
+    if (viewingOwn && !isStopien) {
         askBtnHtml = '<button onclick="openAskModal(\'' + id + '\')" '
             + 'style="position:absolute;bottom:16px;right:16px;background:var(--f4);border:none;'
             + 'border-radius:var(--rs);padding:7px 13px;cursor:pointer;font-size:.82rem;font-weight:600;color:#fff;">'
@@ -6834,6 +6870,20 @@ async function loadKadraForAsk() {
     var kadraList = document.getElementById('askKadraList');
     if (!kadraList) return;
     kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
+
+    // Sprawdź poziom gwiazdek wybranego zadania
+    var taskStarsForAsk = 0;
+    if (_askTaskId && _askItemId) {
+        var askItem = db.find(function(x){ return x.id === _askItemId; });
+        if (askItem) {
+            var parts = _askTaskId.replace(_askItemId + '-', '').split('-');
+            var gi = parseInt(parts[0],10), ti = parseInt(parts[1],10);
+            var tt = (askItem.groups[gi] && askItem.groups[gi].tasks[ti]) || '';
+            var sm = tt.match(/^✶+/);
+            taskStarsForAsk = sm ? sm[0].length : 0;
+        }
+    }
+
     apiFetch('/my-kadra').then(function(r) {
         var kadra = r.ok ? r.data : [];
         if (!kadra.length) {
@@ -6841,22 +6891,29 @@ async function loadKadraForAsk() {
             return;
         }
 
-        var inZastep = currentUser && currentUser.zastepId;
         var filtered;
 
-        if (inZastep) {
-            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
-            filtered = kadra.filter(function(k) {
-                var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
-                var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
-                               && k.zastepId && k.zastepId === currentUser.zastepId;
-                return isGlobal || isMyZastep;
-            });
+        // 3 lub 4 gwiazdkowe — tylko ksis może zatwierdzać
+        if (taskStarsForAsk >= 3) {
+            filtered = kadra.filter(function(k) { return k.role === 'ksis'; });
+            if (!filtered.length) {
+                kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">⭐ To zadanie może zatwierdzić tylko Ksis. Brak Ksis w drużynie.</p>';
+                return;
+            }
         } else {
-            // Bez zastępu: tylko druzynowy i przyboczny
-            filtered = kadra.filter(function(k) {
-                return k.role === 'druzynowy' || k.role === 'przyboczny';
-            });
+            var inZastep = currentUser && currentUser.zastepId;
+            if (inZastep) {
+                filtered = kadra.filter(function(k) {
+                    var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny' || k.role === 'ksis';
+                    var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
+                                   && k.zastepId && k.zastepId === currentUser.zastepId;
+                    return isGlobal || isMyZastep;
+                });
+            } else {
+                filtered = kadra.filter(function(k) {
+                    return k.role === 'druzynowy' || k.role === 'przyboczny' || k.role === 'ksis';
+                });
+            }
         }
 
         if (!filtered.length) {
