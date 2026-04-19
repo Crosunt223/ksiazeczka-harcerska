@@ -5441,6 +5441,8 @@ async function renderAdminDashboard() {
 
     // Pobierz prosby o sprawnosci
     var rReq = await apiFetch('/requests/incoming');
+    var rReqOp = await apiFetch('/stopien-opiekun/incoming');
+    var opiekunRequests = (rReqOp.ok && Array.isArray(rReqOp.data)) ? rReqOp.data : [];
     var sprawRequests = (rReq.ok && Array.isArray(rReq.data)) ? rReq.data : [];
 
     var html = '<div class="welcome-header">'
@@ -5462,6 +5464,23 @@ async function renderAdminDashboard() {
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
         + '</div>';
+    // ── Prosby o bycie opiekunem ──
+    if (opiekunRequests.length > 0) {
+        html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
+            + '<h3 style="color:var(--amber);margin-top:0">&#128101; Prośby o zostanie opiekunem (' + opiekunRequests.length + ')</h3>'
+            + '<div style="display:grid;gap:8px">';
+        opiekunRequests.forEach(function(req) {
+            var stopienName = req.stopienId === 'st_3' ? 'Wywiadowcy' : 'Ćwika';
+            html += '<div class="member-row">'
+                + '<div><strong>' + req.userName + '</strong> prosi Cię o bycie opiekunem próby ' + stopienName + '</div>'
+                + '<div style="display:flex;gap:6px">'
+                + '<button class="btn-sm btn-approve" onclick="respondOpiekun(\''+req._id+'\', \'accept\')">&#10003; Akceptuj</button>'
+                + '<button class="btn-sm btn-reject" onclick="respondOpiekun(\''+req._id+'\', \'reject\')">&#10007; Odrzuć</button>'
+                + '</div></div>';
+        });
+        html += '</div></div>';
+    }
+
 
     // ── Wyszukiwarka ──
     
@@ -5988,7 +6007,29 @@ function loadContent(id) {
                     + '🙋 Poproś o zaliczenie</button>';
             }
 
+       // OPIEKUN PRÓBY UI (DLA WYWIADOWCY I ĆWIKA)
+            var opiekunHtml = '';
+            if (!isAdmin && isOwnView && st && st.status === 'open' && (item.id === 'st_3' || item.id === 'st_4')) {
+                var op = _opiekunData.find(function(o) { return o.stopienId === item.id; });
+                if (!op || op.status === 'rejected') {
+                    opiekunHtml = '<div style="margin-top:8px;padding:10px;background:var(--panel2);border-radius:10px;border:1px dashed var(--amber)">'
+                        + '<h4 style="margin:0 0 6px;color:var(--amber);font-size:.85rem">Wymagany opiekun próby (3-gwiazdkowe)</h4>'
+                        + (op && op.status === 'rejected' ? '<span style="color:#ef4444;font-size:.8rem;margin-right:8px">Odrzucono!</span>' : '')
+                        + '<button onclick="openOpiekunPicker(\''+item.id+'\')" class="stopien-btn stopien-btn-open">Wybierz opiekuna</button>'
+                        + '</div>';
+                } else if (op.status === 'pending') {
+                    opiekunHtml = '<div style="margin-top:8px;padding:10px;background:var(--panel2);border-radius:10px;border:1px solid var(--border)">'
+                        + '<span style="color:var(--muted);font-size:.85rem">⏳ Oczekiwanie na akceptację opiekuna: <strong>' + op.opiekunName + '</strong></span>'
+                        + '</div>';
+                } else if (op.status === 'accepted') {
+                    opiekunHtml = '<div style="margin-top:8px;padding:10px;background:rgba(34,197,94,.05);border-radius:10px;border:1px solid rgba(34,197,94,.3)">'
+                        + '<span style="color:#4ade80;font-size:.85rem">✅ Opiekun próby: <strong>' + op.opiekunName + '</strong></span>'
+                        + '</div>';
+                }
+            }
+
             return '<div class="stopien-status-bar">' + badge + btn + askBtn + '</div>'
+                + opiekunHtml // Renderowanie pola z opiekunem
                 + (st && st.status === 'open' && !allDone && !isAdmin
                     ? '<div class="stopien-progress-info">' + doneT + ' / ' + totalT + ' zadań wykonanych</div>'
                     : '');
@@ -6696,26 +6737,44 @@ async function openAskModal(itemId) {
     document.getElementById('askStep2').style.display = 'none';
     document.getElementById('askModal').style.display = 'flex';
 
-    // Wylistuj niezaliczone podpunkty
     var taskList = document.getElementById('askTaskList');
     if (!item) { taskList.innerHTML = '<p style="color:var(--muted)">Brak zadan.</p>'; return; }
+
+    // Logika dostępu do odpowiednich gwiazdek
+    var hasSt2 = _stopnieStatus['st_2'] && (_stopnieStatus['st_2'].status === 'open' || _stopnieStatus['st_2'].status === 'closed');
+    var hasSt3 = _stopnieStatus['st_3'] && (_stopnieStatus['st_3'].status === 'open' || _stopnieStatus['st_3'].status === 'closed');
+    var hasSt4 = _stopnieStatus['st_4'] && (_stopnieStatus['st_4'].status === 'open' || _stopnieStatus['st_4'].status === 'closed');
+    var hasSt5 = _stopnieStatus['st_5'] && (_stopnieStatus['st_5'].status === 'open' || _stopnieStatus['st_5'].status === 'closed');
+    var hasAcceptedGuardian = _opiekunData.some(function(o) { return o.status === 'accepted' && (o.stopienId === 'st_3' || o.stopienId === 'st_4'); });
+    var canDo3Stars = ((hasSt3 || hasSt4) && hasAcceptedGuardian) || hasSt5;
 
     var tasks = [];
     item.groups.forEach(function(g, gi) {
         g.tasks.forEach(function(t, ti) {
             var tid = itemId + '-' + gi + '-' + ti;
-            if (!cachedProgress[tid]) tasks.push({ tid, text: t.replace(/\*/g,'★'), group: g.name });
+            if (!cachedProgress[tid]) {
+                var stars = (t.match(/^✶+/) || [''])[0].length;
+                var allowed = false;
+                if (stars === 4) allowed = true; // 4-gwiazdkowe zawsze, ale poprosi ksis
+                else if (stars === 3) allowed = canDo3Stars;
+                else if (stars === 2) allowed = hasSt2 || hasSt3 || hasSt4 || hasSt5;
+                else allowed = true; // 1-gwiazdkowe (Młodzik lub brak)
+
+                if (allowed) {
+                    tasks.push({ tid: tid, text: t.replace(/\*/g,'★'), group: g.name, stars: stars });
+                }
+            }
         });
     });
 
     if (!tasks.length) {
-        taskList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Wszystkie podpunkty juz zaliczone!</p>';
+        taskList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak dostępnych/niezaliczonych podpunktów dla Twojego stopnia!</p>';
         return;
     }
 
     taskList.innerHTML = tasks.map(function(t) {
-        return '<div class="member-picker-item" data-tid="' + t.tid + '" data-ttext="' + t.text.replace(/"/g,'&quot;') + '" '
-            + 'onclick="pickTask(this.dataset.tid,this.dataset.ttext)" '
+        return '<div class="member-picker-item" data-tid="' + t.tid + '" data-ttext="' + t.text.replace(/"/g,'&quot;') + '" data-stars="' + t.stars + '" '
+            + 'onclick="pickTask(this.dataset.tid,this.dataset.ttext,parseInt(this.dataset.stars))" '
             + 'style="padding:9px 12px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;font-size:.83rem">'
             + '<span style="color:var(--muted);font-size:.75rem">' + t.group + '</span><br>'
             + t.text
@@ -6727,6 +6786,20 @@ async function loadKadraForAsk() {
     var kadraList = document.getElementById('askKadraList');
     if (!kadraList) return;
     kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
+
+    // Zmiana: Jeśli 4 gwiazdki, ładujemy tylko kadrę KSIS
+    if (_askTaskStars === 4) {
+        apiFetch('/ksis').then(function(r) {
+            var kadra = r.ok ? r.data : [];
+            if (!kadra.length) {
+                kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak KSIS w systemie.</p>';
+                return;
+            }
+            renderKadraList(kadraList, kadra);
+        });
+        return;
+    }
+
     apiFetch('/my-kadra').then(function(r) {
         var kadra = r.ok ? r.data : [];
         if (!kadra.length) {
@@ -6738,41 +6811,41 @@ async function loadKadraForAsk() {
         var filtered;
 
         if (inZastep) {
-            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
             filtered = kadra.filter(function(k) {
                 var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
-                var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
-                               && k.zastepId && k.zastepId === currentUser.zastepId;
+                var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy') && k.zastepId && k.zastepId === currentUser.zastepId;
                 return isGlobal || isMyZastep;
             });
         } else {
-            // Bez zastępu: tylko druzynowy i przyboczny
-            filtered = kadra.filter(function(k) {
-                return k.role === 'druzynowy' || k.role === 'przyboczny';
-            });
+            filtered = kadra.filter(function(k) { return k.role === 'druzynowy' || k.role === 'przyboczny'; });
         }
 
         if (!filtered.length) {
             kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Brak dostępnej kadry.</p>';
             return;
         }
-        kadraList.innerHTML = filtered.map(function(k) {
-            var rColor = ROLE_COLORS[k.role] || '#546e7a';
-            return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
-                + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
-                + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
-                + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
-                + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
-                + '</div>';
-        }).join('');
+        renderKadraList(kadraList, filtered);
     });
 }
 
+function renderKadraList(container, array) {
+    container.innerHTML = array.map(function(k) {
+        var rColor = ROLE_COLORS[k.role] || '#546e7a';
+        return '<div class="member-picker-item" data-kid="' + k._id + '" data-kname="' + k.name.replace(/"/g,'&quot;') + '" '
+            + 'onclick="sendAskRequest(this.dataset.kid,this.dataset.kname)" '
+            + 'style="padding:10px 14px;background:var(--panel2);border:1.5px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;align-items:center;gap:10px">'
+            + '<span style="flex:1;font-weight:500">' + k.name + '</span>'
+            + '<span style="font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--panel);color:' + rColor + ';font-weight:700">' + (ROLE_LABELS[k.role]||k.role) + '</span>'
+            + '</div>';
+    }).join('');
+}
 
+var _askTaskStars = 1;
 
-function pickTask(taskId, taskText) {
+function pickTask(taskId, taskText, stars) {
     _askTaskId   = taskId;
     _askTaskText = taskText;
+    _askTaskStars = stars;
     document.getElementById('askSelectedTask').textContent = taskText;
     document.getElementById('askStep1').style.display = 'none';
     document.getElementById('askStep2').style.display = 'block';
@@ -6897,6 +6970,17 @@ var _boardSlots = Array(12).fill(null);
 var _stopnieStatus = {}; // stopienId -> {status, openedAt, closedAt} // { sprawnoscId, level, variantIdx }
 var _boardLoaded = false;
 var _boardPickingSlot = null; // który slot wypełniamy
+var _opiekunData = [];
+
+async function loadStopnieStatus(userId) {
+    var r = await apiFetch('/stopnie/' + userId);
+    _stopnieStatus = {};
+    if (r.ok && Array.isArray(r.data)) {
+        r.data.forEach(function(s) { _stopnieStatus[s.stopienId] = s; });
+    }
+    var r2 = await apiFetch('/stopien-opiekun/user/' + userId);
+    _opiekunData = (r2.ok && Array.isArray(r2.data)) ? r2.data : [];
+}
 
 async function showBoardTab() {
     bnavSetActive('board');
@@ -7764,6 +7848,55 @@ async function bugDelete(btn){
     var r=await apiFetch('/bug-reports/'+btn.dataset.id,{method:'DELETE'});
     if(r.ok) renderBugReportsPanel();
 }
+
+// --- FUNKCJE DLA WYBORU OPIEKUNA ---
+function openOpiekunPicker(stopienId) {
+    var old = document.getElementById('opiekunPickerOverlay');
+    if (old) old.remove();
+
+    var overlay = document.createElement('div');
+    overlay.id = 'opiekunPickerOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--panel);border-radius:16px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;padding:16px;';
+    modal.innerHTML = '<div style="display:flex;justify-content:space-between;margin-bottom:12px;">'
+        + '<h3 style="margin:0">Wybierz opiekuna</h3>'
+        + '<button onclick="this.parentElement.parentElement.parentElement.remove()" style="background:none;border:none;color:var(--text);font-size:1.2rem;cursor:pointer">✕</button>'
+        + '</div>'
+        + '<div id="opiekunList" style="overflow-y:auto;display:grid;gap:8px;"><p style="color:var(--muted)">Ładowanie...</p></div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    apiFetch('/potential-guardians').then(function(r) {
+        var list = document.getElementById('opiekunList');
+        if (!r.ok || !r.data.length) {
+            list.innerHTML = '<p style="color:var(--muted)">Brak osób spełniających kryteria (m.in zamknięty Wywiadowca/Ćwik).</p>';
+            return;
+        }
+        list.innerHTML = r.data.map(function(u) {
+            return '<div onclick="requestOpiekun(\''+stopienId+'\',\''+u._id+'\',\''+u.name.replace(/'/g,'&quot;')+'\')" '
+                + 'style="padding:10px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;display:flex;justify-content:space-between">'
+                + '<strong>'+u.name+'</strong><span style="font-size:.7rem;color:var(--muted)">'+(ROLE_LABELS[u.role]||u.role)+'</span></div>';
+        }).join('');
+    });
+}
+
+async function requestOpiekun(stopienId, opiekunId, opiekunName) {
+    document.getElementById('opiekunPickerOverlay').remove();
+    var r = await apiFetch('/stopien-opiekun/request', {
+        method: 'POST', body: JSON.stringify({ stopienId: stopienId, opiekunId: opiekunId, opiekunName: opiekunName })
+    });
+    if (r.ok) {
+        await loadStopnieStatus(currentUser.id); // Odświeża w tle cache
+        loadContent(stopienId);
+    } else {
+        alert(r.data.error || 'Wystąpił błąd');
+    }
+}
+
+
 </script>
 </body>
 </html>
