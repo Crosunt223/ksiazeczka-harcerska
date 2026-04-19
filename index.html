@@ -5352,6 +5352,24 @@ async function toggleTask(taskId, itemId) {
         return;
     }
 
+    // Sprawdź czy zadanie jest 3 lub 4 gwiazdkowe — może je zaznaczać tylko ksis lub superadmin
+    var taskStarLevel = 0;
+    var item = db.find(function(x){ return x.id === itemId; });
+    if (item) {
+        var parts = taskId.replace(itemId + '-', '').split('-');
+        var gIdx = parseInt(parts[0], 10), tIdx = parseInt(parts[1], 10);
+        var taskText = (item.groups[gIdx] && item.groups[gIdx].tasks[tIdx]) || '';
+        var starMatch = taskText.match(/^✶+/);
+        taskStarLevel = starMatch ? starMatch[0].length : 0;
+    }
+    if (taskStarLevel >= 3 && !['superadmin','ksis'].includes(myRole)) {
+        document.querySelectorAll('.cb-container input').forEach(function(inp) {
+            if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
+        });
+        alert('Zadania ' + taskStarLevel + '-gwiazdkowe może zaliczać tylko Ksis lub Administrator.');
+        return;
+    }
+
     var isChecked = !cachedProgress[taskId];
     if (isChecked) cachedProgress[taskId] = true;
     else           delete cachedProgress[taskId];
@@ -5509,9 +5527,9 @@ async function renderAdminDashboard() {
     // ── Aktywni ──
     window._adminAllMembers = active;
     window._adminRoleFilter = '';
-    var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
+    var roleFilterBtns = '<button onclick="adminSetRoleFilter(this,\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
-        roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
+        roleFilterBtns += '<button onclick="adminSetRoleFilter(this,\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
           + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
@@ -5524,7 +5542,6 @@ async function renderAdminDashboard() {
           + '</div>'
           + '<div id="adminMembersList" style="display:grid;gap:8px"></div>'
           + '</div>';
-    adminRenderMembersList(active);
 
 // ── Odrzuceni — tylko superadmin ──
     if (role === 'superadmin' && rejected.length > 0) {
@@ -5543,6 +5560,7 @@ async function renderAdminDashboard() {
 
     document.getElementById('contentArea').innerHTML = html;
     window._adminAllMembers = active;
+    adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
