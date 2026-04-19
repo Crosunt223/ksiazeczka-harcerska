@@ -865,6 +865,10 @@ body.neon-mode .btn-main {
 .legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(251,191,36,.22) 50%,transparent);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1}
 .legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase}
 .legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2}
+.nav-circle-img.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
+.nav-item.legendary-item{position:relative;}
+.nav-item.legendary-item::after{content:'✦';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:.55rem;color:#f59e0b;animation:leg-badge-shine 2s linear infinite;background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sprawnosc-circle-icon.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
 </style>
 </head>
 <body>
@@ -1031,7 +1035,11 @@ body.neon-mode .btn-main {
         </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
-
+      <div style="padding:8px 10px 12px;flex-shrink:0">
+        <button onclick="playNap()" style="width:100%;padding:9px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0f2a1a,#1a3d28);border:1.5px solid rgba(74,222,128,.4);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;letter-spacing:.5px" onmouseenter="this.style.borderColor='#4ade80';this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'" onmouseleave="this.style.borderColor='rgba(74,222,128,.4)';this.style.boxShadow='none'">
+          <span style="font-size:1.1rem">&#127925;</span> Nap
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT -->
@@ -5186,6 +5194,9 @@ function initAppAfterLogin() {
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
 
+    // Załaduj legendarne stats żeby efekty były widoczne od razu
+    if (typeof refreshLegendaryStats === 'function') refreshLegendaryStats();
+
     // Pobierz dane druzyny dla kazdego uzytkownika
     apiFetch('/my-team').then(function(r) {
         if (r.ok && r.data) {
@@ -5954,23 +5965,6 @@ function renderCategoryGrid() {
               + '</div>';
     });
 
-    // NAP — kafelek na samym dole (pełna szerokość)
-    html += '</div>';
-    html += '<div onclick="playNap()" style="'
-          + 'margin-top:12px;background:linear-gradient(135deg,var(--f9),#1a3a28);'
-          + 'border:2px solid #4ade80;border-radius:14px;'
-          + 'padding:16px 20px;cursor:pointer;'
-          + 'display:flex;align-items:center;justify-content:center;gap:14px;'
-          + 'box-shadow:0 0 18px rgba(74,222,128,.15);'
-          + 'transition:.15s;user-select:none" '
-          + 'onmouseenter="this.style.transform=\'scale(1.02)\';this.style.boxShadow=\'0 0 28px rgba(74,222,128,.3)\'" '
-          + 'onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 0 18px rgba(74,222,128,.15)\'">'
-          + '<span style="font-size:2.2rem">&#127925;</span>'
-          + '<div style="text-align:left">'
-          + '<div style="font-weight:700;font-size:1rem;color:#d1fae5;letter-spacing:.5px">Nap</div>'
-          + '<div style="font-size:.78rem;color:rgba(209,250,229,.5)">Sygnał harcerski</div>'
-          + '</div>'
-          + '</div>';
     html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
@@ -6092,19 +6086,22 @@ function renderSidebar(filterText) {
             li.id = 'nav-item-' + item.id;
 
             var leftHtml = '';
+            var isLegendary = window._legendaryStats && _legendaryStats[item.id] && _legendaryStats[item.id].active;
             if (item.id && item.id.startsWith('st_')) {
                 leftHtml = getStopienNavBadge(item);
             } else {
                 var opacity = getSprawOpacity(item, cachedProgress);
                 var variant = getSprawVariant(item, cachedProgress);
                 var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
+                var imgClass = 'nav-circle-img' + (isLegendary ? ' legendary-glow' : '');
                 leftHtml = imgSrc
-                    ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
+                    ? '<img src="' + imgSrc + '" class="' + imgClass + '" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
                     : '';
             }
 
+            if (isLegendary) li.classList.add('legendary-item');
             li.innerHTML = leftHtml
-                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + '</span>'
+                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + (isLegendary ? ' <span style="font-size:.6rem;color:#f59e0b">✦</span>' : '') + '</span>'
                 + '<span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
             li.onclick = function() { if (!locked || canManageStopnie()) loadContent(item.id); };
             list.appendChild(li);
@@ -6249,9 +6246,10 @@ function loadContent(id) {
             var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
             if (!imgSrc) return '<h2>' + item.title + '</h2>';
             var s = getSprawDone(item, cachedProgress);
+            var isLegHeader = window._legendaryStats && _legendaryStats[item.id] && _legendaryStats[item.id].active;
             return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
                 + '<div style="position:relative;flex-shrink:0">'
-                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon' + (isLegHeader ? ' legendary-glow' : '') + '" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
                 + (variant > 0 ? '<div class="sprawnosc-stars-badge" style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
                 + '</div>'
                 + '<div>'
@@ -7763,6 +7761,7 @@ function refreshLegendaryStats() {
         if (r.ok && Array.isArray(r.data)) {
             r.data.forEach(function(s) { s.active = s.owners >= 1; _legendaryStats[s.itemId] = s; });
         }
+        if (typeof renderSidebar === 'function') renderSidebar();
     }).catch(function(){});
 }
 
