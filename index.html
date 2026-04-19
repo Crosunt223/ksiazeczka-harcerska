@@ -803,7 +803,7 @@ input:checked+.slider:before{transform:translateX(21px);}
   white-space:nowrap;overflow:hidden;padding:0 2px;
 }
 .msq-circle-stars{position:absolute;top:2px;right:3px;font-size:.5rem;color:var(--amber);}
-.msq-circle-locked{border:2px dashed rgba(255,255,255,.1);background:transparent;font-size:1rem;opacity:.2;cursor:default;}
+.msq-circle-locked{border:2px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);font-size:1rem;opacity:.4;cursor:default;}
 
 /* Board picker */
 .bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
@@ -1031,11 +1031,7 @@ body.neon-mode .btn-main {
         </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
-      <div style="padding:10px 10px 14px;border-top:1px solid rgba(255,255,255,.07)">
-        <button onclick="playNap()" style="width:100%;padding:9px;border-radius:30px;cursor:pointer;background:linear-gradient(135deg,#1a3a2a,#2d6a3f);border:1.5px solid #4ade80;color:#d1fae5;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 14px rgba(74,222,128,.2);">
-          <span>&#127925;</span> nap
-        </button>
-      </div>
+
     </nav>
 
     <!-- CONTENT -->
@@ -5401,9 +5397,11 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
-function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
+function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete, viewerIsKsis) {
     var role = currentUser.role;
     var myRank = rankIndex(role);
+    // ksis może tylko przeglądać sprawności — bez zarządzania drużyną
+    var showManage = !viewerIsKsis;
     var html = '<div class="member-row">'
         + '<div>'
         + '<strong>' + u.name + '</strong>'
@@ -5413,10 +5411,10 @@ function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
         + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
-        + (isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
-        + ((role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
+        + (showManage && isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
+        + (showManage && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
             ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
-        + ((role === 'superadmin' || (role === 'druzynowy' && isLower))
+        + (showManage && (role === 'superadmin' || (role === 'druzynowy' && isLower))
             ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
         + '</div>'
         + '</div>';
@@ -5467,13 +5465,13 @@ async function renderAdminDashboard() {
         + (role === 'superadmin'
             ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
             : '')
-        + (['superadmin'].includes(role)
+        + (role === 'superadmin'
             ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne</button>'
             : '')
-        + (['superadmin'].includes(role)
+        + (role === 'superadmin'
             ? '<button onclick="renderPrivateSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128274; Prywatne sprawnosci</button>'
             : '')
-        + (['superadmin'].includes(role)
+        + (role === 'superadmin'
             ? '<button onclick="renderBugReportsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#dc2626;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128027; Zgloszenia bledow</button>'
             : '')
         + (['druzynowy','przyboczny','superadmin'].includes(role)
@@ -5484,7 +5482,7 @@ async function renderAdminDashboard() {
     // ── Wyszukiwarka ──
     
     // ── Oczekujące — tylko superadmin i druzynowy ──
-    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
+    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny'); // ksis nie zatwierdza kont
     if (canApprove && pending.length > 0) {
         html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
             + '<h3 style="color:var(--amber)">&#8987; Oczekujace (' + pending.length + ')</h3>'
@@ -5559,14 +5557,9 @@ async function renderAdminDashboard() {
     }
 
     document.getElementById('contentArea').innerHTML = html;
-    // ksis nie pokazuje się na liście drużyny (widzi go tylko superadmin)
-    var activeForDisplay = active.filter(function(u) {
-        if (currentUser.role === 'superadmin') return true;
-        return u.role !== 'ksis';
-    });
-    window._adminAllMembers = activeForDisplay;
+    window._adminAllMembers = active;
     window._adminRoleFilter = '';
-    adminRenderMembersList(activeForDisplay);
+    adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
@@ -5606,7 +5599,11 @@ function adminRenderMembersList(list) {
         var isLower = (role === 'superadmin') || (myRank < uRank);
         var rLabel = ROLE_LABELS[u.role] || u.role;
         var rColor = ROLE_COLORS[u.role] || '#546e7a';
-        html += adminMemberRowHtml(u, esc, isLower, rLabel, rColor, isLower, (role === 'superadmin') || (role === 'druzynowy' && isLower));
+        // ksis: może zdawać sprawności (canSpraw=true) ale nie zarządza (canDelete=false, nie pokazujemy Rola/Zastep)
+        var isKsis = (role === 'ksis');
+        var canSpraw = isLower || isKsis;
+        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
+        html += adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete, isKsis);
     }
     el.innerHTML = html;
 }
@@ -5646,7 +5643,10 @@ async function renderTeamsPanel() {
             + '<strong>' + t.name + '</strong>'
             + '<span style="color:var(--text-muted);font-size:0.8em;margin-left:8px;">ID: ' + t.teamId + '</span>'
             + '</div>'
-            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usun</button>'
+            + '<div style="display:flex;gap:6px">'
+            + '<button class="btn-sm btn-approve" onclick="renameTeamModal(\'' + escId + '\',\'' + escName + '\')">&#9998; Zmień nazwę</button>'
+            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usuń</button>'
+            + '</div>'
             + '</div>';
     });
     if (teams.length === 0) html += '<p style="color:var(--text-muted);text-align:center;">Brak druzyn.</p>';
@@ -5675,6 +5675,36 @@ function showTeamMsg(text, type) {
     el.textContent = text;
     el.style.color  = type === 'error' ? '#d32f2f' : '#2e7d32';
     el.style.display = 'block';
+}
+
+function renameTeamModal(teamId, currentName) {
+    var old = document.getElementById('_renameTeamModal'); if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = '_renameTeamModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
+        + '<h3 style="margin:0 0 6px;font-size:1.1rem">✏️ Zmień nazwę drużyny</h3>'
+        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 14px">Obecna nazwa: <strong>' + currentName + '</strong></p>'
+        + '<input id="_renameTeamInput" type="text" value="' + currentName.replace(/"/g,'&quot;') + '" placeholder="Nowa nazwa drużyny..." '
+        + 'style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:14px;font-family:Barlow,sans-serif;outline:none" '
+        + 'onkeydown="if(event.key===&quot;Enter&quot;)window._doRenameTeam()">'
+        + '<p id="_renameTeamMsg" style="font-size:.82rem;min-height:16px;margin:0 0 12px;color:#f87171"></p>'
+        + '<div style="display:flex;gap:8px">'
+        + '<button onclick="document.getElementById(&quot;_renameTeamModal&quot;).remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
+        + '<button onclick="window._doRenameTeam()" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">✓ Zapisz</button>'
+        + '</div></div>';
+    window._doRenameTeam = async function() {
+        var val = (document.getElementById('_renameTeamInput').value || '').trim();
+        var msg = document.getElementById('_renameTeamMsg');
+        if (!val || val.length < 2) { msg.textContent = 'Nazwa musi mieć min. 2 znaki.'; return; }
+        msg.style.color = 'var(--muted)'; msg.textContent = 'Zapisywanie...';
+        var r = await apiFetch('/teams/' + teamId, { method: 'PATCH', body: JSON.stringify({ name: val }) });
+        if (r.ok) { overlay.remove(); renderTeamsPanel(); }
+        else { msg.style.color = '#f87171'; msg.textContent = (r.data && r.data.error) || 'Błąd zapisu.'; }
+    };
+    document.body.appendChild(overlay);
+    setTimeout(function(){ var inp = document.getElementById('_renameTeamInput'); if(inp){ inp.focus(); inp.select(); } }, 50);
 }
 
 async function deleteTeam(teamId, teamName) {
@@ -5740,32 +5770,41 @@ window.changeRolePrompt = function(userId, userName, currentRole) {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
     overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
 
-    var btns = roles.map(function(r) {
+    var inner = document.createElement('div');
+    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
+
+    var title = document.createElement('h3');
+    title.style.cssText = 'margin:0 0 4px;font-size:1.1rem';
+    title.textContent = '✏️ Zmień rolę';
+    inner.appendChild(title);
+
+    var sub = document.createElement('p');
+    sub.style.cssText = 'color:var(--muted);font-size:.83rem;margin:0 0 16px';
+    sub.innerHTML = '<strong>' + userName + '</strong>';
+    inner.appendChild(sub);
+
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;gap:8px;margin-bottom:16px';
+    roles.forEach(function(r) {
         var isActive = r === currentRole;
-        var col = (window.ROLE_COLORS && window.ROLE_COLORS[r]) || '#4e8a2a';
-        return '<button onclick="window._pickRole(\'' + r + '\')" style="'
-            + 'padding:12px 16px;border-radius:10px;border:2px solid ' + col + ';'
-            + 'background:' + (isActive ? col : 'transparent') + ';'
-            + 'color:' + (isActive ? '#fff' : col) + ';'
-            + 'font-weight:700;font-size:.9rem;cursor:pointer;text-align:left;transition:.15s;font-family:Barlow,sans-serif"'
-            + ' onmouseenter="this.style.background=\'' + col + '\';this.style.color=\'#fff\'"'
-            + ' onmouseleave="this.style.background=\'' + (isActive ? col : 'transparent') + '\';this.style.color=\'' + (isActive ? '#fff' : col) + '\'">'
-            + (window.ROLE_LABELS && window.ROLE_LABELS[r] ? window.ROLE_LABELS[r] : r)
-            + (isActive ? ' <span style="font-size:.7rem;opacity:.8">(obecna)</span>' : '')
-            + '</button>';
-    }).join('');
+        var col = (ROLE_COLORS && ROLE_COLORS[r]) || '#4e8a2a';
+        var btn = document.createElement('button');
+        btn.style.cssText = 'padding:12px 16px;border-radius:10px;border:2px solid ' + col + ';background:' + (isActive ? col : 'transparent') + ';color:' + (isActive ? '#fff' : col) + ';font-weight:700;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
+        btn.innerHTML = (ROLE_LABELS && ROLE_LABELS[r] ? ROLE_LABELS[r] : r) + (isActive ? ' <span style="font-size:.7rem;opacity:.8">(obecna)</span>' : '');
+        btn.onmouseenter = function(){ this.style.background = col; this.style.color = '#fff'; };
+        btn.onmouseleave = function(){ this.style.background = isActive ? col : 'transparent'; this.style.color = isActive ? '#fff' : col; };
+        btn.onclick = function() { overlay.remove(); promoteUser(userId, userName, r, null); };
+        grid.appendChild(btn);
+    });
+    inner.appendChild(grid);
 
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
-        + '<h3 style="margin:0 0 4px;font-size:1.1rem">✏️ Zmień rolę</h3>'
-        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
-        + '<div style="display:grid;gap:8px;margin-bottom:16px">' + btns + '</div>'
-        + '<button onclick="document.getElementById('_roleModal').remove()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
-        + '</div>';
+    var cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
+    cancelBtn.textContent = 'Anuluj';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    inner.appendChild(cancelBtn);
 
-    window._pickRole = function(role) {
-        overlay.remove();
-        promoteUser(userId, userName, role, null);
-    };
+    overlay.appendChild(inner);
     document.body.appendChild(overlay);
 };
 
@@ -5779,30 +5818,67 @@ window.changeZastepPrompt = async function(userId, userName) {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
     overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
 
-    var items = '<button onclick="window._pickZastep(null)" style="padding:11px 16px;border-radius:10px;border:2px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif" onmouseenter="this.style.background='#ef4444';this.style.color='#fff'" onmouseleave="this.style.background='transparent';this.style.color='#ef4444'">🚫 Usuń z zastępu</button>';
-    zastepy.forEach(function(z) {
-        items += '<button onclick="window._pickZastep(\'' + z.zastepId + '\')" style="padding:11px 16px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif" onmouseenter="this.style.background='var(--f4)';this.style.color='#fff'" onmouseleave="this.style.background='transparent';this.style.color='var(--f3)'">👥 ' + z.name + '</button>';
-    });
-    if (!zastepy.length) items += '<p style="color:var(--muted);font-size:.85rem">Brak zastępów w drużynie.</p>';
+    var inner = document.createElement('div');
+    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
 
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
-        + '<h3 style="margin:0 0 4px;font-size:1.1rem">👥 Przypisz do zastępu</h3>'
-        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px"><strong>' + userName + '</strong></p>'
-        + '<div style="display:grid;gap:8px;margin-bottom:16px">' + items + '</div>'
-        + '<button onclick="document.getElementById('_zastepModal').remove()" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
-        + '</div>';
+    var title = document.createElement('h3');
+    title.style.cssText = 'margin:0 0 4px;font-size:1.1rem';
+    title.textContent = '👥 Przypisz do zastępu';
+    inner.appendChild(title);
 
-    window._pickZastep = async function(zastepId) {
+    var sub = document.createElement('p');
+    sub.style.cssText = 'color:var(--muted);font-size:.83rem;margin:0 0 16px';
+    sub.innerHTML = '<strong>' + userName + '</strong>';
+    inner.appendChild(sub);
+
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;gap:8px;margin-bottom:16px';
+
+    // Przycisk usunięcia z zastępu
+    var removeBtn = document.createElement('button');
+    removeBtn.style.cssText = 'padding:11px 16px;border-radius:10px;border:2px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
+    removeBtn.textContent = '🚫 Usuń z zastępu';
+    removeBtn.onmouseenter = function(){ this.style.background='#ef4444'; this.style.color='#fff'; };
+    removeBtn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='#ef4444'; };
+    removeBtn.onclick = async function() {
         overlay.remove();
-        var r2 = await apiFetch('/users/' + userId + '/zastep', {
-            method: 'POST',
-            body: JSON.stringify({ zastepId: zastepId })
-        });
-        if (r2.ok) { renderAdminDashboard(); }
-        else { alert((r2.data && r2.data.error) || 'Błąd przypisywania do zastępu'); }
+        var r2 = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: null }) });
+        if (r2.ok) renderAdminDashboard(); else alert((r2.data && r2.data.error) || 'Błąd');
     };
+    grid.appendChild(removeBtn);
+
+    zastepy.forEach(function(z) {
+        var btn = document.createElement('button');
+        btn.style.cssText = 'padding:11px 16px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
+        btn.textContent = '👥 ' + z.name;
+        btn.onmouseenter = function(){ this.style.background='var(--f4)'; this.style.color='#fff'; };
+        btn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='var(--f3)'; };
+        btn.onclick = async function() {
+            overlay.remove();
+            var r2 = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: z.zastepId }) });
+            if (r2.ok) renderAdminDashboard(); else alert((r2.data && r2.data.error) || 'Błąd');
+        };
+        grid.appendChild(btn);
+    });
+
+    if (!zastepy.length) {
+        var none = document.createElement('p');
+        none.style.cssText = 'color:var(--muted);font-size:.85rem';
+        none.textContent = 'Brak zastępów w drużynie.';
+        grid.appendChild(none);
+    }
+    inner.appendChild(grid);
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
+    cancelBtn.textContent = 'Anuluj';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    inner.appendChild(cancelBtn);
+
+    overlay.appendChild(inner);
     document.body.appendChild(overlay);
 };
+
 
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
@@ -5878,7 +5954,24 @@ function renderCategoryGrid() {
               + '</div>';
     });
 
-    html += '</div></div>';
+    // NAP — kafelek na samym dole (pełna szerokość)
+    html += '</div>';
+    html += '<div onclick="playNap()" style="'
+          + 'margin-top:12px;background:linear-gradient(135deg,var(--f9),#1a3a28);'
+          + 'border:2px solid #4ade80;border-radius:14px;'
+          + 'padding:16px 20px;cursor:pointer;'
+          + 'display:flex;align-items:center;justify-content:center;gap:14px;'
+          + 'box-shadow:0 0 18px rgba(74,222,128,.15);'
+          + 'transition:.15s;user-select:none" '
+          + 'onmouseenter="this.style.transform=\'scale(1.02)\';this.style.boxShadow=\'0 0 28px rgba(74,222,128,.3)\'" '
+          + 'onmouseleave="this.style.transform=\'scale(1)\';this.style.boxShadow=\'0 0 18px rgba(74,222,128,.15)\'">'
+          + '<span style="font-size:2.2rem">&#127925;</span>'
+          + '<div style="text-align:left">'
+          + '<div style="font-weight:700;font-size:1rem;color:#d1fae5;letter-spacing:.5px">Nap</div>'
+          + '<div style="font-size:.78rem;color:rgba(209,250,229,.5)">Sygnał harcerski</div>'
+          + '</div>'
+          + '</div>';
+    html += '</div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
 }
@@ -7258,7 +7351,7 @@ function renderBoard() {
     var sqHtml = '<div class="msq-grid">';
     for (var gi = 0; gi < 6; gi++) {
         if (!activeSid) {
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.12)"></div>';
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.25);background:rgba(255,255,255,.04)"></div>';
         } else if (!eDisp || activeSid === 'st_1') {
             /* Adept lub brak poprzedniego — ramka koloru stopnia, bez ikon */
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:var(--sq-bg)"></div>';
@@ -7294,7 +7387,7 @@ function renderBoard() {
             circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick('+i+')">'
                       + '<span class="msq-circle-plus">+</span></div>';
         } else {
-            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.1);border-radius:50%;opacity:.15"></div>';
+            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.25);border-radius:50%;background:rgba(255,255,255,.04)"></div>';
         }
     }
     circHtml += '</div>';
@@ -7858,7 +7951,7 @@ function openBugReport() {
         + '<h3 style="margin:0 0 4px">&#128027; Zglos blad</h3>'
         + '<p style="color:var(--muted);font-size:.82rem;margin:0 0 14px">Opisz co sie stalo. Mozesz dodac screenshot.</p>'
         + '<textarea id="bugDesc" rows="5" placeholder="Opisz blad..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;resize:vertical;margin-bottom:12px"></textarea>'
-        + '<div id="bugSSArea" ondragover="bugDragOver(this)" ondragleave="bugDragLeave(this)" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
+        + '<div id="bugSSArea" ondragover="event.preventDefault();this.style.borderColor=\'var(--primary)\'" ondragleave="this.style.borderColor=\'var(--border)\'" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
         + '<div id="bugSSPreview" style="color:var(--muted);font-size:.85rem">&#128247; Kliknij lub przeciagnij screenshot</div></div>'
         + '<input type="file" id="bugScreenshotInput" accept="image/*" style="display:none" onchange="bugHandleFile(this.files[0])">'
         + '<p id="bugMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
