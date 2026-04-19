@@ -5705,6 +5705,50 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
+window.changeRolePrompt = function(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    if (roles.length === 0) { 
+        alert('Brak uprawnień do zmiany ról.'); 
+        return; 
+    }
+    
+    var roleList = roles.join(', ');
+    var newRole = prompt('Podaj nową rolę dla ' + userName + '.\n\nDostępne role: ' + roleList + '\nObecna rola: ' + currentRole);
+    
+    if (newRole && roles.includes(newRole.trim().toLowerCase())) {
+        promoteUser(userId, userName, newRole.trim().toLowerCase(), null);
+    } else if (newRole) {
+        alert('Nieprawidłowa rola. Wybierz jedną z: ' + roleList);
+    }
+};
+
+window.changeZastepPrompt = async function(userId, userName) {
+    var r = await apiFetch('/zastepy');
+    var zastepy = r.ok ? r.data : [];
+    
+    var text = 'Wpisz NUMER wybranego zastępu dla ' + userName + ':\n0. [Usuń z zastępu]\n';
+    zastepy.forEach(function(z, i) { 
+        text += (i + 1) + '. ' + z.name + '\n'; 
+    });
+    
+    var odp = prompt(text);
+    if (odp === null || odp === "") return;
+    
+    var idx = parseInt(odp) - 1;
+    var zastepId = (idx >= 0 && zastepy[idx]) ? zastepy[idx].zastepId : null;
+    
+    var r2 = await apiFetch('/users/' + userId + '/zastep', { 
+        method: 'POST', 
+        body: JSON.stringify({ zastepId: zastepId }) 
+    });
+    
+    if (r2.ok) {
+        renderAdminDashboard();
+    } else {
+        alert(r2.data.error || 'Błąd przypisywania do zastępu');
+    }
+};
+
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
     window._currentViewUserRole = userRole || 'user';
@@ -5842,20 +5886,57 @@ function goHome() {
 }
 
 function renderSidebar(filterText) {
-    patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
+    patchDbCircleVariants();
     filterText = filterText || '';
     var list = document.getElementById('navList');
     list.innerHTML = '';
     var grouped = {};
+    
     db.forEach(function(item) {
+        // --- LOGIKA FILTROWANIA ---
+        // 1. Filtr Kategori (Kaszuby, Bielik, itp.)
+        if (_filterCat && item.category !== _filterCat) return;
+
+        // Filtry gwiazdek i statusu nie dotyczą stopni harcerskich (zaczynających się od st_)
+        if (!item.id.startsWith('st_')) {
+            // 2. Filtr Gwiazdek (szukamy maksymalnej dostępnej gwiazdki w zadaniach danej sprawności)
+            if (_filterStars && _filterStars.size > 0) {
+                var maxPossibleStars = 0;
+                item.groups.forEach(function(g) {
+                    g.tasks.forEach(function(t) {
+                        var match = t.match(/^✶+/);
+                        if (match && match[0].length > maxPossibleStars) {
+                            maxPossibleStars = match[0].length;
+                        }
+                    });
+                });
+                if (!_filterStars.has(maxPossibleStars)) return;
+            }
+
+            // 3. Filtr Statusu (Zdane / Niezdane)
+            if (_filterStatus && _filterStatus !== 'all') {
+                var s = getSprawDone(item, cachedProgress);
+                if (_filterStatus === 'done' && s.done === 0) return;
+                if (_filterStatus === 'undone' && s.done > 0) return;
+            }
+        }
+        // ---------------------------
+
         if (!grouped[item.category]) grouped[item.category] = [];
         grouped[item.category].push(item);
     });
+
     Object.keys(grouped).forEach(function(cat) {
-        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
+        var filtered = grouped[cat].filter(function(i) { 
+            return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; 
+        });
         if (!filtered.length) return;
+        
         var head = document.createElement('li');
-        head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
+        head.className = 'nav-category'; 
+        head.textContent = cat; 
+        list.appendChild(head);
+        
         filtered.forEach(function(item) {
             var li = document.createElement('li');
             var locked = isStopienLocked(item);
@@ -5864,10 +5945,8 @@ function renderSidebar(filterText) {
 
             var leftHtml = '';
             if (item.id && item.id.startsWith('st_')) {
-                // Stopień — pokaż badge statusu
                 leftHtml = getStopienNavBadge(item);
             } else {
-                // Sprawność — pokaż kółko
                 var opacity = getSprawOpacity(item, cachedProgress);
                 var variant = getSprawVariant(item, cachedProgress);
                 var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
@@ -5883,8 +5962,10 @@ function renderSidebar(filterText) {
             list.appendChild(li);
         });
     });
+    
     updateUIStats();
-    // Pokaz druzyne zalogowanego usera
+    updateFilterCounts(); // Aktualizacja liczników przy filtrach
+    
     if (currentUser && currentUser.teamId) {
         apiFetch('/my-team').then(function(r) {
             var el = document.getElementById('user-team-info');
