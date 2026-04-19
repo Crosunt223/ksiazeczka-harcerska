@@ -5362,11 +5362,11 @@ async function toggleTask(taskId, itemId) {
         var starMatch = taskText.match(/^✶+/);
         taskStarLevel = starMatch ? starMatch[0].length : 0;
     }
-    if (taskStarLevel >= 3 && !['superadmin','ksis'].includes(myRole)) {
+    if (taskStarLevel >= 3 && myRole !== 'superadmin' && myRole !== 'ksis') {
         document.querySelectorAll('.cb-container input').forEach(function(inp) {
             if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
         });
-        alert('Zadania ' + taskStarLevel + '-gwiazdkowe może zaliczać tylko Ksis lub Administrator.');
+        alert('Zadania ' + taskStarLevel + '-gwiazdkowe może zaliczać tylko Ksis.');
         return;
     }
 
@@ -5527,9 +5527,9 @@ async function renderAdminDashboard() {
     // ── Aktywni ──
     window._adminAllMembers = active;
     window._adminRoleFilter = '';
-    var roleFilterBtns = '<button onclick="adminSetRoleFilter(this,\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
+    var roleFilterBtns = '<button class="role-filter-btn active" data-role="" onclick="adminSetRoleFilter(this)">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
-        roleFilterBtns += '<button onclick="adminSetRoleFilter(this,\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
+        roleFilterBtns += '<button class="role-filter-btn" data-role="' + r + '" onclick="adminSetRoleFilter(this)">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
           + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
@@ -5560,24 +5560,26 @@ async function renderAdminDashboard() {
 
     document.getElementById('contentArea').innerHTML = html;
     window._adminAllMembers = active;
+    window._adminRoleFilter = '';
     adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
     var q = (document.getElementById('adminSearch') || {}).value || '';
     q = q.toLowerCase().trim();
-    var role = window._adminRoleFilter || '';
+    var roleF = window._adminRoleFilter || '';
     var list = (window._adminAllMembers || []).filter(function(u) {
         var matchQ = !q || u.name.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q);
-        var matchR = !role || u.role === role;
+        var matchR = !roleF || u.role === roleF;
         return matchQ && matchR;
     });
     adminRenderMembersList(list);
 }
 
-function adminSetRoleFilter(btn, role) {
+function adminSetRoleFilter(btn) {
+    var role = btn ? (btn.dataset.role || '') : '';
     window._adminRoleFilter = role;
-    document.querySelectorAll('.role-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('#adminRoleFilter .role-filter-btn').forEach(function(b) { b.classList.remove('active'); });
     if (btn) btn.classList.add('active');
     adminFilterMembers();
 }
@@ -6165,11 +6167,17 @@ function loadContent(id) {
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
-                    var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
-            html += '<label class="cb-container" style="' + (cbReadOnly ? 'cursor:default' : '') + '">'
-                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (cbReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+            var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
+            // 3 i 4 gwiazdkowe — tylko ksis/superadmin może zaznaczać
+            var starMatch = t.match(/^✶+/);
+            var taskStars = starMatch ? starMatch[0].length : 0;
+            var starLocked = taskStars >= 3 && currentUser.role !== 'ksis' && currentUser.role !== 'superadmin';
+            var isReadOnly = cbReadOnly || starLocked;
+            var starHint = starLocked ? ' title="Tylko Ksis może zaliczać to zadanie"' : '';
+            html += '<label class="cb-container" style="' + (isReadOnly ? 'cursor:default;' : '') + (starLocked ? 'opacity:.5' : '') + '"' + starHint + '>'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (isReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
                 + '<div class="checkmark"></div>'
-                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
+                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + (starLocked ? ' <span style="font-size:.7rem;color:var(--amber)">🔒 Ksis</span>' : '') + '</span>'
                 + '</label>';
         });
         html += '</div>';
