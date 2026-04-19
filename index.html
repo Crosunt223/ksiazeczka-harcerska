@@ -45,6 +45,37 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 .role-filter-btn.active {
     background: var(--primary); color: #fff; border-color: var(--primary);
 }
+
+/* Styl dla customowych okienek */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center; z-index: 10000;
+    font-family: 'Barlow', sans-serif;
+}
+.custom-modal {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 24px; border-radius: 12px; width: 90%; max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    animation: modalFadeIn 0.2s ease-out;
+}
+@keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.custom-modal h3 { margin-top: 0; color: var(--accent); font-size: 1.25rem; margin-bottom: 15px; }
+.custom-modal label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--muted); }
+.custom-modal select, .custom-modal input {
+    width: 100%; padding: 12px; margin-bottom: 20px;
+    background: var(--panel2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; outline: none; font-size: 1rem;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.btn-modal {
+    padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+}
+.btn-confirm { background: var(--accent); color: #000; }
+.btn-confirm:hover { filter: brightness(1.1); }
+.btn-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
 </style>
 <style>
 :root{
@@ -865,6 +896,37 @@ body.neon-mode .btn-main {
 .legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(251,191,36,.22) 50%,transparent);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1}
 .legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase}
 .legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2}
+
+/* Styl dla customowych okienek */
+.custom-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center; z-index: 10000;
+    font-family: 'Barlow', sans-serif;
+}
+.custom-modal {
+    background: var(--panel); border: 1px solid var(--border);
+    padding: 24px; border-radius: 12px; width: 90%; max-width: 400px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+    animation: modalFadeIn 0.2s ease-out;
+}
+@keyframes modalFadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+.custom-modal h3 { margin-top: 0; color: var(--accent); font-size: 1.25rem; margin-bottom: 15px; }
+.custom-modal label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--muted); }
+.custom-modal select, .custom-modal input {
+    width: 100%; padding: 12px; margin-bottom: 20px;
+    background: var(--panel2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; outline: none; font-size: 1rem;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.btn-modal {
+    padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none; font-weight: 600; font-size: 0.9rem; transition: 0.2s;
+}
+.btn-confirm { background: var(--accent); color: #000; }
+.btn-confirm:hover { filter: brightness(1.1); }
+.btn-cancel { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
 </style>
 </head>
 <body>
@@ -1449,6 +1511,50 @@ var stopnieData = [
     ]
   }
 ];
+
+
+// --- NOWE MODALE ---
+function openCustomModal(title, contentHtml, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.onclick = function(e) { if(e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+        <div class="custom-modal">
+            <h3>${title}</h3>
+            <div class="modal-body">${contentHtml}</div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="this.closest('.custom-modal-overlay').remove()">Anuluj</button>
+                <button class="btn-modal btn-confirm" id="modalConfirmBtn">Zapisz</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modalConfirmBtn').onclick = function() {
+        var val = overlay.querySelector('#modalInput').value;
+        onConfirm(val);
+        overlay.remove();
+    };
+}
+
+window.changeRolePrompt = function(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    var options = roles.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('');
+    var html = `<label>Wybierz nową rolę dla <b>${userName}</b>:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Uprawnień', html, function(newRole) {
+        promoteUser(userId, userName, newRole, null);
+    });
+};
+
+window.changeZastepPrompt = async function(userId, userName) {
+    var r = await apiFetch('/zastepy');
+    var zastepy = r.ok ? r.data : [];
+    var options = `<option value="">[ Brak zastępu / Usuń ]</option>` + zastepy.map(z => `<option value="${z.zastepId}">${z.name}</option>`).join('');
+    var html = `<label>Przypisz <b>${userName}</b> do zastępu:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Zastępu', html, async function(zastepId) {
+        var res = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
+        if (res.ok) renderAdminDashboard(); else alert('Błąd: ' + res.data.error);
+    });
+};
 
 </script>
 <script>
@@ -4932,6 +5038,50 @@ var sprawnosciData = [
         ]
     }
 ];
+
+// --- NOWE MODALE ---
+function openCustomModal(title, contentHtml, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.onclick = function(e) { if(e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+        <div class="custom-modal">
+            <h3>${title}</h3>
+            <div class="modal-body">${contentHtml}</div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="this.closest('.custom-modal-overlay').remove()">Anuluj</button>
+                <button class="btn-modal btn-confirm" id="modalConfirmBtn">Zapisz</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modalConfirmBtn').onclick = function() {
+        var val = overlay.querySelector('#modalInput').value;
+        onConfirm(val);
+        overlay.remove();
+    };
+}
+
+window.changeRolePrompt = function(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    var options = roles.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('');
+    var html = `<label>Wybierz nową rolę dla <b>${userName}</b>:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Uprawnień', html, function(newRole) {
+        promoteUser(userId, userName, newRole, null);
+    });
+};
+
+window.changeZastepPrompt = async function(userId, userName) {
+    var r = await apiFetch('/zastepy');
+    var zastepy = r.ok ? r.data : [];
+    var options = `<option value="">[ Brak zastępu / Usuń ]</option>` + zastepy.map(z => `<option value="${z.zastepId}">${z.name}</option>`).join('');
+    var html = `<label>Przypisz <b>${userName}</b> do zastępu:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Zastępu', html, async function(zastepId) {
+        var res = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
+        if (res.ok) renderAdminDashboard(); else alert('Błąd: ' + res.data.error);
+    });
+};
+
 </script>
 <script>
 // Patch: dodaj circleVariants do db po załadowaniu sprawnosci.js
@@ -4948,6 +5098,50 @@ function patchDbCircleVariants() {
         }
     });
 }
+
+// --- NOWE MODALE ---
+function openCustomModal(title, contentHtml, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.onclick = function(e) { if(e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+        <div class="custom-modal">
+            <h3>${title}</h3>
+            <div class="modal-body">${contentHtml}</div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="this.closest('.custom-modal-overlay').remove()">Anuluj</button>
+                <button class="btn-modal btn-confirm" id="modalConfirmBtn">Zapisz</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modalConfirmBtn').onclick = function() {
+        var val = overlay.querySelector('#modalInput').value;
+        onConfirm(val);
+        overlay.remove();
+    };
+}
+
+window.changeRolePrompt = function(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    var options = roles.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('');
+    var html = `<label>Wybierz nową rolę dla <b>${userName}</b>:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Uprawnień', html, function(newRole) {
+        promoteUser(userId, userName, newRole, null);
+    });
+};
+
+window.changeZastepPrompt = async function(userId, userName) {
+    var r = await apiFetch('/zastepy');
+    var zastepy = r.ok ? r.data : [];
+    var options = `<option value="">[ Brak zastępu / Usuń ]</option>` + zastepy.map(z => `<option value="${z.zastepId}">${z.name}</option>`).join('');
+    var html = `<label>Przypisz <b>${userName}</b> do zastępu:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Zastępu', html, async function(zastepId) {
+        var res = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
+        if (res.ok) renderAdminDashboard(); else alert('Błąd: ' + res.data.error);
+    });
+};
+
 </script>
 <script>
 // ================================================================
@@ -5705,50 +5899,6 @@ async function promoteUser(id, name, newRole, selectEl) {
     }
 }
 
-window.changeRolePrompt = function(userId, userName, currentRole) {
-    var roles = availableRoles(currentUser.role);
-    if (roles.length === 0) { 
-        alert('Brak uprawnień do zmiany ról.'); 
-        return; 
-    }
-    
-    var roleList = roles.join(', ');
-    var newRole = prompt('Podaj nową rolę dla ' + userName + '.\n\nDostępne role: ' + roleList + '\nObecna rola: ' + currentRole);
-    
-    if (newRole && roles.includes(newRole.trim().toLowerCase())) {
-        promoteUser(userId, userName, newRole.trim().toLowerCase(), null);
-    } else if (newRole) {
-        alert('Nieprawidłowa rola. Wybierz jedną z: ' + roleList);
-    }
-};
-
-window.changeZastepPrompt = async function(userId, userName) {
-    var r = await apiFetch('/zastepy');
-    var zastepy = r.ok ? r.data : [];
-    
-    var text = 'Wpisz NUMER wybranego zastępu dla ' + userName + ':\n0. [Usuń z zastępu]\n';
-    zastepy.forEach(function(z, i) { 
-        text += (i + 1) + '. ' + z.name + '\n'; 
-    });
-    
-    var odp = prompt(text);
-    if (odp === null || odp === "") return;
-    
-    var idx = parseInt(odp) - 1;
-    var zastepId = (idx >= 0 && zastepy[idx]) ? zastepy[idx].zastepId : null;
-    
-    var r2 = await apiFetch('/users/' + userId + '/zastep', { 
-        method: 'POST', 
-        body: JSON.stringify({ zastepId: zastepId }) 
-    });
-    
-    if (r2.ok) {
-        renderAdminDashboard();
-    } else {
-        alert(r2.data.error || 'Błąd przypisywania do zastępu');
-    }
-};
-
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
     window._currentViewUserRole = userRole || 'user';
@@ -5886,57 +6036,20 @@ function goHome() {
 }
 
 function renderSidebar(filterText) {
-    patchDbCircleVariants();
+    patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
     var list = document.getElementById('navList');
     list.innerHTML = '';
     var grouped = {};
-    
     db.forEach(function(item) {
-        // --- LOGIKA FILTROWANIA ---
-        // 1. Filtr Kategori (Kaszuby, Bielik, itp.)
-        if (_filterCat && item.category !== _filterCat) return;
-
-        // Filtry gwiazdek i statusu nie dotyczą stopni harcerskich (zaczynających się od st_)
-        if (!item.id.startsWith('st_')) {
-            // 2. Filtr Gwiazdek (szukamy maksymalnej dostępnej gwiazdki w zadaniach danej sprawności)
-            if (_filterStars && _filterStars.size > 0) {
-                var maxPossibleStars = 0;
-                item.groups.forEach(function(g) {
-                    g.tasks.forEach(function(t) {
-                        var match = t.match(/^✶+/);
-                        if (match && match[0].length > maxPossibleStars) {
-                            maxPossibleStars = match[0].length;
-                        }
-                    });
-                });
-                if (!_filterStars.has(maxPossibleStars)) return;
-            }
-
-            // 3. Filtr Statusu (Zdane / Niezdane)
-            if (_filterStatus && _filterStatus !== 'all') {
-                var s = getSprawDone(item, cachedProgress);
-                if (_filterStatus === 'done' && s.done === 0) return;
-                if (_filterStatus === 'undone' && s.done > 0) return;
-            }
-        }
-        // ---------------------------
-
         if (!grouped[item.category]) grouped[item.category] = [];
         grouped[item.category].push(item);
     });
-
     Object.keys(grouped).forEach(function(cat) {
-        var filtered = grouped[cat].filter(function(i) { 
-            return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; 
-        });
+        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
         if (!filtered.length) return;
-        
         var head = document.createElement('li');
-        head.className = 'nav-category'; 
-        head.textContent = cat; 
-        list.appendChild(head);
-        
+        head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
         filtered.forEach(function(item) {
             var li = document.createElement('li');
             var locked = isStopienLocked(item);
@@ -5945,8 +6058,10 @@ function renderSidebar(filterText) {
 
             var leftHtml = '';
             if (item.id && item.id.startsWith('st_')) {
+                // Stopień — pokaż badge statusu
                 leftHtml = getStopienNavBadge(item);
             } else {
+                // Sprawność — pokaż kółko
                 var opacity = getSprawOpacity(item, cachedProgress);
                 var variant = getSprawVariant(item, cachedProgress);
                 var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
@@ -5962,10 +6077,8 @@ function renderSidebar(filterText) {
             list.appendChild(li);
         });
     });
-    
     updateUIStats();
-    updateFilterCounts(); // Aktualizacja liczników przy filtrach
-    
+    // Pokaz druzyne zalogowanego usera
     if (currentUser && currentUser.teamId) {
         apiFetch('/my-team').then(function(r) {
             var el = document.getElementById('user-team-info');
@@ -7845,6 +7958,50 @@ async function bugDelete(btn){
     var r=await apiFetch('/bug-reports/'+btn.dataset.id,{method:'DELETE'});
     if(r.ok) renderBugReportsPanel();
 }
+
+// --- NOWE MODALE ---
+function openCustomModal(title, contentHtml, onConfirm) {
+    var overlay = document.createElement('div');
+    overlay.className = 'custom-modal-overlay';
+    overlay.onclick = function(e) { if(e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+        <div class="custom-modal">
+            <h3>${title}</h3>
+            <div class="modal-body">${contentHtml}</div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" onclick="this.closest('.custom-modal-overlay').remove()">Anuluj</button>
+                <button class="btn-modal btn-confirm" id="modalConfirmBtn">Zapisz</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById('modalConfirmBtn').onclick = function() {
+        var val = overlay.querySelector('#modalInput').value;
+        onConfirm(val);
+        overlay.remove();
+    };
+}
+
+window.changeRolePrompt = function(userId, userName, currentRole) {
+    var roles = availableRoles(currentUser.role);
+    var options = roles.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${r.toUpperCase()}</option>`).join('');
+    var html = `<label>Wybierz nową rolę dla <b>${userName}</b>:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Uprawnień', html, function(newRole) {
+        promoteUser(userId, userName, newRole, null);
+    });
+};
+
+window.changeZastepPrompt = async function(userId, userName) {
+    var r = await apiFetch('/zastepy');
+    var zastepy = r.ok ? r.data : [];
+    var options = `<option value="">[ Brak zastępu / Usuń ]</option>` + zastepy.map(z => `<option value="${z.zastepId}">${z.name}</option>`).join('');
+    var html = `<label>Przypisz <b>${userName}</b> do zastępu:</label><select id="modalInput">${options}</select>`;
+    openCustomModal('Zmiana Zastępu', html, async function(zastepId) {
+        var res = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: zastepId || null }) });
+        if (res.ok) renderAdminDashboard(); else alert('Błąd: ' + res.data.error);
+    });
+};
+
 </script>
 </body>
 </html>
