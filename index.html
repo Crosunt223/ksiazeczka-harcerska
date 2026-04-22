@@ -906,6 +906,7 @@ body.neon-mode .btn-main {
     <input type="text" id="loginUsername" placeholder="Login" onkeydown="if(event.key==='Enter')handleLogin()">
     <input type="password" id="loginPassword" placeholder="Haslo" onkeydown="if(event.key==='Enter')handleLogin()">
     <button class="btn-main" onclick="handleLogin()">Zaloguj sie</button>
+    <button class="btn-link" onclick="showForgotPassword()" style="margin-top:4px;font-size:.83rem">🔑 Zapomniałem hasła</button>
     <button class="btn-link" onclick="showPanel('register')">Nie masz konta? Zarejestruj sie</button>
     <p class="login-msg" id="loginMsg"></p>
   </div>
@@ -985,20 +986,55 @@ body.neon-mode .btn-main {
     <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
     <h3>Ustawienia</h3>
 
-    <div class="settings-option">
-      <span>Tryb ciemny</span>
-      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider round"></span></label>
+    <!-- Zakładki -->
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--panel2);border-radius:10px;padding:4px">
+      <button id="stab-general" onclick="settingsTab('general')" style="flex:1;padding:7px;border-radius:7px;border:none;background:var(--primary);color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">⚙️ Ogólne</button>
+      <button id="stab-account" onclick="settingsTab('account')" style="flex:1;padding:7px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-weight:600;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">👤 Konto</button>
     </div>
-    <div class="settings-option">
-      <span>Duzy tekst</span>
-      <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
+
+    <!-- Zakładka: Ogólne -->
+    <div id="stab-panel-general">
+      <div class="settings-option">
+        <span>Tryb ciemny</span>
+        <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider round"></span></label>
+      </div>
+      <div class="settings-option">
+        <span>Duzy tekst</span>
+        <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
+      <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
+      <button class="settings-btn-action btn-reset" onclick="resetProgress()">&#9888; Zresetuj progres</button>
+      <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
     </div>
-    
-    
-    <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
-    <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
-    <button class="settings-btn-action btn-reset"  onclick="resetProgress()">&#9888; Zresetuj progres</button>
-    <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
+
+    <!-- Zakładka: Konto -->
+    <div id="stab-panel-account" style="display:none">
+      <div id="accountEmailInfo" style="font-size:.82rem;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:var(--panel2);border-radius:var(--rs)">
+        📧 Email: <span id="accountEmailDisplay" style="color:var(--text);font-weight:600">Ładowanie...</span>
+      </div>
+
+      <!-- Zmień email -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Zmień email</div>
+        <input id="newEmailInput" type="email" placeholder="Nowy adres email" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
+        <input id="emailConfirmPass" type="password" placeholder="Potwierdź aktualnym hasłem" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:8px;font-family:Barlow,sans-serif">
+        <button onclick="changeEmail()" style="width:100%;padding:9px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;font-size:.88rem">📧 Wyślij link potwierdzający</button>
+        <p id="emailChangeMsg" style="font-size:.8rem;min-height:16px;margin:6px 0 0;text-align:center"></p>
+      </div>
+
+      <!-- Zmień hasło -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Zmień hasło</div>
+        <input id="currentPassInput" type="password" placeholder="Obecne hasło" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
+        <input id="newPassInput" type="password" placeholder="Nowe hasło (min. 6 znaków)" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
+        <input id="newPass2Input" type="password" placeholder="Powtórz nowe hasło" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:8px;font-family:Barlow,sans-serif">
+        <button onclick="changePassword()" style="width:100%;padding:9px;border-radius:var(--rs);border:none;background:var(--f5);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;font-size:.88rem">🔑 Zmień hasło</button>
+        <p id="passChangeMsg" style="font-size:.8rem;min-height:16px;margin:6px 0 0;text-align:center"></p>
+      </div>
+
+      <button class="settings-btn-action btn-logout" onclick="handleLogout()" style="margin-top:8px">Wyloguj się</button>
+    </div>
   </div>
 </div>
 
@@ -1014,12 +1050,26 @@ body.neon-mode .btn-main {
 <!-- ══ APP SHELL ══ -->
 <div id="appShell">
 
+  <!-- BANER EMAIL (ukryty domyślnie) -->
+  <div id="emailBanner" style="display:none;background:linear-gradient(90deg,#92400e,#b45309);color:#fef3c7;font-size:.78rem;padding:6px 14px;text-align:center;flex-shrink:0;position:relative;align-items:center;justify-content:center;gap:8px">
+    <span>📧 Dodaj adres email, aby móc odzyskać hasło.</span>
+    <button onclick="openSettings();settingsTab('account')" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fef3c7;padding:2px 10px;border-radius:20px;font-size:.75rem;cursor:pointer;font-family:Barlow,sans-serif;font-weight:600">Dodaj email</button>
+    <button onclick="dismissEmailBanner()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:1rem;padding:2px 6px" title="Ukryj">✕</button>
+  </div>
+
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-brand" onclick="bnavClick('book')">
       LESNA SZKOLKA
       <small>Ksiazeczka Harcerska</small>
     </div>
+  </div>
+
+  <!-- BANER EMAIL -->
+  <div id="emailBanner" style="display:none;background:linear-gradient(90deg,#1e3a2e,#2d5a3d);border-bottom:1px solid rgba(74,222,128,.2);padding:8px 16px;flex-shrink:0;align-items:center;gap:10px;z-index:100">
+    <span style="font-size:.85rem;color:#a7f3d0;flex:1">📧 <strong>Dodaj email</strong> do konta, aby móc odzyskać hasło w razie potrzeby.</span>
+    <button onclick="emailBannerSetEmail()" style="padding:5px 12px;border-radius:20px;border:1.5px solid #4ade80;background:transparent;color:#4ade80;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">Dodaj email</button>
+    <button onclick="emailBannerDismiss()" style="padding:5px 10px;border-radius:20px;border:none;background:transparent;color:rgba(167,243,208,.5);font-size:.85rem;cursor:pointer;flex-shrink:0" title="Zamknij">✕</button>
   </div>
 
   <!-- BODY -->
@@ -4983,7 +5033,7 @@ function patchDbCircleVariants() {
 // ================================================================
 // KONFIGURACJA
 // ================================================================
-const API = 'https://harcerze-backend.onrender.com/api';
+const API = 'https://backend-dev-o2p4.onrender.com/api';
 
 // ================================================================
 // HIERARCHIA RAN
@@ -5053,19 +5103,27 @@ window.onload = function() {
         try { userObj = JSON.parse(savedUser); } catch(e) { userObj = null; }
     }
 
-    if (savedToken && userObj && userObj.id) {
-        // Mamy sesję — wczytaj od razu bez czekania na serwer
+    // Sprawdz URL tokeny ZAWSZE — niezależnie czy zalogowany
+    var urlParams  = new URLSearchParams(window.location.search);
+    var resetTok   = urlParams.get('resetToken');
+    var confirmTok = urlParams.get('confirmEmail');
+
+    if (confirmTok) {
+        // Potwierdzenie emaila — obsłuż od razu, nie ładuj aplikacji
+        confirmEmailChange(confirmTok);
+    } else if (resetTok) {
+        // Reset hasła — pokaż formularz
+        showResetPasswordPanel(resetTok);
+    } else if (savedToken && userObj && userObj.id) {
+        // Normalna sesja — wczytaj aplikację
         authToken   = savedToken;
         currentUser = userObj;
         if (savedProgress) {
             try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
         }
-        // Pokaż aplikację natychmiast
         initAppAfterLogin();
-        // W tle tylko odśwież progress — NIE wylogowuj nigdy przy błędzie
         _backgroundRefreshProgress();
     } else {
-        // Brak sesji — pokaż login
         loadTeams().then(function() { showPanel('login'); }).catch(function() { showPanel('login'); });
     }
 };
@@ -5146,6 +5204,180 @@ async function loadTeams() {
 // ================================================================
 // LOGOWANIE
 // ================================================================
+
+// ================================================================
+// EMAIL BANNER
+// ================================================================
+function checkEmailBanner() {
+    // Nie pokazuj jeśli user go ukrył
+    var dismissed = false;
+    try { dismissed = localStorage.getItem('hk_email_banner_dismissed') === '1'; } catch(e) {}
+    if (dismissed) return;
+
+    var banner = document.getElementById('emailBanner');
+    if (!banner) return;
+
+    // Sprawdź czy user ma email — z tokenu lub z API
+    if (currentUser && currentUser.email) { banner.style.display = 'none'; return; }
+
+    // Zapytaj API żeby mieć pewność
+    apiFetch('/me').then(function(r) {
+        if (r.ok && r.data && r.data.email) {
+            // Ma email — zaktualizuj currentUser i ukryj
+            currentUser.email = r.data.email;
+            banner.style.display = 'none';
+        } else {
+            banner.style.display = 'flex';
+        }
+    }).catch(function() {
+        banner.style.display = 'flex';
+    });
+}
+
+function dismissEmailBanner() {
+    var banner = document.getElementById('emailBanner');
+    if (banner) banner.style.display = 'none';
+    try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
+}
+
+// Po zmianie emaila w ustawieniach — ukryj baner i wyczyść dismiss
+function onEmailSaved() {
+    var banner = document.getElementById('emailBanner');
+    if (banner) banner.style.display = 'none';
+    try { localStorage.removeItem('hk_email_banner_dismissed'); } catch(e) {}
+}
+
+
+// ================================================================
+// BANER EMAIL
+// ================================================================
+function checkEmailBanner() {
+    // Nie pokazuj jeśli użytkownik już zamknął
+    try { if (localStorage.getItem('hk_email_banner_dismissed') === '1') return; } catch(e) {}
+    // Sprawdź czy ma email
+    apiFetch('/me').then(function(r) {
+        if (!r.ok) return;
+        var hasEmail = r.data && r.data.email;
+        var banner = document.getElementById('emailBanner');
+        if (banner) banner.style.display = hasEmail ? 'none' : 'flex';
+    }).catch(function(){});
+}
+
+function emailBannerDismiss() {
+    try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
+    var b = document.getElementById('emailBanner');
+    if (b) b.style.display = 'none';
+}
+
+function emailBannerSetEmail() {
+    // Otwórz ustawienia na zakładce Konto
+    toggleSettingsModal(true);
+    setTimeout(function() { settingsTab('account'); }, 50);
+    var b = document.getElementById('emailBanner');
+    if (b) b.style.display = 'none';
+}
+
+// ================================================================
+// RESET HASŁA / POTWIERDZENIE EMAILA
+// ================================================================
+
+function showForgotPassword() {
+    var old = document.getElementById('_forgotModal'); if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = '_forgotModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
+    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
+
+    var inner = document.createElement('div');
+    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:28px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
+    inner.innerHTML = '<h3 style="margin:0 0 6px;font-size:1.1rem">🔑 Reset hasła</h3>'
+        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px">Podaj adres email przypisany do konta. Wyślemy link do ustawienia nowego hasła.</p>'
+        + '<input id="_forgotEmail" type="email" placeholder="Adres email" style="width:100%;box-sizing:border-box;padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.92rem;margin-bottom:12px;font-family:Barlow,sans-serif">'
+        + '<p id="_forgotMsg" style="font-size:.82rem;min-height:16px;margin:0 0 10px;text-align:center"></p>'
+        + '<div style="display:flex;gap:8px">'
+        + '<button id="_forgotCancelBtn" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
+        + '<button id="_forgotSendBtn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">Wyślij link</button>'
+        + '</div>';
+    overlay.appendChild(inner);
+    document.body.appendChild(overlay);
+
+    inner.querySelector('#_forgotCancelBtn').onclick = function() { overlay.remove(); };
+    inner.querySelector('#_forgotSendBtn').onclick = async function() {
+        var email = (document.getElementById('_forgotEmail').value || '').trim();
+        var msg = document.getElementById('_forgotMsg');
+        if (!email) { msg.style.color='#ef4444'; msg.textContent='Podaj adres email.'; return; }
+        msg.style.color='var(--muted)'; msg.textContent='Wysyłanie...';
+        this.disabled = true;
+        var r = await apiFetch('/reset-password', { method:'POST', body:JSON.stringify({ email }) });
+        this.disabled = false;
+        if (r.ok) {
+            msg.style.color='#22c55e';
+            msg.textContent='✓ Sprawdź skrzynkę — jeśli email istnieje, link został wysłany.';
+            setTimeout(function(){ overlay.remove(); }, 3000);
+        } else {
+            msg.style.color='#ef4444';
+            msg.textContent=(r.data&&r.data.error)||'Błąd.';
+        }
+    };
+}
+
+function showResetPasswordPanel(token) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    var box = document.querySelector('.login-box');
+    if (!box) return;
+    box.innerHTML = '<h2>🔑 Nowe hasło</h2>'
+        + '<p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Ustaw nowe hasło dla swojego konta.</p>'
+        + '<input id="_resetNewPass" type="password" placeholder="Nowe hasło (min. 6 znaków)" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:Barlow,sans-serif;font-size:.95rem;margin-bottom:10px">'
+        + '<input id="_resetNewPass2" type="password" placeholder="Powtórz nowe hasło" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:Barlow,sans-serif;font-size:.95rem;margin-bottom:10px">'
+        + '<p id="_resetMsg" style="font-size:.82rem;min-height:16px;margin:0 0 10px;text-align:center"></p>'
+        + '<button onclick="doResetPassword(window._resetToken)" class="btn-main">Ustaw nowe hasło</button>';
+    window._resetToken = token;
+}
+
+async function doResetPassword(token) {
+    var np  = (document.getElementById('_resetNewPass').value || '');
+    var np2 = (document.getElementById('_resetNewPass2').value || '');
+    var msg = document.getElementById('_resetMsg');
+    msg.style.color='var(--muted)'; msg.textContent='';
+    if (!np || !np2) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij oba pola.'; return; }
+    if (np !== np2)  { msg.style.color='#ef4444'; msg.textContent='Hasła nie są identyczne.'; return; }
+    if (np.length<6) { msg.style.color='#ef4444'; msg.textContent='Hasło min. 6 znaków.'; return; }
+    msg.textContent='Zmienianie...';
+    var r = await apiFetch('/reset-password/confirm', { method:'POST', body:JSON.stringify({ token, newPassword: np }) });
+    if (r.ok) {
+        msg.style.color='#22c55e'; msg.textContent='✓ Hasło zmienione! Możesz się zalogować.';
+        setTimeout(function(){
+            history.replaceState({}, '', window.location.pathname);
+            location.reload();
+        }, 2000);
+    } else {
+        msg.style.color='#ef4444'; msg.textContent=(r.data&&r.data.error)||'Błąd.';
+    }
+}
+
+async function confirmEmailChange(token) {
+    document.getElementById('loginOverlay').style.display = 'flex';
+    var box = document.querySelector('.login-box');
+    if (!box) return;
+    box.innerHTML = '<h2>📧 Potwierdzenie emaila</h2><p style="color:var(--muted);font-size:.85rem">Potwierdzanie zmiany adresu email...</p>';
+    // confirm-email nie wymaga tokenu JWT
+    var API_BASE = (typeof API !== 'undefined' ? API : 'https://backend-dev-o2p4.onrender.com/api');
+    var rawRes = await fetch(API_BASE + '/confirm-email?token=' + token);
+    var r = { ok: rawRes.ok, data: {} };
+    try { r.data = await rawRes.json(); } catch(e) {}
+    // mock apiFetch shape
+    r = r;
+    if (r.ok) {
+        box.innerHTML = '<h2>📧 Email potwierdzony!</h2>'
+            + '<p style="color:#22c55e;margin-bottom:16px">' + (r.data.message||'Email został zmieniony.') + '</p>'
+            + '<button onclick="history.replaceState({},\'\',location.pathname);location.reload()" class="btn-main">Wróć do logowania</button>';
+    } else {
+        box.innerHTML = '<h2>❌ Błąd</h2>'
+            + '<p style="color:#ef4444;margin-bottom:16px">' + ((r.data&&r.data.error)||'Link nieprawidłowy lub wygasł.') + '</p>'
+            + '<button onclick="history.replaceState({},\'\',location.pathname);location.reload()" class="btn-main">Wróć do logowania</button>';
+    }
+}
+
 async function handleLogin() {
     var username = document.getElementById('loginUsername').value.trim();
     var password = document.getElementById('loginPassword').value;
@@ -5200,7 +5432,7 @@ async function _handleRegisterOriginal() {
 // ================================================================
 function handleLogout() {
     try { localStorage.removeItem('hk_progress'); } catch(e) {}
-    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen();
+    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen(); try { localStorage.removeItem('hk_email_banner_dismissed'); } catch(e) {}
     localStorage.removeItem('hk_token');
     localStorage.removeItem('hk_user');
     toggleSettingsModal(false);
@@ -5245,6 +5477,9 @@ function initAppAfterLogin() {
         return;
     }
 
+    // Pokaż baner email jeśli user nie ma emaila (i nie ukrył banera)
+    checkEmailBanner();
+
     // Renderuj natychmiast z cachedProgress (juz zaladowanym z localStorage)
     if (currentUser.role !== 'user') {
         bnavSetActive('book');
@@ -5257,6 +5492,9 @@ function initAppAfterLogin() {
         renderCategoryGrid();
     }
     renderSidebar(); // ikony od razu z localStorage cache
+
+    // Pokaż baner email jeśli użytkownik nie ma emaila i nie zamknął banera
+    setTimeout(function() { checkEmailBanner(); }, 800);
 
     // Załaduj statusy stopni — potrzebne do munduru i widoku stopni
     loadStopnieStatus(currentUser.id).then(function() {
@@ -6436,9 +6674,83 @@ function openPhoto(src)     { document.getElementById('modalImg').src = src; doc
 function closeModal()       { document.getElementById('photoModal').style.display = 'none'; }
 function toggleZoom(e)      { e.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
 function filterNav()        { renderSidebar(document.getElementById('searchInput').value); }
-function openSettings()     { toggleSettingsModal(true); }
-function closeSettings(e)   { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
+function openSettings() {
+    toggleSettingsModal(true);
+    settingsTab('general');
+}
+function closeSettings(e) { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
 function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
+
+function settingsTab(tab) {
+    ['general','account'].forEach(function(t) {
+        var panel = document.getElementById('stab-panel-' + t);
+        var btn   = document.getElementById('stab-' + t);
+        if (!panel || !btn) return;
+        var active = t === tab;
+        panel.style.display = active ? 'block' : 'none';
+        btn.style.background = active ? 'var(--primary)' : 'transparent';
+        btn.style.color      = active ? '#fff' : 'var(--muted)';
+    });
+    if (tab === 'account') loadAccountInfo();
+}
+
+async function loadAccountInfo() {
+    var emailEl = document.getElementById('accountEmailDisplay');
+    if (!emailEl) return;
+    emailEl.textContent = 'Ładowanie...';
+    var r = await apiFetch('/me');
+    if (r.ok) {
+        emailEl.textContent = r.data.email || '(nie ustawiono)';
+    } else {
+        emailEl.textContent = '(błąd ładowania)';
+    }
+}
+
+async function changeEmail() {
+    var newEmail = (document.getElementById('newEmailInput').value || '').trim();
+    var pass     = document.getElementById('emailConfirmPass').value;
+    var msg      = document.getElementById('emailChangeMsg');
+    msg.style.color = 'var(--muted)'; msg.textContent = '';
+    if (!newEmail || !pass) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij wszystkie pola.'; return; }
+    msg.textContent = 'Wysyłanie...';
+    var r = await apiFetch('/me/change-email', { method:'POST', body:JSON.stringify({ newEmail, password: pass }) });
+    if (r.ok) {
+        msg.style.color = '#22c55e';
+        msg.textContent = r.data.message || '✓ Email zapisany!';
+        document.getElementById('newEmailInput').value = '';
+        document.getElementById('emailConfirmPass').value = '';
+        if (r.data.confirmed) {
+            var banner = document.getElementById('emailBanner');
+            if (banner) banner.style.display = 'none';
+            try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
+            loadAccountInfo();
+        }
+    } else {
+        msg.style.color = '#ef4444';
+        msg.textContent = (r.data && r.data.error) || 'Błąd.';
+    }
+}
+
+async function changePassword() {
+    var cur  = document.getElementById('currentPassInput').value;
+    var np   = document.getElementById('newPassInput').value;
+    var np2  = document.getElementById('newPass2Input').value;
+    var msg  = document.getElementById('passChangeMsg');
+    msg.style.color = 'var(--muted)'; msg.textContent = '';
+    if (!cur || !np || !np2) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij wszystkie pola.'; return; }
+    if (np !== np2)          { msg.style.color='#ef4444'; msg.textContent='Nowe hasła nie są identyczne.'; return; }
+    if (np.length < 6)       { msg.style.color='#ef4444'; msg.textContent='Nowe hasło min. 6 znaków.'; return; }
+    msg.textContent = 'Zmienianie...';
+    var r = await apiFetch('/me/change-password', { method:'POST', body:JSON.stringify({ currentPassword: cur, newPassword: np }) });
+    if (r.ok) {
+        msg.style.color = '#22c55e'; msg.textContent = '✓ Hasło zmienione!';
+        document.getElementById('currentPassInput').value = '';
+        document.getElementById('newPassInput').value = '';
+        document.getElementById('newPass2Input').value = '';
+    } else {
+        msg.style.color = '#ef4444'; msg.textContent = (r.data && r.data.error) || 'Błąd.';
+    }
+}
 function loadSettings() {
     var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
     if (s.dark)      { document.body.classList.add('dark-mode', 'dark'); var dt = document.getElementById('darkModeToggle'); if(dt) dt.checked = true; }
@@ -7709,7 +8021,7 @@ async function pickMember(userId, userName, userRole) {
 // ══════════════════════════════════════════════════════
 // WAKE UP SERVER
 // ══════════════════════════════════════════════════════
-fetch('https://harcerze-backend.onrender.com/api/ping').catch(function(){});
+fetch('https://backend-dev-o2p4.onrender.com/api/ping').catch(function(){});
 
 // ================================================================
 // NAP
@@ -7785,9 +8097,25 @@ function refreshLegendaryStats() {
     return apiFetch('/legendary-stats').then(function(r) {
         _legendaryStats = {};
         if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(s) { s.active = s.owners >= 1; _legendaryStats[s.itemId] = s; });
+            r.data.forEach(function(s) {
+                // active gdy enabled=true i owners >= threshold (lub >= 1 jeśli threshold=0)
+                s.active = s.enabled && s.owners >= Math.max(1, s.threshold || 1);
+                _legendaryStats[s.itemId] = s;
+            });
         }
-        if (typeof renderSidebar === 'function') renderSidebar();
+        // Odśwież tylko ikony w sidebarze bez przebudowywania całej listy
+        document.querySelectorAll('.nav-circle-img').forEach(function(img) {
+            var li = img.closest('li');
+            if (!li) return;
+            var id = (li.id || '').replace('nav-item-', '');
+            var isLeg = _legendaryStats[id] && _legendaryStats[id].active;
+            img.classList.toggle('legendary-glow', !!isLeg);
+            li.classList.toggle('legendary-item', !!isLeg);
+            var titleEl = li.querySelector('.nav-item-title');
+            if (titleEl) {
+                titleEl.innerHTML = titleEl.textContent.trim() + (isLeg ? ' <span style="font-size:.6rem;color:#f59e0b">✦</span>' : '');
+            }
+        });
     }).catch(function(){});
 }
 
