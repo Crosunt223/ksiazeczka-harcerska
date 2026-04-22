@@ -5361,7 +5361,7 @@ async function confirmEmailChange(token) {
     if (!box) return;
     box.innerHTML = '<h2>📧 Potwierdzenie emaila</h2><p style="color:var(--muted);font-size:.85rem">Potwierdzanie zmiany adresu email...</p>';
     // confirm-email nie wymaga tokenu JWT
-    var API_BASE = (typeof API !== 'undefined' ? API : 'https://backend-dev-o2p4.onrender.com/api');
+    var API_BASE = (typeof API !== 'undefined' ? API : 'https://harcerze-backend.onrender.com/api');
     var rawRes = await fetch(API_BASE + '/confirm-email?token=' + token);
     var r = { ok: rawRes.ok, data: {} };
     try { r.data = await rawRes.json(); } catch(e) {}
