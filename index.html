@@ -1111,11 +1111,7 @@ body.neon-mode .btn-main {
         </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
-      <div style="padding:8px 10px 12px;flex-shrink:0">
-        <button onclick="playNap()" style="width:100%;padding:9px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0a1f10,#163320);border:1.5px solid rgba(74,222,128,.5);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s;letter-spacing:.5px" onmouseenter="this.style.borderColor='#4ade80';this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'" onmouseleave="this.style.borderColor='rgba(74,222,128,.4)';this.style.boxShadow='none'">
-          <span style="font-size:1.1rem">&#127925;</span> Nap
-        </button>
-      </div>
+
     </nav>
 
     <!-- CONTENT -->
@@ -5692,6 +5688,7 @@ function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
         + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
+        + (canSpraw ? '<button class="btn-sm" style="background:#1d4ed8" onclick="renderUserStatsPanel(\'' + u._id + '\',\'' + esc + '\')">📊 Statystyki</button>' : '')
         + (showManage && isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
         + (showManage && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
             ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
@@ -5757,6 +5754,9 @@ async function renderAdminDashboard() {
             : '')
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
+            : '')
+        + (['druzynowy','przyboczny','zastepowy','podzastepowy','superadmin','ksis'].includes(role)
+            ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki ' + (role==='zastepowy'||role==='podzastepowy'?'zastępu':'drużyny') + '</button>'
             : '')
         + '</div>';
 
@@ -6074,7 +6074,45 @@ window.changeRolePrompt = function(userId, userName, currentRole) {
         btn.innerHTML = (ROLE_LABELS && ROLE_LABELS[r] ? ROLE_LABELS[r] : r) + (isActive ? ' <span style="font-size:.7rem;opacity:.8">(obecna)</span>' : '');
         btn.onmouseenter = function(){ this.style.background = col; this.style.color = '#fff'; };
         btn.onmouseleave = function(){ this.style.background = isActive ? col : 'transparent'; this.style.color = isActive ? '#fff' : col; };
-        btn.onclick = function() { overlay.remove(); promoteUser(userId, userName, r, null); };
+        btn.onclick = (function(chosenRole) { return async function() {
+            overlay.remove();
+            if (chosenRole === 'zastepowy' || chosenRole === 'podzastepowy') {
+                var rz = await apiFetch('/zastepy');
+                var zastepy = rz.ok ? rz.data : [];
+                if (!zastepy.length) { alert('Brak zastępów. Najpierw utwórz zastęp.'); return; }
+                var zOv = document.createElement('div');
+                zOv.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9991;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
+                zOv.onclick = function(e){ if(e.target===zOv) zOv.remove(); };
+                var zIn = document.createElement('div');
+                zIn.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
+                zIn.innerHTML = '<h3 style="margin:0 0 4px;font-size:1.05rem">👥 Dla którego zastępu?</h3>'
+                    + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 14px">Rola <strong>'+(ROLE_LABELS[chosenRole]||chosenRole)+'</strong> dla <strong>'+userName+'</strong></p>';
+                var zGrid = document.createElement('div');
+                zGrid.style.cssText = 'display:grid;gap:8px;margin-bottom:12px';
+                zastepy.forEach(function(z) {
+                    var zBtn = document.createElement('button');
+                    zBtn.style.cssText = 'padding:10px 14px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
+                    zBtn.textContent = '👥 ' + z.name;
+                    zBtn.onmouseenter = function(){ this.style.background='var(--f4)'; this.style.color='#fff'; };
+                    zBtn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='var(--f3)'; };
+                    zBtn.onclick = async function() {
+                        zOv.remove();
+                        await promoteUser(userId, userName, chosenRole, null);
+                        await apiFetch('/users/'+userId+'/zastep',{method:'POST',body:JSON.stringify({zastepId:z.zastepId})});
+                        renderAdminDashboard();
+                    };
+                    zGrid.appendChild(zBtn);
+                });
+                var zCancel = document.createElement('button');
+                zCancel.style.cssText = 'width:100%;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
+                zCancel.textContent = 'Anuluj';
+                zCancel.onclick = function(){ zOv.remove(); };
+                zIn.appendChild(zGrid); zIn.appendChild(zCancel);
+                zOv.appendChild(zIn); document.body.appendChild(zOv);
+            } else {
+                promoteUser(userId, userName, chosenRole, null);
+            }
+        };})(r);
         grid.appendChild(btn);
     });
     inner.appendChild(grid);
@@ -6378,6 +6416,18 @@ function renderSidebar(filterText) {
         });
     });
     
+    // NAP — jako ostatni element listy nawigacyjnej
+    var napLi = document.createElement('li');
+    napLi.style.cssText = 'padding:8px 8px 4px';
+    var napBtn = document.createElement('button');
+    napBtn.onclick = playNap;
+    napBtn.style.cssText = 'width:100%;padding:8px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0a1f10,#163320);border:1.5px solid rgba(74,222,128,.4);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s';
+    napBtn.onmouseenter = function(){ this.style.borderColor='#4ade80'; this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'; };
+    napBtn.onmouseleave = function(){ this.style.borderColor='rgba(74,222,128,.4)'; this.style.boxShadow='none'; };
+    napBtn.innerHTML = '<span style="font-size:1rem">&#127925;</span>&nbsp;Nap';
+    napLi.appendChild(napBtn);
+    list.appendChild(napLi);
+
     updateUIStats();
     updateFilterCounts(); // Aktualizacja liczników przy filtrach
     
@@ -8385,6 +8435,169 @@ async function bugDelete(btn){
     if(r.ok) renderBugReportsPanel();
 }
 
+
+// ================================================================
+// STATYSTYKI GRUPY (drużyna/zastęp) I UŻYTKOWNIKA
+// ================================================================
+
+// Pobierz postęp konkretnego użytkownika
+async function fetchUserProgress(userId) {
+    var r = await apiFetch('/progress/' + userId);
+    return r.ok ? (r.data || {}) : {};
+}
+
+// Statystyki jednego usera — ile sprawności zdobył per kategoria
+function calcUserStats(progress) {
+    var result = { total: 0, bycat: {} };
+    STATS_CATS.forEach(function(c){ result.bycat[c] = 0; });
+    db.forEach(function(item) {
+        if (item.id.startsWith('st_') || item._isPrivate) return;
+        var lv = getSprawLevel(item, progress);
+        if (lv > 0) {
+            result.total++;
+            if (result.bycat[item.category] !== undefined) result.bycat[item.category]++;
+        }
+    });
+    return result;
+}
+
+// Panel statystyk konkretnego użytkownika
+async function renderUserStatsPanel(userId, userName) {
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk...</p></div>';
+    var progress = await fetchUserProgress(userId);
+    var stats = calcUserStats(progress);
+    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
+    var pct = totalItems ? Math.round(stats.total / totalItems * 100) : 0;
+
+    var html = '<div style="padding:16px;max-width:780px;margin:0 auto">';
+    html += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
+          + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
+          + '<h2 style="margin:0;font-size:1.3rem">📊 ' + userName + '</h2>'
+          + '</div>';
+
+    // Kafelki
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
+    html += _statCard('✅ Zdobyte', stats.total + ' / ' + totalItems, '#22c55e');
+    html += _statCard('📈 Postęp', pct + '%', '#3b82f6');
+    var maxCat = STATS_CATS.reduce(function(a,c){ return (stats.bycat[c]||0) > (stats.bycat[a]||0) ? c : a; }, STATS_CATS[0]);
+    html += _statCard('🏆 Ulubione', maxCat.split(' ')[0], STATS_COLORS[maxCat]||'#888');
+    html += '</div>';
+
+    // Słupki per kategoria
+    var maxVal = Math.max.apply(null, STATS_CATS.map(function(c){ return stats.bycat[c]||0; })) || 1;
+    html += '<div class="home-card" style="padding:16px">';
+    html += '<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności per miano</h3>';
+    html += '<div style="display:flex;align-items:flex-end;gap:10px;height:180px;padding:0 4px">';
+    STATS_CATS.forEach(function(cat) {
+        var val = stats.bycat[cat] || 0;
+        var pct2 = Math.round(val / maxVal * 100);
+        var col = STATS_COLORS[cat];
+        var meta = (typeof CAT_META !== 'undefined' && CAT_META[cat]) || {};
+        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">'
+              + '<div style="font-size:.75rem;font-weight:700;color:var(--text)">' + val + '</div>'
+              + '<div style="width:100%;background:' + col + ';border-radius:6px 6px 0 0;height:' + Math.max(pct2,3) + '%"></div>'
+              + '<div style="font-size:.68rem;color:var(--muted);text-align:center;line-height:1.2">' + (meta.icon||'') + '<br>' + cat.split(' ')[0] + '</div>'
+              + '</div>';
+    });
+    html += '</div></div>';
+    html += '</div>';
+    document.getElementById('contentArea').innerHTML = html;
+}
+
+// Panel statystyk grupy (drużyna lub zastęp)
+async function renderGroupStatsPanel() {
+    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk grupy...</p></div>';
+
+    var rMembers = await apiFetch('/team-members');
+    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status === 'active'; }) : [];
+
+    // Zastępowy/podzastępowy widzą tylko swój zastęp
+    var myRole = currentUser.role;
+    var isZastepLevel = (myRole === 'zastepowy' || myRole === 'podzastepowy');
+    var members = isZastepLevel
+        ? allMembers.filter(function(u){ return u.zastepId === currentUser.zastepId; })
+        : allMembers;
+
+    var groupName = isZastepLevel ? ('Zastęp') : ('Drużyna');
+
+    // Pobierz postępy wszystkich
+    var progressMap = {};
+    await Promise.all(members.map(async function(u) {
+        progressMap[u._id] = await fetchUserProgress(u._id);
+    }));
+
+    // Oblicz statsy per user
+    var userStats = members.map(function(u) {
+        var s = calcUserStats(progressMap[u._id] || {});
+        return { id: u._id, name: u.name, role: u.role, zastepId: u.zastepId, zastepName: u.zastepName, total: s.total, bycat: s.bycat };
+    }).sort(function(a,b){ return b.total - a.total; });
+
+    var _gf = { cat: 'all', star: 'all' };
+    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
+
+    function renderGroupContent() {
+        var html = '';
+
+        // Filtry
+        html += '<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
+        html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
+        ['all','Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'].forEach(function(c) {
+            var active = _gf.cat === c;
+            html += '<button onclick="window._gf.cat=\''+c+'\';window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(active?'var(--primary)':'var(--panel)')+';color:'+(active?'#fff':'var(--muted)')+';font-size:.75rem;cursor:pointer">' + (c==='all'?'Wszystkie':c.split(' ')[0]) + '</button>';
+        });
+        html += '</div></div></div>';
+
+        // Wykres słupkowy — kto ile zdał
+        var maxTotal = Math.max.apply(null, userStats.map(function(u){ return u.total; })) || 1;
+        html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
+        html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking — sprawności zdobyte</h3>';
+        html += '<div style="display:grid;gap:8px">';
+        userStats.forEach(function(u, i) {
+            var val = _gf.cat === 'all' ? u.total : (u.bycat[_gf.cat]||0);
+            var max2 = _gf.cat === 'all' ? maxTotal : (Math.max.apply(null, userStats.map(function(x){return x.bycat[_gf.cat]||0;}))||1);
+            var pct2 = Math.round(val/max2*100);
+            var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+            var col = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b87333':'var(--f4)';
+            html += '<div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="renderUserStatsPanel(\''+u.id+'\',\''+u.name.replace(/'/g,"\\'")+'\')">'
+                  + '<div style="width:22px;text-align:center;font-size:.85rem">' + (medal||('#'+(i+1))) + '</div>'
+                  + '<div style="width:120px;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + u.name + '</div>'
+                  + '<div style="flex:1;height:22px;background:var(--panel2);border-radius:20px;overflow:hidden">'
+                  + '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.3s"></div></div>'
+                  + '<div style="width:32px;text-align:right;font-size:.82rem;font-weight:700;color:var(--text)">' + val + '</div>'
+                  + '</div>';
+        });
+        html += '</div></div>';
+
+        document.getElementById('groupStatsContent').innerHTML = html;
+    }
+
+    window._gf = _gf;
+    window._rerenderGroup = renderGroupContent;
+
+    var outerHtml = '<div style="padding:16px;max-width:780px;margin:0 auto">';
+    outerHtml += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
+               + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
+               + '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki ' + groupName + '</h2>'
+               + '<span style="color:var(--muted);font-size:.82rem">(' + members.length + ' osób)</span></div>';
+
+    // Sumaryczne kafelki
+    var totalDone = userStats.reduce(function(a,u){ return a + u.total; }, 0);
+    var avgDone = members.length ? Math.round(totalDone / members.length) : 0;
+    var topUser = userStats[0] || { name: '—', total: 0 };
+    outerHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
+    outerHtml += _statCard('👥 Członków', members.length + '', '#3b82f6');
+    outerHtml += _statCard('📊 Śr. zdobytych', avgDone + ' spr.', '#22c55e');
+    outerHtml += _statCard('🏆 Lider', topUser.name.split(' ')[0], '#f59e0b');
+    outerHtml += '</div>';
+
+    outerHtml += '<div id="groupStatsContent"></div>';
+    outerHtml += '</div>';
+
+    document.getElementById('contentArea').innerHTML = outerHtml;
+    renderGroupContent();
+}
+
+
 // ================================================================
 // PANEL STATYSTYK
 // ================================================================
@@ -8480,7 +8693,22 @@ function statsBarData(starF,catF,month) {
 }
 function statsTimeData(timeScale,timeGroupBy,catF,starF) {
     var dates=getProgDates(); var items=statsFilteredItems(starF,catF); var now=new Date();
-    function earliest(item){var e=null;item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){var tid=item.id+'-'+gi+'-'+ti;if(cachedProgress[tid]&&dates[tid]&&(!e||dates[tid]<e))e=dates[tid];});});return e;}
+    var hasDates = Object.keys(dates).length > 0;
+    // Jeśli brak dat w bazie, użyj bieżącego czasu jako fallback dla zdanych zadań
+    function earliest(item){
+        var e=null;
+        item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
+            var tid=item.id+'-'+gi+'-'+ti;
+            if(!cachedProgress[tid]) return;
+            var ts = dates[tid] || null;
+            if(ts && (!e||ts<e)) e=ts;
+        });});
+        // Jeśli zdano ale brak daty — użyj teraz (żeby było widoczne na wykresie)
+        if(!e && hasDates===false) {
+            // no dates at all — skip
+        }
+        return e;
+    }
     if(timeScale==='year'){
         var months=[]; for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
         var counts={}; months.forEach(function(m){counts[m]=0;});
