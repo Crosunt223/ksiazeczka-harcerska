@@ -5467,9 +5467,10 @@ function initAppAfterLogin() {
         updateBnavTeam();
     });
     apiFetch('/my-zastep').then(function(r) {
-        if (r.ok && r.data && r.data.zastepName) {
-            currentUser.zastepName = r.data.zastepName;
-            currentUser.zastepId   = r.data.zastepId;
+        if (r.ok && r.data) {
+            // Zapisz zawsze — nawet gdy zastepId jest null (brak zastępu)
+            currentUser.zastepId   = r.data.zastepId   || null;
+            currentUser.zastepName = r.data.zastepName || null;
             try { localStorage.setItem('hk_user', JSON.stringify(currentUser)); } catch(e) {}
         }
     });
@@ -8509,399 +8510,227 @@ async function renderGroupStatsPanel() {
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk grupy...</p></div>';
 
     var rMembers = await apiFetch('/team-members');
-    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status === 'active'; }) : [];
-
-    // Zastępowy/podzastępowy widzą tylko swój zastęp
+    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status==='active'; }) : [];
     var myRole = currentUser.role;
-    var isZastepLevel = (myRole === 'zastepowy' || myRole === 'podzastepowy');
-    var members = isZastepLevel
-        ? allMembers.filter(function(u){ return u.zastepId === currentUser.zastepId; })
-        : allMembers;
+    var isZastepLevel = (myRole==='zastepowy'||myRole==='podzastepowy');
 
-    var groupName = isZastepLevel ? ('Zastęp') : ('Drużyna');
+    // Pobierz zawsze świeże zastepId z API (nie polegaj na localStorage)
+    var myZastepId = currentUser.zastepId || null;
+    if (isZastepLevel && !myZastepId) {
+        var rzMe = await apiFetch('/my-zastep');
+        if (rzMe.ok && rzMe.data && rzMe.data.zastepId) {
+            myZastepId = rzMe.data.zastepId;
+            currentUser.zastepId = myZastepId;
+        }
+    }
+    // Jeśli nadal brak zastepId — zastępowy bez przypisanego zastępu
+    if (isZastepLevel && !myZastepId) {
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Nie masz przypisanego zastępu. Poproś drużynowego o przypisanie.</p></div>';
+        return;
+    }
 
-    // Pobierz postępy wszystkich
-    var progressMap = {};
+    var members = isZastepLevel ? allMembers.filter(function(u){ return String(u.zastepId) === String(myZastepId); }) : allMembers;
+    var groupName = isZastepLevel ? 'Zastęp' : 'Drużyna';
+
+    // Pobierz postępy i daty wszystkich
+    var progressMap = {}, datesMap = {};
     await Promise.all(members.map(async function(u) {
-        progressMap[u._id] = await fetchUserProgress(u._id);
+        var rp = await apiFetch('/progress/'+u._id);
+        progressMap[u._id] = rp.ok ? (rp.data||{}) : {};
+        var rd = await apiFetch('/progress/'+u._id+'/dates');
+        datesMap[u._id] = rd.ok ? (rd.data||{}) : {};
     }));
 
     // Oblicz statsy per user
-    var userStats = members.map(function(u) {
-        var s = calcUserStats(progressMap[u._id] || {});
-        return { id: u._id, name: u.name, role: u.role, zastepId: u.zastepId, zastepName: u.zastepName, total: s.total, bycat: s.bycat };
-    }).sort(function(a,b){ return b.total - a.total; });
+    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_')&&!i._isPrivate; }).length;
+    function calcStats(prog, dates, monthFilter) {
+        var total=0, bycat={};
+        STATS_CATS.forEach(function(c){ bycat[c]=0; });
+        db.forEach(function(item){
+            if(item.id.startsWith('st_')||item._isPrivate) return;
+            var lv = getSprawLevel(item, prog);
+            if(lv===0) return;
+            if(monthFilter) {
+                var found=false;
+                item.groups.forEach(function(g,gi){ g.tasks.forEach(function(t,ti){
+                    var tid=item.id+'-'+gi+'-'+ti;
+                    if(prog[tid]&&dates[tid]){
+                        var d=new Date(dates[tid]); var ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+                        if(ym===monthFilter) found=true;
+                    }
+                }); });
+                if(!found) return;
+            }
+            total++;
+            if(bycat[item.category]!==undefined) bycat[item.category]++;
+        });
+        return {total:total, bycat:bycat};
+    }
 
-    var _gf = { cat: 'all', star: 'all' };
-    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
+    // State
+    var _gf = { tab:'bar', cat:'all', month:null };
+    window._gf = _gf;
+
+    function getUserVal(u) {
+        var s = calcStats(progressMap[u.id]||{}, datesMap[u.id]||{}, _gf.month);
+        return _gf.cat==='all' ? s.total : (s.bycat[_gf.cat]||0);
+    }
 
     function renderGroupContent() {
+        var sorted = members.map(function(u){
+            return { id:u._id, name:u.name, role:u.role };
+        }).map(function(u){
+            return Object.assign({}, u, { val: getUserVal(u) });
+        }).sort(function(a,b){ return b.val-a.val; });
+
         var html = '';
 
-        // Filtry
-        html += '<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
-        html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
-        ['all','Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'].forEach(function(c) {
-            var active = _gf.cat === c;
-            html += '<button onclick="window._gf.cat=\''+c+'\';window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(active?'var(--primary)':'var(--panel)')+';color:'+(active?'#fff':'var(--muted)')+';font-size:.75rem;cursor:pointer">' + (c==='all'?'Wszystkie':c.split(' ')[0]) + '</button>';
+        // ─ Zakładki
+        html += '<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">';
+        ['bar','pie','line'].forEach(function(t){
+            var lbl = t==='bar'?'📊 Słupki':t==='pie'?'🥧 Kołowy':'📈 Czas';
+            var a = _gf.tab===t;
+            html += '<button onclick="window._gf.tab=\''+t+'\';window._rerenderGroup()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+lbl+'</button>';
         });
-        html += '</div></div></div>';
+        html += '</div>';
 
-        // Wykres słupkowy — kto ile zdał
-        var maxTotal = Math.max.apply(null, userStats.map(function(u){ return u.total; })) || 1;
-        html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
-        html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking — sprawności zdobyte</h3>';
-        html += '<div style="display:grid;gap:8px">';
-        userStats.forEach(function(u, i) {
-            var val = _gf.cat === 'all' ? u.total : (u.bycat[_gf.cat]||0);
-            var max2 = _gf.cat === 'all' ? maxTotal : (Math.max.apply(null, userStats.map(function(x){return x.bycat[_gf.cat]||0;}))||1);
-            var pct2 = Math.round(val/max2*100);
-            var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-            var col = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b87333':'var(--f4)';
-            html += '<div style="display:flex;align-items:center;gap:10px;cursor:pointer" onclick="renderUserStatsPanel(\''+u.id+'\',\''+u.name.replace(/'/g,"\\'")+'\')">'
-                  + '<div style="width:22px;text-align:center;font-size:.85rem">' + (medal||('#'+(i+1))) + '</div>'
-                  + '<div style="width:120px;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + u.name + '</div>'
-                  + '<div style="flex:1;height:22px;background:var(--panel2);border-radius:20px;overflow:hidden">'
-                  + '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.3s"></div></div>'
-                  + '<div style="width:32px;text-align:right;font-size:.82rem;font-weight:700;color:var(--text)">' + val + '</div>'
-                  + '</div>';
+        // ─ Filtry
+        html += '<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+        // Miano
+        ['all'].concat(STATS_CATS).forEach(function(c){
+            var a=_gf.cat===c;
+            html += '<button onclick="window._gf.cat=\''+c+'\';window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.75rem;cursor:pointer">'+(c==='all'?'Wszystkie':c.split(' ')[0])+'</button>';
         });
+        // Miesiąc
+        html += '<input type="month" value="'+(_gf.month||'')+'" onchange="window._gf.month=this.value||null;window._rerenderGroup()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.8rem;margin-left:6px">';
+        if(_gf.month) html += '<button onclick="window._gf.month=null;window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;font-size:.75rem">✕</button>';
         html += '</div></div>';
 
+        // ─ Wykres
+        html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
+        var maxVal = Math.max.apply(null, sorted.map(function(u){return u.val;})) || 1;
+
+        if(_gf.tab === 'bar') {
+            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking — '+(_gf.cat==='all'?'wszystkie miana':_gf.cat)+(_gf.month?' — '+_gf.month:'')+'</h3>';
+            if(!sorted.some(function(u){return u.val>0;})) {
+                html += '<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych dla wybranych filtrów.</p>';
+            } else {
+                html += '<div style="display:grid;gap:8px">';
+                sorted.forEach(function(u,i){
+                    var pct2 = Math.round(u.val/maxVal*100);
+                    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+                    var col = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b87333':'var(--f4)';
+                    var safeName = u.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                    html += '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px;border-radius:8px;transition:.15s" '
+                          + 'onmouseenter="this.style.background=\'var(--panel2)\'" onmouseleave="this.style.background=\'transparent\'" '
+                          + 'onclick="renderUserStatsPanel(\''+u.id+'\',\''+safeName+'\')">'
+                          + '<div style="width:24px;text-align:center;font-size:.85rem">'+(medal||('<span style="color:var(--muted)">#'+(i+1)+'</span>'))+'</div>'
+                          + '<div style="width:110px;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+u.name+'</div>'
+                          + '<div style="flex:1;height:22px;background:var(--panel2);border-radius:20px;overflow:hidden">'
+                          + '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.4s"></div></div>'
+                          + '<div style="width:28px;text-align:right;font-size:.82rem;font-weight:700;color:var(--text)">'+u.val+'</div>'
+                          + '</div>';
+                });
+                html += '</div>';
+            }
+
+        } else if(_gf.tab === 'pie') {
+            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności w grupie'+(_gf.month?' — '+_gf.month:'')+'</h3>';
+            // Per miano (suma dla całej grupy) lub per osobę
+            var pieData, pieColors, pieLabels;
+            if(_gf.cat === 'all') {
+                // Per miano — suma dla grupy
+                pieData = {}; STATS_CATS.forEach(function(c){ pieData[c]=0; });
+                members.forEach(function(u){
+                    var s=calcStats(progressMap[u._id]||{},datesMap[u._id]||{},_gf.month);
+                    STATS_CATS.forEach(function(c){ pieData[c]+=s.bycat[c]||0; });
+                });
+                pieLabels = STATS_CATS.filter(function(c){return pieData[c]>0;});
+                pieColors = pieLabels.map(function(c){return STATS_COLORS[c];});
+                pieData   = pieLabels.map(function(c){return pieData[c];});
+            } else {
+                // Per osoba w wybranym mianie
+                pieLabels = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.name;});
+                pieColors = pieLabels.map(function(_,i){var cols=['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444','#ec4899','#06b6d4','#84cc16'];return cols[i%cols.length];});
+                pieData   = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.val;});
+            }
+            var total2=pieData.reduce(function(a,b){return a+b;},0);
+            if(!total2){ html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych.</p>'; }
+            else {
+                var cx=100,cy=100,r=85,sa=-Math.PI/2,slices='';
+                pieData.forEach(function(v,i){
+                    var angle=(v/total2)*2*Math.PI,ea=sa+angle;
+                    var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+                    slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+pieColors[i]+'" stroke="var(--panel)" stroke-width="2"><title>'+pieLabels[i]+': '+v+'</title></path>';
+                    sa=ea;
+                });
+                html+='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center">';
+                html+='<svg viewBox="0 0 200 200" style="width:180px;height:180px;flex-shrink:0">'+slices+'</svg>';
+                html+='<div style="display:grid;gap:6px">';
+                pieLabels.forEach(function(lb,i){html+='<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:'+pieColors[i]+';flex-shrink:0"></div><span style="font-size:.82rem;color:var(--text)">'+lb+'</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+pieData[i]+' ('+Math.round(pieData[i]/total2*100)+'%)</span></div>';});
+                html+='</div></div>';
+            }
+
+        } else {
+            // Wykres czasowy — ilość sprawności zdobytych per miesiąc (suma grupy)
+            html += '<h3 style="margin:0 0 10px;font-size:.95rem">Sprawności w czasie — 12 miesięcy'+(_gf.cat!=='all'?' — '+_gf.cat:'')+'</h3>';
+            var now=new Date(), months=[];
+            for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
+            var counts={}; months.forEach(function(m){counts[m]=0;});
+            members.forEach(function(u){
+                var prog=progressMap[u._id]||{}, dates=datesMap[u._id]||{};
+                var items2 = _gf.cat==='all' ? db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate;}) : db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate&&i.category===_gf.cat;});
+                items2.forEach(function(item){
+                    if(getSprawLevel(item,prog)===0) return;
+                    var earliest=null;
+                    item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
+                        var tid=item.id+'-'+gi+'-'+ti;
+                        if(prog[tid]&&dates[tid]&&(!earliest||dates[tid]<earliest)) earliest=dates[tid];
+                    });});
+                    if(!earliest) return;
+                    var d2=new Date(earliest); var ym=d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');
+                    if(counts[ym]!==undefined) counts[ym]++;
+                });
+            });
+            var data=months.map(function(m){return counts[m];}), maxV=Math.max.apply(null,data)||1, total3=data.reduce(function(a,b){return a+b;},0);
+            var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+            var labels=months.map(function(m){var p=m.split('-');return MN[parseInt(p[1])-1]+' '+p[0].slice(2);});
+            var W=640,H=170,PL=30,PR=8,PT=10,PB=26,cW=W-PL-PR,cH=H-PT-PB,n=labels.length;
+            var pts=data.map(function(v,i){return{x:PL+(i/(n-1||1))*cW,y:PT+(1-v/maxV)*cH};});
+            var pathD=pts.map(function(p,i){return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
+            var fillD=pathD+' L'+pts[n-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
+            var yTicks=''; for(var yi=0;yi<=3;yi++){var yv=Math.round(maxV*yi/3),yy=PT+(1-yi/3)*cH;yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/><text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';}
+            var xLabels=''; labels.forEach(function(lb,i){if(i%3!==0&&i!==n-1)return;var xx=PL+(i/(n-1||1))*cW;xLabels+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';});
+            var dots=pts.map(function(p,i){return'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';}).join('');
+            if(total3===0){html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych — daty zaczną się zapisywać od teraz.</p>';}
+            else{html+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><defs><linearGradient id="lgfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>'+yTicks+xLabels+'<path d="'+fillD+'" fill="url(#lgfg)"/><path d="'+pathD+'" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+            html+='<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie: <strong style="color:var(--text)">'+total3+' sprawności</strong></div>';}
+        }
+
+        html += '</div>';
         document.getElementById('groupStatsContent').innerHTML = html;
     }
 
-    window._gf = _gf;
     window._rerenderGroup = renderGroupContent;
+
+    var totalDone = members.reduce(function(a,u){ return a + calcStats(progressMap[u._id]||{}, datesMap[u._id]||{}, null).total; }, 0);
+    var avgDone = members.length ? Math.round(totalDone/members.length) : 0;
+    var topUser = members.map(function(u){ return { name:u.name, total:calcStats(progressMap[u._id]||{},{},null).total }; }).sort(function(a,b){return b.total-a.total;})[0] || {name:'—'};
 
     var outerHtml = '<div style="padding:16px;max-width:780px;margin:0 auto">';
     outerHtml += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
                + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
-               + '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki ' + groupName + '</h2>'
-               + '<span style="color:var(--muted);font-size:.82rem">(' + members.length + ' osób)</span></div>';
-
-    // Sumaryczne kafelki
-    var totalDone = userStats.reduce(function(a,u){ return a + u.total; }, 0);
-    var avgDone = members.length ? Math.round(totalDone / members.length) : 0;
-    var topUser = userStats[0] || { name: '—', total: 0 };
+               + '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki '+groupName+'</h2>'
+               + '<span style="color:var(--muted);font-size:.82rem">('+members.length+' osób)</span></div>';
     outerHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
-    outerHtml += _statCard('👥 Członków', members.length + '', '#3b82f6');
-    outerHtml += _statCard('📊 Śr. zdobytych', avgDone + ' spr.', '#22c55e');
+    outerHtml += _statCard('👥 Członków', members.length+'', '#3b82f6');
+    outerHtml += _statCard('📊 Średnio', avgDone+' spr.', '#22c55e');
     outerHtml += _statCard('🏆 Lider', topUser.name.split(' ')[0], '#f59e0b');
     outerHtml += '</div>';
-
-    outerHtml += '<div id="groupStatsContent"></div>';
-    outerHtml += '</div>';
+    outerHtml += '<div id="groupStatsContent"></div></div>';
 
     document.getElementById('contentArea').innerHTML = outerHtml;
     renderGroupContent();
 }
 
-
-// ================================================================
-// PANEL STATYSTYK
-// ================================================================
-
-// ── Dane pomocnicze ──────────────────────────────────────────────
-var STATS_CATS   = ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'];
-var STATS_COLORS = {
-    'Bielik':       '#3b82f6',
-    'Lilijka':      '#8b5cf6',
-    'Róża Wiatrów': '#f59e0b',
-    'Robinson':     '#10b981',
-    'Las':          '#16a34a',
-    'Plaster':      '#ef4444'
-};
-var STAR_COLORS = { 1:'#6b7280', 2:'#3b82f6', 3:'#8b5cf6', 4:'#f59e0b' };
-
-// Stan filtrów statystyk
-var _sf = {
-    // wspólne
-    starFilter: 'all',   // 'all'|1|2|3|4
-    catFilter:  'all',   // 'all'|'Bielik'|...
-    // dla słupków/kołowy
-    month: null,         // null = wszystkie, lub 'YYYY-MM'
-    // dla osi czasu
-    timeScale: 'year',   // 'month'|'year'
-    timeMonth:  null,    // null = bieżący mies, lub 'YYYY-MM'
-    timeGroupBy:'week',  // 'day'|'week' (tylko przy timeScale=month)
-    activeTab: 'bar',    // 'bar'|'pie'|'line'
-};
-
-// ── Silnik danych ────────────────────────────────────────────────
-
-// Zwraca listę sprawności spełniających filtry gwiazdek i kategorii
-function statsFilteredItems(starF, catF) {
-    starF = starF || _sf.starFilter;
-    catF  = catF  || _sf.catFilter;
-    return db.filter(function(item) {
-        if (item.id.startsWith('st_') || item._isPrivate) return false;
-        if (catF !== 'all' && item.category !== catF) return false;
-        if (starF !== 'all') {
-            var maxStar = 0;
-            item.groups.forEach(function(g) {
-                g.tasks.forEach(function(t) {
-                    var m = t.match(/^✶+/);
-                    if (m && m[0].length > maxStar) maxStar = m[0].length;
-                });
-            });
-            if (maxStar !== parseInt(starF)) return false;
-        }
-        return true;
-    });
-}
-
-
-function _statCard(label, val, color) {
-    return '<div style="background:var(--panel);border-radius:12px;padding:12px 14px;border:1.5px solid var(--border);text-align:center">'
-         + '<div style="font-size:1.35rem;font-weight:800;color:'+color+'">'+val+'</div>'
-         + '<div style="font-size:.72rem;color:var(--muted);margin-top:2px">'+label+'</div></div>';
-}
-function _sfTab(tab, label) {
-    var a=_sf.activeTab===tab;
-    return '<button onclick="_sf.activeTab=\''+tab+'\';renderStatsPanel()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+label+'</button>';
-}
-function _sfBtn(prop, val, label, fn) {
-    var a=_sf[prop]==val;
-    return '<button onclick="_sf.'+prop+'='+JSON.stringify(val)+';'+fn+'" style="padding:4px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">'+label+'</button>';
-}
-function statsApplyFilter() { renderStatsPanel(); }
-
-function statsSummary() {
-    var items=db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate;});
-    var byStars={1:0,2:0,3:0,4:0};
-    var done=0;
-    items.forEach(function(item){var lv=getSprawLevel(item,cachedProgress);if(lv>0)done++;if(lv>=1&&lv<=4)byStars[lv]++;});
-    return {total:items.length,done:done,pct:items.length?Math.round(done/items.length*100):0,byStars:byStars};
-}
-function statsBarData(starF,catF,month) {
-    var items=statsFilteredItems(starF,catF); var dates=getProgDates(); var result={};
-    STATS_CATS.forEach(function(c){result[c]=0;});
-    items.forEach(function(item){
-        if(getSprawLevel(item,cachedProgress)===0)return;
-        if(month){
-            var found=false;
-            item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
-                var tid=item.id+'-'+gi+'-'+ti;
-                if(cachedProgress[tid]&&dates[tid]){var d=new Date(dates[tid]);var ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(ym===month)found=true;}
-            });});
-            if(!found)return;
-        }
-        if(result[item.category]!==undefined)result[item.category]++;
-    });
-    return result;
-}
-function statsTimeData(timeScale,timeGroupBy,catF,starF) {
-    var dates=getProgDates(); var items=statsFilteredItems(starF,catF); var now=new Date();
-    var hasDates = Object.keys(dates).length > 0;
-    // Jeśli brak dat w bazie, użyj bieżącego czasu jako fallback dla zdanych zadań
-    function earliest(item){
-        var e=null;
-        item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
-            var tid=item.id+'-'+gi+'-'+ti;
-            if(!cachedProgress[tid]) return;
-            var ts = dates[tid] || null;
-            if(ts && (!e||ts<e)) e=ts;
-        });});
-        // Jeśli zdano ale brak daty — użyj teraz (żeby było widoczne na wykresie)
-        if(!e && hasDates===false) {
-            // no dates at all — skip
-        }
-        return e;
-    }
-    if(timeScale==='year'){
-        var months=[]; for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
-        var counts={}; months.forEach(function(m){counts[m]=0;});
-        items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var d2=new Date(e);var ym=d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');if(counts[ym]!==undefined)counts[ym]++;});
-        var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-        return {labels:months.map(function(m){var p=m.split('-');return MN[parseInt(p[1])-1]+' '+p[0].slice(2);}),data:months.map(function(m){return counts[m];})};
-    }
-    var bm=_sf.timeMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0'));
-    var parts=bm.split('-'); var yr=parseInt(parts[0]),mo=parseInt(parts[1]);
-    var daysInMonth=new Date(yr,mo,0).getDate();
-    if(timeGroupBy==='day'){
-        var days=[]; for(var di=1;di<=daysInMonth;di++)days.push(di);
-        var dc={}; days.forEach(function(d){dc[d]=0;});
-        items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var dd=new Date(e);if(dd.getFullYear()===yr&&dd.getMonth()+1===mo)dc[dd.getDate()]++;});
-        return {labels:days.map(String),data:days.map(function(d){return dc[d];})};
-    }
-    var wc={1:0,2:0,3:0,4:0,5:0};
-    items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var dd=new Date(e);if(dd.getFullYear()===yr&&dd.getMonth()+1===mo)wc[Math.min(5,Math.ceil(dd.getDate()/7))]++;});
-    return {labels:['Tyg 1','Tyg 2','Tyg 3','Tyg 4','Tyg 5'],data:[wc[1],wc[2],wc[3],wc[4],wc[5]]};
-}
-
-function renderStatsPanel() {
-    document.getElementById('navList').innerHTML='';
-    var sum=statsSummary();
-    var now=new Date();
-    if(!_sf.timeMonth)_sf.timeMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    var html='<div style="padding:16px;max-width:780px;margin:0 auto">';
-    html+='<div style="padding:16px 0 14px"><h2 style="margin:0 0 4px;font-size:1.4rem">📊 Twoje Statystyki</h2><p style="color:var(--muted);font-size:.85rem">Zdobyte sprawności — dane z MongoDB</p></div>';
-    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">';
-    html+=_statCard('✅ Zdobyte',sum.done+' / '+sum.total,'#22c55e');
-    html+=_statCard('📈 Postęp',sum.pct+'%','#3b82f6');
-    html+=_statCard('⭐ Poziom',(sum.byStars[4]>0?'4★':sum.byStars[3]>0?'3★':sum.byStars[2]>0?'2★':sum.byStars[1]>0?'1★':'—'),'#f59e0b');
-    html+='</div>';
-    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
-    [1,2,3,4].forEach(function(s){html+=_statCard('★'.repeat(s),sum.byStars[s]+' spr.',STAR_COLORS[s]);});
-    html+='</div>';
-    html+='<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">'+_sfTab('bar','📊 Słupki')+_sfTab('pie','🥧 Kołowy')+_sfTab('line','📈 Czas')+'</div>';
-    html+='<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
-    html+='<div style="display:flex;gap:4px;flex-wrap:wrap">'+_sfBtn('starFilter','all','Wszystkie ★','statsApplyFilter()');
-    [1,2,3,4].forEach(function(s){html+=_sfBtn('starFilter',s,'★'.repeat(s),'statsApplyFilter()');});
-    html+='</div>';
-    if(_sf.activeTab!=='line'){
-        html+='<select onchange="_sf.catFilter=this.value;statsApplyFilter()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem;cursor:pointer"><option value="all"'+(_sf.catFilter==='all'?' selected':'')+'>Wszystkie miana</option>';
-        STATS_CATS.forEach(function(c){html+='<option value="'+c+'"'+(_sf.catFilter===c?' selected':'')+'>'+c+'</option>';});
-        html+='</select>';
-        html+='<input type="month" value="'+(_sf.month||'')+'" onchange="_sf.month=this.value||null;statsApplyFilter()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem">';
-        if(_sf.month)html+='<button onclick="_sf.month=null;statsApplyFilter()" style="padding:4px 10px;border-radius:8px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;font-size:.78rem">✕</button>';
-    }
-    html+='</div></div>';
-    html+='<div class="home-card" style="padding:16px">';
-    if(_sf.activeTab==='bar') html+=_renderBarChart();
-    else if(_sf.activeTab==='pie') html+=_renderPieChart();
-    else html+=_renderLineControls()+_renderLineChart();
-    html+='</div></div>';
-    document.getElementById('contentArea').innerHTML=html;
-}
-
-function _renderBarChart() {
-    var data=statsBarData(_sf.starFilter,_sf.catFilter,_sf.month);
-    var maxVal=Math.max.apply(null,Object.values(data))||1;
-    var totalDone=Object.values(data).reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności per miano'+(_sf.month?' — '+_sf.month:'')+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+'</h3>';
-    if(!totalDone)return html+'<p style="color:var(--muted);text-align:center;padding:30px 0">Brak zdobytych sprawności w wybranych filtrach.</p>';
-    html+='<div style="display:flex;align-items:flex-end;gap:10px;height:200px;padding:0 4px">';
-    STATS_CATS.forEach(function(cat){
-        var val=data[cat]||0; var pct=Math.round(val/maxVal*100); var col=STATS_COLORS[cat]; var meta=CAT_META[cat]||{};
-        html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">'
-            +'<div style="font-size:.75rem;font-weight:700;color:var(--text)">'+val+'</div>'
-            +'<div style="width:100%;background:'+col+';border-radius:6px 6px 0 0;height:'+Math.max(pct,3)+'%;transition:height .4s" title="'+cat+': '+val+'"></div>'
-            +'<div style="font-size:.68rem;color:var(--muted);text-align:center;line-height:1.2">'+(meta.icon||'')+'<br>'+cat.split(' ')[0]+'</div></div>';
-    });
-    html+='</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center">';
-    STATS_CATS.forEach(function(cat){html+='<div style="display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:2px;background:'+STATS_COLORS[cat]+'"></div>'+cat+'</div>';});
-    return html+'</div>';
-}
-
-function _renderPieChart() {
-    var data=statsBarData(_sf.starFilter,_sf.catFilter,_sf.month);
-    var total=Object.values(data).reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności'+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+(_sf.month?' — '+_sf.month:'')+'</h3>';
-    if(!total)return html+'<p style="color:var(--muted);text-align:center;padding:30px 0">Brak zdobytych sprawności.</p>';
-    var cx=100,cy=100,r=85,startAngle=-Math.PI/2,slices='';
-    var entries=STATS_CATS.map(function(c){return {cat:c,val:data[c]||0,col:STATS_COLORS[c]};}).filter(function(e){return e.val>0;});
-    entries.forEach(function(e){
-        var angle=(e.val/total)*2*Math.PI,endAngle=startAngle+angle;
-        var x1=cx+r*Math.cos(startAngle),y1=cy+r*Math.sin(startAngle),x2=cx+r*Math.cos(endAngle),y2=cy+r*Math.sin(endAngle);
-        slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+e.col+'" stroke="var(--panel)" stroke-width="2"><title>'+e.cat+': '+e.val+'</title></path>';
-        startAngle=endAngle;
-    });
-    html+='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center">';
-    html+='<svg viewBox="0 0 200 200" style="width:180px;height:180px;flex-shrink:0">'+slices+'</svg>';
-    html+='<div style="display:grid;gap:6px">';
-    entries.forEach(function(e){html+='<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:'+e.col+';flex-shrink:0"></div><span style="font-size:.82rem;color:var(--text)">'+e.cat+'</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+e.val+' ('+Math.round(e.val/total*100)+'%)</span></div>';});
-    return html+'</div></div>';
-}
-
-function _renderLineControls() {
-    var now=new Date(); var curMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    var html='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">';
-    html+='<div style="display:flex;gap:4px">';
-    html+='<button onclick="_sf.timeScale=\'year\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeScale==='year'?'var(--primary)':'var(--panel)')+';color:'+(_sf.timeScale==='year'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">12 miesięcy</button>';
-    html+='<button onclick="_sf.timeScale=\'month\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeScale==='month'?'var(--primary)':'var(--panel)')+';color:'+(_sf.timeScale==='month'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Miesiąc</button>';
-    html+='</div>';
-    if(_sf.timeScale==='month'){
-        html+='<input type="month" value="'+(_sf.timeMonth||curMonth)+'" onchange="_sf.timeMonth=this.value;renderStatsPanel()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem">';
-        html+='<div style="display:flex;gap:4px">';
-        html+='<button onclick="_sf.timeGroupBy=\'day\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeGroupBy==='day'?'var(--f5)':'var(--panel)')+';color:'+(_sf.timeGroupBy==='day'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Dni</button>';
-        html+='<button onclick="_sf.timeGroupBy=\'week\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeGroupBy==='week'?'var(--f5)':'var(--panel)')+';color:'+(_sf.timeGroupBy==='week'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Tygodnie</button>';
-        html+='</div>';
-    }
-    html+='<select onchange="_sf.catFilter=this.value;renderStatsPanel()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem;cursor:pointer"><option value="all"'+(_sf.catFilter==='all'?' selected':'')+'>Wszystkie miana</option>';
-    STATS_CATS.forEach(function(c){html+='<option value="'+c+'"'+(_sf.catFilter===c?' selected':'')+'>'+(CAT_META[c]?CAT_META[c].icon+' ':'')+c+'</option>';});
-    html+='</select></div>';
-    return html;
-}
-
-function _renderLineChart() {
-    var d=statsTimeData(_sf.timeScale,_sf.timeGroupBy,_sf.catFilter,_sf.starFilter);
-    var labels=d.labels,data=d.data,maxVal=Math.max.apply(null,data)||1,total=data.reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności w czasie'+(_sf.timeScale==='year'?' — 12 miesięcy':' — '+(_sf.timeMonth||''))+(_sf.catFilter!=='all'?' — '+_sf.catFilter:'')+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+'</h3>';
-    if(!total)return html+'<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych — sprawności zaczynają być zliczane od teraz.</p>';
-    var W=660,H=180,PL=32,PR=8,PT=10,PB=28,cW=W-PL-PR,cH=H-PT-PB,n=labels.length;
-    var pts=data.map(function(v,i){return{x:PL+(i/(n-1||1))*cW,y:PT+(1-v/maxVal)*cH};});
-    var pathD=pts.map(function(p,i){return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
-    var fillD=pathD+' L'+pts[pts.length-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
-    var yTicks=''; for(var yi=0;yi<=4;yi++){var yv=Math.round(maxVal*yi/4),yy=PT+(1-yi/4)*cH;yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/><text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';}
-    var step=Math.ceil(n/10),xLabels='';
-    labels.forEach(function(lb,i){if(i%step!==0&&i!==n-1)return;var xx=PL+(i/(n-1||1))*cW;xLabels+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';});
-    var dots=pts.map(function(p,i){return'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';}).join('');
-    html+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><defs><linearGradient id="lgf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>'+yTicks+xLabels+'<path d="'+fillD+'" fill="url(#lgf)"/><path d="'+pathD+'" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
-    html+='<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie: <strong style="color:var(--text)">'+total+' sprawności</strong></div>';
-    return html;
-}
-
-// ── Daty zaliczeń — MongoDB przez API ──────────────────────────
-var _cachedProgDates = null;
-
-function getProgDates() {
-    return _cachedProgDates || {};
-}
-
-async function loadProgDates() {
-    if (!currentUser || !currentUser.id) return;
-    try {
-        var r = await apiFetch('/progress/' + currentUser.id + '/dates');
-        if (r.ok) {
-            _cachedProgDates = r.data || {};
-            // Jednorazowa migracja z localStorage
-            try {
-                var local = JSON.parse(localStorage.getItem('hk_prog_dates') || '{}');
-                var toMigrate = Object.keys(local).filter(function(k){ return !_cachedProgDates[k]; });
-                if (toMigrate.length) {
-                    await Promise.all(toMigrate.map(function(k){
-                        return apiFetch('/progress/date', { method:'POST', body:JSON.stringify({ taskId:k, timestamp:local[k] }) });
-                    }));
-                    toMigrate.forEach(function(k){ _cachedProgDates[k] = local[k]; });
-                    localStorage.removeItem('hk_prog_dates');
-                    console.log('Migracja dat z localStorage -> MongoDB OK (' + toMigrate.length + ')');
-                }
-            } catch(e) {}
-        }
-    } catch(e) { console.warn('loadProgDates error:', e); }
-}
-
-async function statRecordTaskDate(taskId, done) {
-    if (!_cachedProgDates) _cachedProgDates = {};
-    if (done) {
-        if (_cachedProgDates[taskId]) return; // już zapisana data
-        var ts = Date.now();
-        _cachedProgDates[taskId] = ts;
-        apiFetch('/progress/date', { method:'POST', body:JSON.stringify({ taskId:taskId, timestamp:ts }) }).catch(function(){});
-    } else {
-        delete _cachedProgDates[taskId];
-        apiFetch('/progress/date', { method:'POST', body:JSON.stringify({ taskId:taskId, timestamp:null }) }).catch(function(){});
-    }
-}
-
-// Patch toggleTask — zapisuj daty przy zaliczaniu
-window._statsPatchToggle = function() {
-    var orig = window.toggleTask;
-    if (orig && !orig._datePatched) {
-        window.toggleTask = async function(taskId, itemId) {
-            var wasDone = !!cachedProgress[taskId];
-            var result = await orig.apply(this, arguments);
-            var isDone = !!cachedProgress[taskId];
-            if (isDone !== wasDone) statRecordTaskDate(taskId, isDone);
-            return result;
-        };
-        window.toggleTask._datePatched = true;
-    }
-};
-setTimeout(window._statsPatchToggle, 500);
-
-</script>
-</body>
-</html>
+>
