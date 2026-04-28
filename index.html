@@ -41,9 +41,7 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 .role-filter-btn {
     padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border);
     background: var(--panel); color: var(--muted); font-size: .75rem; cursor: pointer;
-    transition: .15s;
 }
-.role-filter-btn:hover{border-color:var(--f4);color:var(--f5);}
 .role-filter-btn.active {
     background: var(--primary); color: #fff; border-color: var(--primary);
 }
@@ -52,42 +50,28 @@ body.neon-mode button, body.neon-mode .btn { box-shadow: 0 0 8px rgba(0,255,180,
 :root{
   --sq-bg:#ffffff;
   --sq-border-opacity:1;
-  /* Paleta zieleni — niezmieniana */
   --f9:#0d1f14;--f8:#1a3424;--f7:#243d2b;--f6:#2d5016;--f5:#3a6b1e;
   --f4:#4e8a2a;--f3:#6aaa3d;--f2:#a8d080;--f1:#d4eab8;--f0:#eef7e2;
   --amber:#c97d1a;
-  /* Light mode UI */
-  --bg:#f0f5eb;
-  --panel:#ffffff;
-  --panel2:#e8f0e0;
-  --text:#1a2e1d;--muted:#5a7060;--border:#c8dbb8;
-  --shadow:0 2px 12px rgba(13,31,20,.08);--shadow-lg:0 8px 40px rgba(13,31,20,.16);
+  --bg:#f5f7f0;--panel:#fff;--panel2:#eef2e8;
+  --text:#1a2e1d;--muted:#6b7c6e;--border:#dde8d0;
+  --shadow:0 2px 12px rgba(13,31,20,.07);--shadow-lg:0 8px 40px rgba(13,31,20,.14);
   --r:14px;--rs:9px;
   --nav-h:70px;--topbar-h:54px;
-  --primary:#2e7d32;--primary-dark:#1b5e20;--primary-light:#4caf50;
-  --accent:#e65100;
-  /* Sidebar/topbar/bottom-nav w light mode — ciemnozielone jak zawsze */
-  --chrome-bg:#0d1f14;
-  --chrome-bg2:#1a3424;
-  --chrome-text:#d4eab8;
-  --chrome-muted:#4a6a4a;
-  --chrome-border:rgba(255,255,255,.07);
-  --chrome-item:#88b078;
-  --chrome-hover:rgba(255,255,255,.07);
+  --primary:#2e7d32;--primary-dark:#1b3a28;--primary-light:#4caf50;
+  --accent:#ff6f00;--bg-body:#f7f9f5;--bg-panel:#fff;--bg-input:#f8fafc;
+  --text-main:#2c3e50;--text-muted:#7f8c8d;--border-color:#e2e8f0;
 }
-body.dark,body.dark-mode{
+body.dark{
+  --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
+  --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
+  --bg-body:#121212;--bg-panel:#1e1e1e;--bg-input:#2c2c2c;
+  --text-main:#e0e0e0;--text-muted:#a0a0a0;--border-color:#333;
+}
+body.dark-mode{
   --sq-bg:#111111;
   --bg:#0f1a10;--panel:#172218;--panel2:#1d2e1e;
   --text:#d8ecc8;--muted:#7a9c7e;--border:#253525;
-  --shadow:0 2px 12px rgba(0,0,0,.25);--shadow-lg:0 8px 40px rgba(0,0,0,.4);
-  /* Dark mode chrome — tak samo ciemne */
-  --chrome-bg:#0d1f14;
-  --chrome-bg2:#1a3424;
-  --chrome-text:#d4eab8;
-  --chrome-muted:#4a6a4a;
-  --chrome-border:rgba(255,255,255,.07);
-  --chrome-item:#88b078;
-  --chrome-hover:rgba(255,255,255,.07);
 }
 body.large-text{font-size:20px;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -219,12 +203,12 @@ body.dark .login-box h2{color:var(--f2);}
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;
-  height:var(--topbar-h);background:var(--chrome-bg);
+  height:var(--topbar-h);background:var(--f9);
   display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;
 }
 .topbar-brand{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1rem;
-  color:var(--chrome-text);flex:1;cursor:pointer;line-height:1.2;
+  color:#e8f5d0;flex:1;cursor:pointer;line-height:1.2;
 }
 .topbar-brand small{display:block;font-size:.65rem;color:#6a9a6a;}
 
@@ -233,9 +217,9 @@ body.dark .login-box h2{color:var(--f2);}
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;background:var(--chrome-bg);color:var(--chrome-text);
+  width:260px;background:var(--f9);color:var(--f1);
   display:flex;flex-direction:column;flex-shrink:0;
-  border-right:1px solid var(--chrome-border);overflow:hidden;
+  border-right:1px solid rgba(255,255,255,.05);overflow:hidden;
   transition:width .25s, transform .25s;
 }
 /* PC: sidebar można zwinąć */
@@ -253,15 +237,15 @@ body.dark .login-box h2{color:var(--f2);}
 .sidebar-search{padding:12px 12px 6px;}
 .sidebar-search input{
   width:100%;padding:9px 13px;border-radius:30px;border:none;
-  background:rgba(255,255,255,.1);color:var(--chrome-text);
+  background:rgba(255,255,255,.08);color:var(--f1);
   font-size:.86rem;outline:none;transition:.2s;
   font-family:"Barlow", sans-serif;
 }
-.sidebar-search input::placeholder{color:var(--chrome-muted);}
-.sidebar-search input:focus{background:rgba(255,255,255,.18);}
+.sidebar-search input::placeholder{color:#4a6a4a;}
+.sidebar-search input:focus{background:rgba(255,255,255,.14);}
 .nav-list{flex:1;overflow-y:auto;list-style:none;padding:4px 8px 20px;}
 .nav-list::-webkit-scrollbar{width:3px}
-.nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--chrome-muted);font-weight:700;}
+.nav-category{padding:14px 10px 5px;font-size:.64rem;text-transform:uppercase;letter-spacing:1.5px;color:#456645;font-weight:700;}
 .nav-circle-img{
   width:28px;height:28px;border-radius:50%;object-fit:contain;
   flex-shrink:0;margin-right:6px;
@@ -269,7 +253,7 @@ body.dark .login-box h2{color:var(--f2);}
 }
 .nav-circle-empty{
   width:28px;height:28px;border-radius:50%;flex-shrink:0;margin-right:6px;
-  border:1.5px dashed rgba(255,255,255,.3);background:rgba(255,255,255,.06);
+  border:1.5px dashed rgba(255,255,255,.15);background:rgba(255,255,255,.03);
 }
 .nav-item-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .nav-item-locked{cursor:default;}
@@ -284,11 +268,11 @@ body.dark .login-box h2{color:var(--f2);}
 .nav-item{
   padding:9px 12px;border-radius:var(--rs);cursor:pointer;
   display:flex;align-items:center;gap:0;
-  color:var(--chrome-item);font-size:.87rem;transition:.15s;margin-bottom:2px;
+  color:#88b078;font-size:.87rem;transition:.15s;margin-bottom:2px;
 }
-.nav-item:hover{background:rgba(255,255,255,.1);color:var(--chrome-text);}
+.nav-item:hover{background:rgba(255,255,255,.07);color:var(--f1);}
 .nav-item.active{background:linear-gradient(90deg,var(--f4),var(--f3));color:#fff;font-weight:600;}
-.nav-progress{font-size:.67rem;font-weight:700;background:rgba(0,0,0,.3);padding:2px 7px;border-radius:20px;color:var(--chrome-text);}
+.nav-progress{font-size:.67rem;font-weight:700;background:rgba(0,0,0,.25);padding:2px 7px;border-radius:20px;}
 .nav-item.active .nav-progress{background:rgba(255,255,255,.2);}
 
 /* SIDEBAR OVERLAY (mobile) */
@@ -299,7 +283,7 @@ body.dark .login-box h2{color:var(--f2);}
 .sidebar-overlay.active{display:block;}
 
 /* CONTENT */
-.content-scroll{flex:1;overflow-y:auto;padding:24px 24px 90px;background:var(--bg);}
+.content-scroll{flex:1;overflow-y:auto;padding:24px 24px 90px;}
 .content-wrap{max-width:780px;margin:0 auto;}
 
 /* ══════════════════════════════════════════════
@@ -307,8 +291,8 @@ body.dark .login-box h2{color:var(--f2);}
 ══════════════════════════════════════════════ */
 .bottom-nav{
   height:var(--nav-h);
-  background:var(--chrome-bg2);
-  border-top:1px solid var(--chrome-border);
+  background:var(--f8);
+  border-top:1px solid rgba(255,255,255,.07);
   display:flex;align-items:center;justify-content:space-around;
   padding:0 8px;flex-shrink:0;
 }
@@ -316,11 +300,11 @@ body.dark .login-box h2{color:var(--f2);}
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:4px;
   cursor:pointer;padding:6px 4px;border-radius:var(--rs);
-  transition:.18s;color:var(--chrome-muted);border:none;background:none;
+  transition:.18s;color:#4a6a4a;border:none;background:none;
   font-family:"Barlow", sans-serif;
 }
-.bnav-btn:hover{color:var(--chrome-text);}
-.bnav-btn.active{color:var(--chrome-text);}
+.bnav-btn:hover{color:var(--f2);}
+.bnav-btn.active{color:var(--f1);}
 .bnav-icon{
   width:40px;height:40px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
@@ -463,8 +447,6 @@ body.dark .cat-badge{color:var(--f2);}
   border:1.5px solid var(--border);cursor:pointer;transition:.16s;
 }
 .cb-container:hover{border-color:var(--f3);box-shadow:var(--shadow);}
-body:not(.dark):not(.dark-mode) .cb-container{border-color:#c8dbb8;}
-body:not(.dark):not(.dark-mode) .cb-container:hover{border-color:var(--f4);background:#f8fbf4;}
 .cb-container input{display:none;}
 .checkmark{
   width:22px;height:22px;min-width:22px;border-radius:6px;
@@ -485,20 +467,15 @@ body:not(.dark):not(.dark-mode) .cb-container:hover{border-color:var(--f4);backg
 .welcome-header{text-align:center;padding:36px 20px 28px;}
 .welcome-header h2{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:2rem;
-  color:var(--f4);margin-bottom:6px;
+  color:var(--f5);margin-bottom:6px;
 }
 body.dark .welcome-header h2{color:var(--f2);}
-body:not(.dark):not(.dark-mode) .welcome-header h2{color:var(--f5);}
 .welcome-header p{color:var(--muted);}
 
 .home-card{
   background:var(--panel);border-radius:var(--r);
   box-shadow:var(--shadow);padding:24px;
   margin-bottom:18px;border:1px solid var(--border);
-}
-body:not(.dark):not(.dark-mode) .home-card{
-  box-shadow:0 2px 16px rgba(13,31,20,.1);
-  border-color:#bdd4aa;
 }
 .home-card h3{
   font-family:"Franklin Gothic Book", "Franklin Gothic Medium", "ITC Franklin Gothic", Arial Narrow, sans-serif;font-size:1.05rem;
@@ -513,9 +490,6 @@ body:not(.dark):not(.dark-mode) .home-card{
   padding:12px 14px;background:var(--panel2);
   border:1.5px solid var(--border);border-radius:var(--rs);
   display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
-}
-body:not(.dark):not(.dark-mode) .member-row{
-  background:#f3f8ed;border-color:#bdd4aa;
 }
 .btn-sm{
   padding:7px 13px;border:none;border-radius:var(--rs);
@@ -829,7 +803,7 @@ input:checked+.slider:before{transform:translateX(21px);}
   white-space:nowrap;overflow:hidden;padding:0 2px;
 }
 .msq-circle-stars{position:absolute;top:2px;right:3px;font-size:.5rem;color:var(--amber);}
-.msq-circle-locked{border:2px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.03);font-size:1rem;opacity:.4;cursor:default;}
+.msq-circle-locked{border:2px dashed rgba(255,255,255,.1);background:transparent;font-size:1rem;opacity:.2;cursor:default;}
 
 /* Board picker */
 .bp-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;}
@@ -891,10 +865,6 @@ body.neon-mode .btn-main {
 .legendary-card::before{content:'';position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(105deg,transparent,rgba(251,191,36,.22) 50%,transparent);animation:leg-sweep 3s ease-in-out infinite;pointer-events:none;z-index:1}
 .legendary-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;animation:leg-badge-shine 2s linear infinite;color:#1a0a00;font-size:.52rem;font-weight:900;padding:1px 8px;border-radius:0 0 8px 8px;letter-spacing:.08em;z-index:10;white-space:nowrap;text-transform:uppercase}
 .legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2}
-.nav-circle-img.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
-.nav-item.legendary-item{position:relative;}
-.nav-item.legendary-item::after{content:'✦';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:.55rem;color:#f59e0b;animation:leg-badge-shine 2s linear infinite;background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.sprawnosc-circle-icon.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
 </style>
 </head>
 <body>
@@ -906,7 +876,6 @@ body.neon-mode .btn-main {
     <input type="text" id="loginUsername" placeholder="Login" onkeydown="if(event.key==='Enter')handleLogin()">
     <input type="password" id="loginPassword" placeholder="Haslo" onkeydown="if(event.key==='Enter')handleLogin()">
     <button class="btn-main" onclick="handleLogin()">Zaloguj sie</button>
-    <button class="btn-link" onclick="showForgotPassword()" style="margin-top:4px;font-size:.83rem">🔑 Zapomniałem hasła</button>
     <button class="btn-link" onclick="showPanel('register')">Nie masz konta? Zarejestruj sie</button>
     <p class="login-msg" id="loginMsg"></p>
   </div>
@@ -914,6 +883,7 @@ body.neon-mode .btn-main {
     <h2>Dolacz!</h2>
     <input type="text"     id="regUsername"  placeholder="Login (min. 3 znaki)">
     <input type="text"     id="regName"      placeholder="Pseudonim / Imie">
+    <input type="email"    id="regEmail"     placeholder="Adres e-mail">
     <input type="password" id="regPassword"  placeholder="Haslo (min. 6 znakow)">
     <input type="password" id="regPassword2" placeholder="Powtorz haslo">
     <select id="regTeam" style="display:none"><option value="">-- Wybierz druzyne --</option></select>
@@ -986,55 +956,20 @@ body.neon-mode .btn-main {
     <span class="close-settings" onclick="toggleSettingsModal(false)">&times;</span>
     <h3>Ustawienia</h3>
 
-    <!-- Zakładki -->
-    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--panel2);border-radius:10px;padding:4px">
-      <button id="stab-general" onclick="settingsTab('general')" style="flex:1;padding:7px;border-radius:7px;border:none;background:var(--primary);color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">⚙️ Ogólne</button>
-      <button id="stab-account" onclick="settingsTab('account')" style="flex:1;padding:7px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-weight:600;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">👤 Konto</button>
+    <div class="settings-option">
+      <span>Tryb ciemny</span>
+      <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider round"></span></label>
     </div>
-
-    <!-- Zakładka: Ogólne -->
-    <div id="stab-panel-general">
-      <div class="settings-option">
-        <span>Tryb ciemny</span>
-        <label class="switch"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()"><span class="slider round"></span></label>
-      </div>
-      <div class="settings-option">
-        <span>Duzy tekst</span>
-        <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
-      </div>
-      <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
-      <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
-      <button class="settings-btn-action btn-reset" onclick="resetProgress()">&#9888; Zresetuj progres</button>
-      <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
+    <div class="settings-option">
+      <span>Duzy tekst</span>
+      <label class="switch"><input type="checkbox" id="textSizeToggle" onchange="toggleTextSize()"><span class="slider"></span></label>
     </div>
-
-    <!-- Zakładka: Konto -->
-    <div id="stab-panel-account" style="display:none">
-      <div id="accountEmailInfo" style="font-size:.82rem;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:var(--panel2);border-radius:var(--rs)">
-        📧 Email: <span id="accountEmailDisplay" style="color:var(--text);font-weight:600">Ładowanie...</span>
-      </div>
-
-      <!-- Zmień email -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Zmień email</div>
-        <input id="newEmailInput" type="email" placeholder="Nowy adres email" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
-        <input id="emailConfirmPass" type="password" placeholder="Potwierdź aktualnym hasłem" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:8px;font-family:Barlow,sans-serif">
-        <button onclick="changeEmail()" style="width:100%;padding:9px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;font-size:.88rem">📧 Wyślij link potwierdzający</button>
-        <p id="emailChangeMsg" style="font-size:.8rem;min-height:16px;margin:6px 0 0;text-align:center"></p>
-      </div>
-
-      <!-- Zmień hasło -->
-      <div style="margin-bottom:18px">
-        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Zmień hasło</div>
-        <input id="currentPassInput" type="password" placeholder="Obecne hasło" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
-        <input id="newPassInput" type="password" placeholder="Nowe hasło (min. 6 znaków)" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:6px;font-family:Barlow,sans-serif">
-        <input id="newPass2Input" type="password" placeholder="Powtórz nowe hasło" style="width:100%;box-sizing:border-box;padding:9px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;margin-bottom:8px;font-family:Barlow,sans-serif">
-        <button onclick="changePassword()" style="width:100%;padding:9px;border-radius:var(--rs);border:none;background:var(--f5);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif;font-size:.88rem">🔑 Zmień hasło</button>
-        <p id="passChangeMsg" style="font-size:.8rem;min-height:16px;margin:6px 0 0;text-align:center"></p>
-      </div>
-
-      <button class="settings-btn-action btn-logout" onclick="handleLogout()" style="margin-top:8px">Wyloguj się</button>
-    </div>
+    
+    
+    <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
+    <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
+    <button class="settings-btn-action btn-reset"  onclick="resetProgress()">&#9888; Zresetuj progres</button>
+    <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
   </div>
 </div>
 
@@ -1058,13 +993,6 @@ body.neon-mode .btn-main {
     </div>
   </div>
 
-  <!-- BANER EMAIL -->
-  <div id="emailBanner" style="display:none;background:linear-gradient(90deg,#1e3a2e,#2d5a3d);border-bottom:1px solid rgba(74,222,128,.2);padding:8px 16px;flex-shrink:0;align-items:center;gap:10px;z-index:100">
-    <span style="font-size:.85rem;color:#a7f3d0;flex:1">📧 <strong>Dodaj email</strong> do konta, aby móc odzyskać hasło w razie potrzeby.</span>
-    <button onclick="emailBannerSetEmail()" style="padding:5px 12px;border-radius:20px;border:1.5px solid #4ade80;background:transparent;color:#4ade80;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">Dodaj email</button>
-    <button onclick="emailBannerDismiss()" style="padding:5px 10px;border-radius:20px;border:none;background:transparent;color:rgba(167,243,208,.5);font-size:.85rem;cursor:pointer;flex-shrink:0" title="Zamknij">✕</button>
-  </div>
-
   <!-- BODY -->
   <div class="app-body">
 
@@ -1073,7 +1001,7 @@ body.neon-mode .btn-main {
       <div class="sidebar-search">
         <div style="display:flex;align-items:center;gap:6px">
           <input type="text" id="searchInput" placeholder="&#128269; Szukaj..." onkeyup="filterNav()" style="flex:1">
-          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.1);color:var(--chrome-text);cursor:pointer;font-size:.9rem">&#9881;</button>
+          <button id="filterGearBtn" onclick="toggleFilterPanel()" title="Filtry" style="flex-shrink:0;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--f1);cursor:pointer;font-size:.9rem">&#9881;</button>
         </div>
         <div id="filterPanel" style="display:none;padding:8px 0 4px">
           <div style="font-size:.62rem;text-transform:uppercase;letter-spacing:1px;color:#456645;font-weight:700;margin:6px 0 4px">Kategoria</div>
@@ -1104,7 +1032,11 @@ body.neon-mode .btn-main {
         </div>
       </div>
       <ul class="nav-list" id="navList"></ul>
-
+      <div style="padding:10px 10px 14px;border-top:1px solid rgba(255,255,255,.07)">
+        <button onclick="playNap()" style="width:100%;padding:9px;border-radius:30px;cursor:pointer;background:linear-gradient(135deg,#1a3a2a,#2d6a3f);border:1.5px solid #4ade80;color:#d1fae5;font-weight:700;font-size:.88rem;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 14px rgba(74,222,128,.2);">
+          <span>&#127925;</span> nap
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT -->
@@ -1127,10 +1059,6 @@ body.neon-mode .btn-main {
     <button class="bnav-btn" id="bnav-board" onclick="bnavClick('board')">
       <div class="bnav-icon">🪡</div>
       <span class="bnav-label">Mój Mundur</span>
-    </button>
-    <button class="bnav-btn" id="bnav-stats" onclick="bnavClick('stats')">
-      <div class="bnav-icon">📊</div>
-      <span class="bnav-label">Statystyki</span>
     </button>
     <button class="bnav-btn" id="bnav-settings" onclick="bnavClick('settings')">
       <div class="bnav-icon">&#9881;</div>
@@ -5039,7 +4967,7 @@ var ROLE_LABELS = {
     'druzynowy':   '🦅 Drużynowy',
     'zastepowy':   '📋 Zastępowy',
     'podzastepowy':'🌿 Podzastępowy',
-    'user':        '🍀 Szeregowy'
+    'user':        '🍀 Harcerz'
 };
 var ROLE_COLORS = {
     'superadmin':   '#a855f7',
@@ -5096,27 +5024,19 @@ window.onload = function() {
         try { userObj = JSON.parse(savedUser); } catch(e) { userObj = null; }
     }
 
-    // Sprawdz URL tokeny ZAWSZE — niezależnie czy zalogowany
-    var urlParams  = new URLSearchParams(window.location.search);
-    var resetTok   = urlParams.get('resetToken');
-    var confirmTok = urlParams.get('confirmEmail');
-
-    if (confirmTok) {
-        // Potwierdzenie emaila — obsłuż od razu, nie ładuj aplikacji
-        confirmEmailChange(confirmTok);
-    } else if (resetTok) {
-        // Reset hasła — pokaż formularz
-        showResetPasswordPanel(resetTok);
-    } else if (savedToken && userObj && userObj.id) {
-        // Normalna sesja — wczytaj aplikację
+    if (savedToken && userObj && userObj.id) {
+        // Mamy sesję — wczytaj od razu bez czekania na serwer
         authToken   = savedToken;
         currentUser = userObj;
         if (savedProgress) {
             try { cachedProgress = JSON.parse(savedProgress); } catch(e) { cachedProgress = {}; }
         }
+        // Pokaż aplikację natychmiast
         initAppAfterLogin();
+        // W tle tylko odśwież progress — NIE wylogowuj nigdy przy błędzie
         _backgroundRefreshProgress();
     } else {
+        // Brak sesji — pokaż login
         loadTeams().then(function() { showPanel('login'); }).catch(function() { showPanel('login'); });
     }
 };
@@ -5197,137 +5117,6 @@ async function loadTeams() {
 // ================================================================
 // LOGOWANIE
 // ================================================================
-
-// ================================================================
-// BANER EMAIL
-// ================================================================
-function checkEmailBanner() {
-    // Nie pokazuj jeśli użytkownik już zamknął
-    try { if (localStorage.getItem('hk_email_banner_dismissed') === '1') return; } catch(e) {}
-    // Sprawdź czy ma email
-    apiFetch('/me').then(function(r) {
-        if (!r.ok) return;
-        var hasEmail = r.data && r.data.email;
-        var banner = document.getElementById('emailBanner');
-        if (banner) banner.style.display = hasEmail ? 'none' : 'flex';
-    }).catch(function(){});
-}
-
-function emailBannerDismiss() {
-    try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
-    var b = document.getElementById('emailBanner');
-    if (b) b.style.display = 'none';
-}
-
-function emailBannerSetEmail() {
-    // Otwórz ustawienia na zakładce Konto
-    toggleSettingsModal(true);
-    setTimeout(function() { settingsTab('account'); }, 50);
-    var b = document.getElementById('emailBanner');
-    if (b) b.style.display = 'none';
-}
-
-// ================================================================
-// RESET HASŁA / POTWIERDZENIE EMAILA
-// ================================================================
-
-function showForgotPassword() {
-    var old = document.getElementById('_forgotModal'); if (old) old.remove();
-    var overlay = document.createElement('div');
-    overlay.id = '_forgotModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-
-    var inner = document.createElement('div');
-    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:28px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
-    inner.innerHTML = '<h3 style="margin:0 0 6px;font-size:1.1rem">🔑 Reset hasła</h3>'
-        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 16px">Podaj adres email przypisany do konta. Wyślemy link do ustawienia nowego hasła.</p>'
-        + '<input id="_forgotEmail" type="email" placeholder="Adres email" style="width:100%;box-sizing:border-box;padding:10px 13px;border-radius:10px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.92rem;margin-bottom:12px;font-family:Barlow,sans-serif">'
-        + '<p id="_forgotMsg" style="font-size:.82rem;min-height:16px;margin:0 0 10px;text-align:center"></p>'
-        + '<div style="display:flex;gap:8px">'
-        + '<button id="_forgotCancelBtn" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
-        + '<button id="_forgotSendBtn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">Wyślij link</button>'
-        + '</div>';
-    overlay.appendChild(inner);
-    document.body.appendChild(overlay);
-
-    inner.querySelector('#_forgotCancelBtn').onclick = function() { overlay.remove(); };
-    inner.querySelector('#_forgotSendBtn').onclick = async function() {
-        var email = (document.getElementById('_forgotEmail').value || '').trim();
-        var msg = document.getElementById('_forgotMsg');
-        if (!email) { msg.style.color='#ef4444'; msg.textContent='Podaj adres email.'; return; }
-        msg.style.color='var(--muted)'; msg.textContent='Wysyłanie...';
-        this.disabled = true;
-        var r = await apiFetch('/reset-password', { method:'POST', body:JSON.stringify({ email }) });
-        this.disabled = false;
-        if (r.ok) {
-            msg.style.color='#22c55e';
-            msg.textContent='✓ Sprawdź skrzynkę — jeśli email istnieje, link został wysłany.';
-            setTimeout(function(){ overlay.remove(); }, 3000);
-        } else {
-            msg.style.color='#ef4444';
-            msg.textContent=(r.data&&r.data.error)||'Błąd.';
-        }
-    };
-}
-
-function showResetPasswordPanel(token) {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    var box = document.querySelector('.login-box');
-    if (!box) return;
-    box.innerHTML = '<h2>🔑 Nowe hasło</h2>'
-        + '<p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Ustaw nowe hasło dla swojego konta.</p>'
-        + '<input id="_resetNewPass" type="password" placeholder="Nowe hasło (min. 6 znaków)" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:Barlow,sans-serif;font-size:.95rem;margin-bottom:10px">'
-        + '<input id="_resetNewPass2" type="password" placeholder="Powtórz nowe hasło" style="width:100%;box-sizing:border-box;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--bg);color:var(--text);font-family:Barlow,sans-serif;font-size:.95rem;margin-bottom:10px">'
-        + '<p id="_resetMsg" style="font-size:.82rem;min-height:16px;margin:0 0 10px;text-align:center"></p>'
-        + '<button onclick="doResetPassword(window._resetToken)" class="btn-main">Ustaw nowe hasło</button>';
-    window._resetToken = token;
-}
-
-async function doResetPassword(token) {
-    var np  = (document.getElementById('_resetNewPass').value || '');
-    var np2 = (document.getElementById('_resetNewPass2').value || '');
-    var msg = document.getElementById('_resetMsg');
-    msg.style.color='var(--muted)'; msg.textContent='';
-    if (!np || !np2) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij oba pola.'; return; }
-    if (np !== np2)  { msg.style.color='#ef4444'; msg.textContent='Hasła nie są identyczne.'; return; }
-    if (np.length<6) { msg.style.color='#ef4444'; msg.textContent='Hasło min. 6 znaków.'; return; }
-    msg.textContent='Zmienianie...';
-    var r = await apiFetch('/reset-password/confirm', { method:'POST', body:JSON.stringify({ token, newPassword: np }) });
-    if (r.ok) {
-        msg.style.color='#22c55e'; msg.textContent='✓ Hasło zmienione! Możesz się zalogować.';
-        setTimeout(function(){
-            history.replaceState({}, '', window.location.pathname);
-            location.reload();
-        }, 2000);
-    } else {
-        msg.style.color='#ef4444'; msg.textContent=(r.data&&r.data.error)||'Błąd.';
-    }
-}
-
-async function confirmEmailChange(token) {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    var box = document.querySelector('.login-box');
-    if (!box) return;
-    box.innerHTML = '<h2>📧 Potwierdzenie emaila</h2><p style="color:var(--muted);font-size:.85rem">Potwierdzanie zmiany adresu email...</p>';
-    // confirm-email nie wymaga tokenu JWT
-    var API_BASE = (typeof API !== 'undefined' ? API : 'https://harcerze-backend.onrender.com/api');
-    var rawRes = await fetch(API_BASE + '/confirm-email?token=' + token);
-    var r = { ok: rawRes.ok, data: {} };
-    try { r.data = await rawRes.json(); } catch(e) {}
-    // mock apiFetch shape
-    r = r;
-    if (r.ok) {
-        box.innerHTML = '<h2>📧 Email potwierdzony!</h2>'
-            + '<p style="color:#22c55e;margin-bottom:16px">' + (r.data.message||'Email został zmieniony.') + '</p>'
-            + '<button onclick="history.replaceState({},\'\',location.pathname);location.reload()" class="btn-main">Wróć do logowania</button>';
-    } else {
-        box.innerHTML = '<h2>❌ Błąd</h2>'
-            + '<p style="color:#ef4444;margin-bottom:16px">' + ((r.data&&r.data.error)||'Link nieprawidłowy lub wygasł.') + '</p>'
-            + '<button onclick="history.replaceState({},\'\',location.pathname);location.reload()" class="btn-main">Wróć do logowania</button>';
-    }
-}
-
 async function handleLogin() {
     var username = document.getElementById('loginUsername').value.trim();
     var password = document.getElementById('loginPassword').value;
@@ -5382,7 +5171,7 @@ async function _handleRegisterOriginal() {
 // ================================================================
 function handleLogout() {
     try { localStorage.removeItem('hk_progress'); } catch(e) {}
-    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen(); try { localStorage.removeItem('hk_email_banner_dismissed'); } catch(e) {}
+    authToken = null; currentUser = null; currentViewUserId = null; cachedProgress = {}; document.getElementById('appShell').style.display='none'; hidePendingScreen();
     localStorage.removeItem('hk_token');
     localStorage.removeItem('hk_user');
     toggleSettingsModal(false);
@@ -5402,11 +5191,6 @@ function initAppAfterLogin() {
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('appShell').style.display = 'flex';
 
-    // Załaduj legendarne stats żeby efekty były widoczne od razu
-    if (typeof refreshLegendaryStats === 'function') refreshLegendaryStats();
-    // Załaduj daty zaliczeń z MongoDB
-    if (typeof loadProgDates === 'function') loadProgDates();
-
     // Pobierz dane druzyny dla kazdego uzytkownika
     apiFetch('/my-team').then(function(r) {
         if (r.ok && r.data) {
@@ -5417,10 +5201,9 @@ function initAppAfterLogin() {
         updateBnavTeam();
     });
     apiFetch('/my-zastep').then(function(r) {
-        if (r.ok && r.data) {
-            // Zapisz zawsze — nawet gdy zastepId jest null (brak zastępu)
-            currentUser.zastepId   = r.data.zastepId   || null;
-            currentUser.zastepName = r.data.zastepName || null;
+        if (r.ok && r.data && r.data.zastepName) {
+            currentUser.zastepName = r.data.zastepName;
+            currentUser.zastepId   = r.data.zastepId;
             try { localStorage.setItem('hk_user', JSON.stringify(currentUser)); } catch(e) {}
         }
     });
@@ -5429,9 +5212,6 @@ function initAppAfterLogin() {
         showPendingScreen();
         return;
     }
-
-    // Pokaż baner email jeśli user nie ma emaila (i nie ukrył banera)
-    checkEmailBanner();
 
     // Renderuj natychmiast z cachedProgress (juz zaladowanym z localStorage)
     if (currentUser.role !== 'user') {
@@ -5445,9 +5225,6 @@ function initAppAfterLogin() {
         renderCategoryGrid();
     }
     renderSidebar(); // ikony od razu z localStorage cache
-
-    // Pokaż baner email jeśli użytkownik nie ma emaila i nie zamknął banera
-    setTimeout(function() { checkEmailBanner(); }, 800);
 
     // Załaduj statusy stopni — potrzebne do munduru i widoku stopni
     loadStopnieStatus(currentUser.id).then(function() {
@@ -5576,24 +5353,6 @@ async function toggleTask(taskId, itemId) {
         return;
     }
 
-    // Sprawdź czy zadanie jest 3 lub 4 gwiazdkowe — może je zaznaczać tylko ksis lub superadmin
-    var taskStarLevel = 0;
-    var item = db.find(function(x){ return x.id === itemId; });
-    if (item) {
-        var parts = taskId.replace(itemId + '-', '').split('-');
-        var gIdx = parseInt(parts[0], 10), tIdx = parseInt(parts[1], 10);
-        var taskText = (item.groups[gIdx] && item.groups[gIdx].tasks[tIdx]) || '';
-        var starMatch = taskText.match(/^✶+/);
-        taskStarLevel = starMatch ? starMatch[0].length : 0;
-    }
-    if (taskStarLevel >= 3 && myRole !== 'superadmin' && myRole !== 'ksis') {
-        document.querySelectorAll('.cb-container input').forEach(function(inp) {
-            if (inp.dataset.tid === taskId) inp.checked = !!cachedProgress[taskId];
-        });
-        alert('Zadania ' + taskStarLevel + '-gwiazdkowe może zaliczać tylko Ksis.');
-        return;
-    }
-
     var isChecked = !cachedProgress[taskId];
     if (isChecked) cachedProgress[taskId] = true;
     else           delete cachedProgress[taskId];
@@ -5625,11 +5384,9 @@ async function toggleTask(taskId, itemId) {
 // ================================================================
 // PANEL ADMINA — lista harcerzy
 // ================================================================
-function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete, viewerIsKsis) {
+function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete) {
     var role = currentUser.role;
     var myRank = rankIndex(role);
-    // ksis może tylko przeglądać sprawności — bez zarządzania drużyną
-    var showManage = !viewerIsKsis;
     var html = '<div class="member-row">'
         + '<div>'
         + '<strong>' + u.name + '</strong>'
@@ -5639,11 +5396,10 @@ function adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
         + (canSpraw ? '<button class="btn-sm" style="background:var(--primary)" onclick="switchToUser(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#128203; Sprawnosci</button>' : '')
-        + (canSpraw ? '<button class="btn-sm" style="background:#1d4ed8" onclick="renderUserStatsPanel(\'' + u._id + '\',\'' + esc + '\')">📊 Statystyki</button>' : '')
-        + (showManage && isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
-        + (showManage && (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
+        + (isLower ? '<button class="btn-sm btn-approve" onclick="changeRolePrompt(\'' + u._id + '\',\'' + esc + '\',\'' + u.role + '\')">&#9998; Rola</button>' : '')
+        + ((role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny') && isLower
             ? '<button class="btn-sm" style="background:var(--f5)" onclick="changeZastepPrompt(\'' + u._id + '\',\'' + esc + '\')">&#128101; Zastep</button>' : '')
-        + (showManage && (role === 'superadmin' || (role === 'druzynowy' && isLower))
+        + ((role === 'superadmin' || (role === 'druzynowy' && isLower))
             ? '<button class="btn-sm btn-delete" onclick="deleteUser(\'' + u._id + '\',\'' + esc + '\')">&#128465; Usun</button>' : '')
         + '</div>'
         + '</div>';
@@ -5694,27 +5450,32 @@ async function renderAdminDashboard() {
         + (role === 'superadmin'
             ? '<button onclick="renderTeamsPanel()" style="margin-top:12px;padding:10px 20px;background:var(--amber);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9881; Zarzadzaj druzynami</button>'
             : '')
-        + (role === 'superadmin'
+        + (['superadmin'].includes(role)
             ? '<button onclick="renderLegendaryPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#9876;&#65039; Legendarne</button>'
             : '')
-        + (role === 'superadmin'
+        + (['superadmin'].includes(role)
             ? '<button onclick="renderPrivateSprawPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#7c3aed;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128274; Prywatne sprawnosci</button>'
             : '')
-        + (role === 'superadmin'
+        + (['superadmin'].includes(role)
             ? '<button onclick="renderBugReportsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:#dc2626;border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128027; Zgloszenia bledow</button>'
             : '')
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
-        + (['druzynowy','przyboczny','zastepowy','podzastepowy','superadmin','ksis'].includes(role)
-            ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki ' + (role==='zastepowy'||role==='podzastepowy'?'zastępu':'drużyny') + '</button>'
-            : '')
         + '</div>';
 
     // ── Wyszukiwarka ──
     
+    // ── Pobierz zastepy druzyny ──
+    var zastepyData = [];
+    if (['druzynowy','przyboczny','superadmin'].includes(role)) {
+        var rzd = await apiFetch('/zastepy');
+        if (rzd.ok && Array.isArray(rzd.data)) zastepyData = rzd.data;
+    }
+    window._adminZastepyData = zastepyData;
+
     // ── Oczekujące — tylko superadmin i druzynowy ──
-    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny'); // ksis nie zatwierdza kont
+    var canApprove = (role === 'superadmin' || role === 'druzynowy' || role === 'przyboczny');
     if (canApprove && pending.length > 0) {
         html += '<div class="home-card" style="border-left:4px solid var(--amber)">'
             + '<h3 style="color:var(--amber)">&#8987; Oczekujace (' + pending.length + ')</h3>'
@@ -5757,12 +5518,15 @@ async function renderAdminDashboard() {
     // ── Aktywni ──
     window._adminAllMembers = active;
     window._adminRoleFilter = '';
-    var roleFilterBtns = '<button class="role-filter-btn active" data-role="" onclick="adminSetRoleFilter(this)">Wszyscy</button>';
+    var roleFilterBtns = '<button onclick="adminSetRoleFilter(\'\')" class="role-filter-btn active" data-role="">Wszyscy</button>';
     ['druzynowy','przyboczny','zastepowy','podzastepowy','user'].forEach(function(r){
-        roleFilterBtns += '<button class="role-filter-btn" data-role="' + r + '" onclick="adminSetRoleFilter(this)">' + (ROLE_LABELS[r]||r) + '</button>';
+        roleFilterBtns += '<button onclick="adminSetRoleFilter(\'' + r + '\')" class="role-filter-btn" data-role="' + r + '">' + (ROLE_LABELS[r]||r) + '</button>';
     });
     html += '<div class="home-card">'
-          + '<h3 style="margin:0 0 10px">Aktywni harcerze (' + active.length + ')</h3>'
+          + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+          + '<h3 style="margin:0">&#128101; Druchy (' + active.length + ')</h3>'
+          + (zastepyData.length ? '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-left:8px">' + zastepyData.reduce(function(acc,z){ return acc + '<button onclick="adminFilterByZastep(this.dataset.id)" data-id="' + z.zastepId + '" class="role-filter-btn" style="font-size:.72rem;padding:2px 9px">' + z.name + '</button>'; },'<button onclick="adminFilterByZastep(\'\')" class="role-filter-btn active" style="font-size:.72rem;padding:2px 9px">Wszyscy</button>') + '</div>' : '')
+          + '</div>'
           + '<input id="adminSearch" oninput="adminFilterMembers()" placeholder="Szukaj po imieniu lub loginie..." '
           + 'style="width:100%;box-sizing:border-box;padding:8px 14px;border-radius:20px;'
           + 'border:1.5px solid var(--border);background:var(--panel);color:var(--f1);'
@@ -5772,6 +5536,7 @@ async function renderAdminDashboard() {
           + '</div>'
           + '<div id="adminMembersList" style="display:grid;gap:8px"></div>'
           + '</div>';
+    adminRenderMembersList(active);
 
 // ── Odrzuceni — tylko superadmin ──
     if (role === 'superadmin' && rejected.length > 0) {
@@ -5790,26 +5555,23 @@ async function renderAdminDashboard() {
 
     document.getElementById('contentArea').innerHTML = html;
     window._adminAllMembers = active;
-    window._adminRoleFilter = '';
-    adminRenderMembersList(active);
 }
 
 function adminFilterMembers() {
     var q = (document.getElementById('adminSearch') || {}).value || '';
     q = q.toLowerCase().trim();
-    var roleF = window._adminRoleFilter || '';
+    var role = window._adminRoleFilter || '';
     var list = (window._adminAllMembers || []).filter(function(u) {
         var matchQ = !q || u.name.toLowerCase().includes(q) || (u.username||'').toLowerCase().includes(q);
-        var matchR = !roleF || u.role === roleF;
+        var matchR = !role || u.role === role;
         return matchQ && matchR;
     });
     adminRenderMembersList(list);
 }
 
-function adminSetRoleFilter(btn) {
-    var role = btn ? (btn.dataset.role || '') : '';
+function adminSetRoleFilter(btn, role) {
     window._adminRoleFilter = role;
-    document.querySelectorAll('#adminRoleFilter .role-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.role-filter-btn').forEach(function(b) { b.classList.remove('active'); });
     if (btn) btn.classList.add('active');
     adminFilterMembers();
 }
@@ -5831,11 +5593,7 @@ function adminRenderMembersList(list) {
         var isLower = (role === 'superadmin') || (myRank < uRank);
         var rLabel = ROLE_LABELS[u.role] || u.role;
         var rColor = ROLE_COLORS[u.role] || '#546e7a';
-        // ksis: może zdawać sprawności (canSpraw=true) ale nie zarządza (canDelete=false, nie pokazujemy Rola/Zastep)
-        var isKsis = (role === 'ksis');
-        var canSpraw = isLower || isKsis;
-        var canDelete = (role === 'superadmin') || (role === 'druzynowy' && isLower);
-        html += adminMemberRowHtml(u, esc, isLower, rLabel, rColor, canSpraw, canDelete, isKsis);
+        html += adminMemberRowHtml(u, esc, isLower, rLabel, rColor, isLower, (role === 'superadmin') || (role === 'druzynowy' && isLower));
     }
     el.innerHTML = html;
 }
@@ -5875,10 +5633,7 @@ async function renderTeamsPanel() {
             + '<strong>' + t.name + '</strong>'
             + '<span style="color:var(--text-muted);font-size:0.8em;margin-left:8px;">ID: ' + t.teamId + '</span>'
             + '</div>'
-            + '<div style="display:flex;gap:6px">'
-            + '<button class="btn-sm btn-approve" onclick="renameTeamModal(\'' + escId + '\',\'' + escName + '\')">&#9998; Zmień nazwę</button>'
-            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usuń</button>'
-            + '</div>'
+            + '<button class="btn-sm btn-delete" onclick="deleteTeam(\'' + escId + '\',\'' + escName + '\')">&#128465; Usun</button>'
             + '</div>';
     });
     if (teams.length === 0) html += '<p style="color:var(--text-muted);text-align:center;">Brak druzyn.</p>';
@@ -5907,36 +5662,6 @@ function showTeamMsg(text, type) {
     el.textContent = text;
     el.style.color  = type === 'error' ? '#d32f2f' : '#2e7d32';
     el.style.display = 'block';
-}
-
-function renameTeamModal(teamId, currentName) {
-    var old = document.getElementById('_renameTeamModal'); if (old) old.remove();
-    var overlay = document.createElement('div');
-    overlay.id = '_renameTeamModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-    overlay.innerHTML = '<div style="background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 16px 64px rgba(0,0,0,.4)">'
-        + '<h3 style="margin:0 0 6px;font-size:1.1rem">✏️ Zmień nazwę drużyny</h3>'
-        + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 14px">Obecna nazwa: <strong>' + currentName + '</strong></p>'
-        + '<input id="_renameTeamInput" type="text" value="' + currentName.replace(/"/g,'&quot;') + '" placeholder="Nowa nazwa drużyny..." '
-        + 'style="width:100%;box-sizing:border-box;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.95rem;margin-bottom:14px;font-family:Barlow,sans-serif;outline:none" '
-        + 'onkeydown="if(event.key===&quot;Enter&quot;)window._doRenameTeam()">'
-        + '<p id="_renameTeamMsg" style="font-size:.82rem;min-height:16px;margin:0 0 12px;color:#f87171"></p>'
-        + '<div style="display:flex;gap:8px">'
-        + '<button onclick="document.getElementById(&quot;_renameTeamModal&quot;).remove()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
-        + '<button onclick="window._doRenameTeam()" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">✓ Zapisz</button>'
-        + '</div></div>';
-    window._doRenameTeam = async function() {
-        var val = (document.getElementById('_renameTeamInput').value || '').trim();
-        var msg = document.getElementById('_renameTeamMsg');
-        if (!val || val.length < 2) { msg.textContent = 'Nazwa musi mieć min. 2 znaki.'; return; }
-        msg.style.color = 'var(--muted)'; msg.textContent = 'Zapisywanie...';
-        var r = await apiFetch('/teams/' + teamId, { method: 'PATCH', body: JSON.stringify({ name: val }) });
-        if (r.ok) { overlay.remove(); renderTeamsPanel(); }
-        else { msg.style.color = '#f87171'; msg.textContent = (r.data && r.data.error) || 'Błąd zapisu.'; }
-    };
-    document.body.appendChild(overlay);
-    setTimeout(function(){ var inp = document.getElementById('_renameTeamInput'); if(inp){ inp.focus(); inp.select(); } }, 50);
 }
 
 async function deleteTeam(teamId, teamName) {
@@ -5991,164 +5716,6 @@ async function promoteUser(id, name, newRole, selectEl) {
         selectEl.value = '';
     }
 }
-
-window.changeRolePrompt = function(userId, userName, currentRole) {
-    var roles = availableRoles(currentUser.role);
-    if (roles.length === 0) { alert('Brak uprawnień do zmiany ról.'); return; }
-
-    var old = document.getElementById('_roleModal'); if (old) old.remove();
-    var overlay = document.createElement('div');
-    overlay.id = '_roleModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-
-    var inner = document.createElement('div');
-    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
-
-    var title = document.createElement('h3');
-    title.style.cssText = 'margin:0 0 4px;font-size:1.1rem';
-    title.textContent = '✏️ Zmień rolę';
-    inner.appendChild(title);
-
-    var sub = document.createElement('p');
-    sub.style.cssText = 'color:var(--muted);font-size:.83rem;margin:0 0 16px';
-    sub.innerHTML = '<strong>' + userName + '</strong>';
-    inner.appendChild(sub);
-
-    var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;gap:8px;margin-bottom:16px';
-    roles.forEach(function(r) {
-        var isActive = r === currentRole;
-        var col = (ROLE_COLORS && ROLE_COLORS[r]) || '#4e8a2a';
-        var btn = document.createElement('button');
-        btn.style.cssText = 'padding:12px 16px;border-radius:10px;border:2px solid ' + col + ';background:' + (isActive ? col : 'transparent') + ';color:' + (isActive ? '#fff' : col) + ';font-weight:700;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
-        btn.innerHTML = (ROLE_LABELS && ROLE_LABELS[r] ? ROLE_LABELS[r] : r) + (isActive ? ' <span style="font-size:.7rem;opacity:.8">(obecna)</span>' : '');
-        btn.onmouseenter = function(){ this.style.background = col; this.style.color = '#fff'; };
-        btn.onmouseleave = function(){ this.style.background = isActive ? col : 'transparent'; this.style.color = isActive ? '#fff' : col; };
-        btn.onclick = (function(chosenRole) { return async function() {
-            overlay.remove();
-            if (chosenRole === 'zastepowy' || chosenRole === 'podzastepowy') {
-                var rz = await apiFetch('/zastepy');
-                var zastepy = rz.ok ? rz.data : [];
-                if (!zastepy.length) { alert('Brak zastępów. Najpierw utwórz zastęp.'); return; }
-                var zOv = document.createElement('div');
-                zOv.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9991;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
-                zOv.onclick = function(e){ if(e.target===zOv) zOv.remove(); };
-                var zIn = document.createElement('div');
-                zIn.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
-                zIn.innerHTML = '<h3 style="margin:0 0 4px;font-size:1.05rem">👥 Dla którego zastępu?</h3>'
-                    + '<p style="color:var(--muted);font-size:.83rem;margin:0 0 14px">Rola <strong>'+(ROLE_LABELS[chosenRole]||chosenRole)+'</strong> dla <strong>'+userName+'</strong></p>';
-                var zGrid = document.createElement('div');
-                zGrid.style.cssText = 'display:grid;gap:8px;margin-bottom:12px';
-                zastepy.forEach(function(z) {
-                    var zBtn = document.createElement('button');
-                    zBtn.style.cssText = 'padding:10px 14px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
-                    zBtn.textContent = '👥 ' + z.name;
-                    zBtn.onmouseenter = function(){ this.style.background='var(--f4)'; this.style.color='#fff'; };
-                    zBtn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='var(--f3)'; };
-                    zBtn.onclick = async function() {
-                        zOv.remove();
-                        await promoteUser(userId, userName, chosenRole, null);
-                        await apiFetch('/users/'+userId+'/zastep',{method:'POST',body:JSON.stringify({zastepId:z.zastepId})});
-                        renderAdminDashboard();
-                    };
-                    zGrid.appendChild(zBtn);
-                });
-                var zCancel = document.createElement('button');
-                zCancel.style.cssText = 'width:100%;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
-                zCancel.textContent = 'Anuluj';
-                zCancel.onclick = function(){ zOv.remove(); };
-                zIn.appendChild(zGrid); zIn.appendChild(zCancel);
-                zOv.appendChild(zIn); document.body.appendChild(zOv);
-            } else {
-                promoteUser(userId, userName, chosenRole, null);
-            }
-        };})(r);
-        grid.appendChild(btn);
-    });
-    inner.appendChild(grid);
-
-    var cancelBtn = document.createElement('button');
-    cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
-    cancelBtn.textContent = 'Anuluj';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    inner.appendChild(cancelBtn);
-
-    overlay.appendChild(inner);
-    document.body.appendChild(overlay);
-};
-
-window.changeZastepPrompt = async function(userId, userName) {
-    var r = await apiFetch('/zastepy');
-    var zastepy = r.ok ? r.data : [];
-
-    var old = document.getElementById('_zastepModal'); if (old) old.remove();
-    var overlay = document.createElement('div');
-    overlay.id = '_zastepModal';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9990;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)';
-    overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-
-    var inner = document.createElement('div');
-    inner.style.cssText = 'background:var(--panel);border-radius:18px;padding:24px;width:100%;max-width:340px;box-shadow:0 16px 64px rgba(0,0,0,.4)';
-
-    var title = document.createElement('h3');
-    title.style.cssText = 'margin:0 0 4px;font-size:1.1rem';
-    title.textContent = '👥 Przypisz do zastępu';
-    inner.appendChild(title);
-
-    var sub = document.createElement('p');
-    sub.style.cssText = 'color:var(--muted);font-size:.83rem;margin:0 0 16px';
-    sub.innerHTML = '<strong>' + userName + '</strong>';
-    inner.appendChild(sub);
-
-    var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;gap:8px;margin-bottom:16px';
-
-    // Przycisk usunięcia z zastępu
-    var removeBtn = document.createElement('button');
-    removeBtn.style.cssText = 'padding:11px 16px;border-radius:10px;border:2px solid #ef4444;background:transparent;color:#ef4444;font-weight:700;font-size:.88rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
-    removeBtn.textContent = '🚫 Usuń z zastępu';
-    removeBtn.onmouseenter = function(){ this.style.background='#ef4444'; this.style.color='#fff'; };
-    removeBtn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='#ef4444'; };
-    removeBtn.onclick = async function() {
-        overlay.remove();
-        var r2 = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: null }) });
-        if (r2.ok) renderAdminDashboard(); else alert((r2.data && r2.data.error) || 'Błąd');
-    };
-    grid.appendChild(removeBtn);
-
-    zastepy.forEach(function(z) {
-        var btn = document.createElement('button');
-        btn.style.cssText = 'padding:11px 16px;border-radius:10px;border:2px solid var(--f4);background:transparent;color:var(--f3);font-weight:600;font-size:.9rem;cursor:pointer;text-align:left;font-family:Barlow,sans-serif';
-        btn.textContent = '👥 ' + z.name;
-        btn.onmouseenter = function(){ this.style.background='var(--f4)'; this.style.color='#fff'; };
-        btn.onmouseleave = function(){ this.style.background='transparent'; this.style.color='var(--f3)'; };
-        btn.onclick = async function() {
-            overlay.remove();
-            var r2 = await apiFetch('/users/' + userId + '/zastep', { method: 'POST', body: JSON.stringify({ zastepId: z.zastepId }) });
-            if (r2.ok) renderAdminDashboard(); else alert((r2.data && r2.data.error) || 'Błąd');
-        };
-        grid.appendChild(btn);
-    });
-
-    if (!zastepy.length) {
-        var none = document.createElement('p');
-        none.style.cssText = 'color:var(--muted);font-size:.85rem';
-        none.textContent = 'Brak zastępów w drużynie.';
-        grid.appendChild(none);
-    }
-    inner.appendChild(grid);
-
-    var cancelBtn = document.createElement('button');
-    cancelBtn.style.cssText = 'width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif';
-    cancelBtn.textContent = 'Anuluj';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    inner.appendChild(cancelBtn);
-
-    overlay.appendChild(inner);
-    document.body.appendChild(overlay);
-};
-
 
 async function switchToUser(userId, userName, userRole) {
     currentViewUserId = userId;
@@ -6212,19 +5779,19 @@ function renderCategoryGrid() {
         var done  = items.filter(function(x){ return getSprawLevel(x, cachedProgress) > 0; }).length;
 
         html += '<div onclick="renderCategoryItems(\''+cat+'\')" style="'
-              + 'background:var(--panel);border:2px solid '+meta.color+';border-radius:14px;'
+              + 'background:var(--panel2);border:2px solid '+meta.color+';border-radius:14px;'
               + 'padding:18px 14px;cursor:pointer;text-align:center;'
               + 'display:flex;flex-direction:column;align-items:center;gap:8px;'
               + 'transition:.15s;user-select:none" '
               + 'onmouseenter="this.style.transform=\'scale(1.03)\'" '
               + 'onmouseleave="this.style.transform=\'scale(1)\'">'
               + '<div style="font-size:2.4rem">'+meta.icon+'</div>'
-              + '<div style="font-weight:700;font-size:1rem;color:var(--text)">'+cat+'</div>'
+              + '<div style="font-weight:700;font-size:1rem;color:var(--f1)">'+cat+'</div>'
               + '<div style="font-size:.8rem;color:var(--muted)">'+done+' / '+items.length+' zdobytych</div>'
               + '</div>';
     });
 
-    html += '</div>';
+    html += '</div></div>';
     document.getElementById('contentArea').innerHTML = html;
     updateUIStats();
 }
@@ -6287,57 +5854,20 @@ function goHome() {
 }
 
 function renderSidebar(filterText) {
-    patchDbCircleVariants();
+    patchDbCircleVariants(); // upewnij sie ze circleVariants sa ustawione
     filterText = filterText || '';
     var list = document.getElementById('navList');
     list.innerHTML = '';
     var grouped = {};
-    
     db.forEach(function(item) {
-        // --- LOGIKA FILTROWANIA ---
-        // 1. Filtr Kategori (Kaszuby, Bielik, itp.)
-        if (_filterCat && item.category !== _filterCat) return;
-
-        // Filtry gwiazdek i statusu nie dotyczą stopni harcerskich (zaczynających się od st_)
-        if (!item.id.startsWith('st_')) {
-            // 2. Filtr Gwiazdek (szukamy maksymalnej dostępnej gwiazdki w zadaniach danej sprawności)
-            if (_filterStars && _filterStars.size > 0) {
-                var maxPossibleStars = 0;
-                item.groups.forEach(function(g) {
-                    g.tasks.forEach(function(t) {
-                        var match = t.match(/^✶+/);
-                        if (match && match[0].length > maxPossibleStars) {
-                            maxPossibleStars = match[0].length;
-                        }
-                    });
-                });
-                if (!_filterStars.has(maxPossibleStars)) return;
-            }
-
-            // 3. Filtr Statusu (Zdane / Niezdane)
-            if (_filterStatus && _filterStatus !== 'all') {
-                var s = getSprawDone(item, cachedProgress);
-                if (_filterStatus === 'done' && s.done === 0) return;
-                if (_filterStatus === 'undone' && s.done > 0) return;
-            }
-        }
-        // ---------------------------
-
         if (!grouped[item.category]) grouped[item.category] = [];
         grouped[item.category].push(item);
     });
-
     Object.keys(grouped).forEach(function(cat) {
-        var filtered = grouped[cat].filter(function(i) { 
-            return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; 
-        });
+        var filtered = grouped[cat].filter(function(i) { return i.title.toLowerCase().indexOf(filterText.toLowerCase()) !== -1; });
         if (!filtered.length) return;
-        
         var head = document.createElement('li');
-        head.className = 'nav-category'; 
-        head.textContent = cat; 
-        list.appendChild(head);
-        
+        head.className = 'nav-category'; head.textContent = cat; list.appendChild(head);
         filtered.forEach(function(item) {
             var li = document.createElement('li');
             var locked = isStopienLocked(item);
@@ -6345,43 +5875,28 @@ function renderSidebar(filterText) {
             li.id = 'nav-item-' + item.id;
 
             var leftHtml = '';
-            var isLegendary = window._legendaryStats && _legendaryStats[item.id] && _legendaryStats[item.id].active;
             if (item.id && item.id.startsWith('st_')) {
+                // Stopień — pokaż badge statusu
                 leftHtml = getStopienNavBadge(item);
             } else {
+                // Sprawność — pokaż kółko
                 var opacity = getSprawOpacity(item, cachedProgress);
                 var variant = getSprawVariant(item, cachedProgress);
                 var imgSrc  = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
-                var imgClass = 'nav-circle-img' + (isLegendary ? ' legendary-glow' : '');
                 leftHtml = imgSrc
-                    ? '<img src="' + imgSrc + '" class="' + imgClass + '" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
+                    ? '<img src="' + imgSrc + '" class="nav-circle-img" style="opacity:' + opacity + '" title="' + (variant ? 'Poziom ' + variant : 'Nie zdana') + '">'
                     : '';
             }
 
-            if (isLegendary) li.classList.add('legendary-item');
             li.innerHTML = leftHtml
-                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + (isLegendary ? ' <span style="font-size:.6rem;color:#f59e0b">✦</span>' : '') + '</span>'
+                + '<span class="nav-item-title"' + (locked ? ' style="opacity:.4"' : '') + '>' + item.title + '</span>'
                 + '<span class="nav-progress" id="nav-prog-' + item.id + '">0%</span>';
             li.onclick = function() { if (!locked || canManageStopnie()) loadContent(item.id); };
             list.appendChild(li);
         });
     });
-    
-    // NAP — jako ostatni element listy nawigacyjnej
-    var napLi = document.createElement('li');
-    napLi.style.cssText = 'padding:8px 8px 4px';
-    var napBtn = document.createElement('button');
-    napBtn.onclick = playNap;
-    napBtn.style.cssText = 'width:100%;padding:8px 12px;border-radius:10px;cursor:pointer;background:linear-gradient(135deg,#0a1f10,#163320);border:1.5px solid rgba(74,222,128,.4);color:#a7f3d0;font-weight:700;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s';
-    napBtn.onmouseenter = function(){ this.style.borderColor='#4ade80'; this.style.boxShadow='0 0 14px rgba(74,222,128,.25)'; };
-    napBtn.onmouseleave = function(){ this.style.borderColor='rgba(74,222,128,.4)'; this.style.boxShadow='none'; };
-    napBtn.innerHTML = '<span style="font-size:1rem">&#127925;</span>&nbsp;Nap';
-    napLi.appendChild(napBtn);
-    list.appendChild(napLi);
-
     updateUIStats();
-    updateFilterCounts(); // Aktualizacja liczników przy filtrach
-    
+    // Pokaz druzyne zalogowanego usera
     if (currentUser && currentUser.teamId) {
         apiFetch('/my-team').then(function(r) {
             var el = document.getElementById('user-team-info');
@@ -6429,10 +5944,9 @@ function loadContent(id) {
             + '</div>';
     }
 
-    // Przycisk "Poproś o sprawność" — dla każdego kto ogląda swoje sprawności
+    // Przycisk "Poproś o sprawność" dla zwykłego usera
     var askBtnHtml = '';
-    var viewingOwn = (currentViewUserId === currentUser.id);
-    if (viewingOwn && !isStopien) {
+    if (currentUser.role === 'user') {
         askBtnHtml = '<button onclick="openAskModal(\'' + id + '\')" '
             + 'style="position:absolute;bottom:16px;right:16px;background:var(--f4);border:none;'
             + 'border-radius:var(--rs);padding:7px 13px;cursor:pointer;font-size:.82rem;font-weight:600;color:#fff;">'
@@ -6517,10 +6031,9 @@ function loadContent(id) {
             var imgSrc   = item.circleVariants ? getCircleImgForProgress(item, cachedProgress) : null;
             if (!imgSrc) return '<h2>' + item.title + '</h2>';
             var s = getSprawDone(item, cachedProgress);
-            var isLegHeader = window._legendaryStats && _legendaryStats[item.id] && _legendaryStats[item.id].active;
             return '<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'
                 + '<div style="position:relative;flex-shrink:0">'
-                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon' + (isLegHeader ? ' legendary-glow' : '') + '" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
+                + '<img src="' + imgSrc + '" class="sprawnosc-circle-icon" data-item="' + item.id + '" data-src="' + imgSrc + '" style="opacity:' + opacity + ';transition:opacity .4s">'
                 + (variant > 0 ? '<div class="sprawnosc-stars-badge" style="position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:var(--panel);border-radius:8px;padding:1px 6px;font-size:.6rem;color:var(--amber);white-space:nowrap">' + '★'.repeat(level) + '</div>' : '')
                 + '</div>'
                 + '<div>'
@@ -6565,17 +6078,11 @@ function loadContent(id) {
         g.tasks.forEach(function(t, tIdx) {
             var tId   = id + '-' + gIdx + '-' + tIdx;
             var isDone = !!cachedProgress[tId];
-            var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
-            // 3 i 4 gwiazdkowe — tylko ksis/superadmin może zaznaczać
-            var starMatch = t.match(/^✶+/);
-            var taskStars = starMatch ? starMatch[0].length : 0;
-            var starLocked = taskStars >= 3 && currentUser.role !== 'ksis' && currentUser.role !== 'superadmin';
-            var isReadOnly = cbReadOnly || starLocked;
-            var starHint = starLocked ? ' title="Tylko Ksis może zaliczać to zadanie"' : '';
-            html += '<label class="cb-container" style="' + (isReadOnly ? 'cursor:default;' : '') + (starLocked ? 'opacity:.5' : '') + '"' + starHint + '>'
-                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (isReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
+                    var cbReadOnly = (currentUser.role === 'user') || (currentViewUserId === currentUser.id && ['zastepowy','podzastepowy'].includes(currentUser.role));
+            html += '<label class="cb-container" style="' + (cbReadOnly ? 'cursor:default' : '') + '">'
+                + '<input type="checkbox" ' + (isDone ? 'checked' : '') + ' ' + (cbReadOnly ? 'disabled' : '') + ' data-tid="' + tId + '" onchange="toggleTask(\'' + tId + '\',\'' + id + '\')">'
                 + '<div class="checkmark"></div>'
-                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + (starLocked ? ' <span style="font-size:.7rem;color:var(--amber)">🔒 Ksis</span>' : '') + '</span>'
+                + '<span class="task-text">' + t.replace(/\*/g,'&#9733;') + '</span>'
                 + '</label>';
         });
         html += '</div>';
@@ -6681,83 +6188,9 @@ function openPhoto(src)     { document.getElementById('modalImg').src = src; doc
 function closeModal()       { document.getElementById('photoModal').style.display = 'none'; }
 function toggleZoom(e)      { e.stopPropagation(); document.getElementById('modalImg').classList.toggle('zoomed'); }
 function filterNav()        { renderSidebar(document.getElementById('searchInput').value); }
-function openSettings() {
-    toggleSettingsModal(true);
-    settingsTab('general');
-}
-function closeSettings(e) { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
+function openSettings()     { toggleSettingsModal(true); }
+function closeSettings(e)   { if (e.target === document.getElementById('settingsModal')) toggleSettingsModal(false); }
 function toggleSettingsModal(s) { document.getElementById('settingsModal').style.display = s ? 'flex' : 'none'; }
-
-function settingsTab(tab) {
-    ['general','account'].forEach(function(t) {
-        var panel = document.getElementById('stab-panel-' + t);
-        var btn   = document.getElementById('stab-' + t);
-        if (!panel || !btn) return;
-        var active = t === tab;
-        panel.style.display = active ? 'block' : 'none';
-        btn.style.background = active ? 'var(--primary)' : 'transparent';
-        btn.style.color      = active ? '#fff' : 'var(--muted)';
-    });
-    if (tab === 'account') loadAccountInfo();
-}
-
-async function loadAccountInfo() {
-    var emailEl = document.getElementById('accountEmailDisplay');
-    if (!emailEl) return;
-    emailEl.textContent = 'Ładowanie...';
-    var r = await apiFetch('/me');
-    if (r.ok) {
-        emailEl.textContent = r.data.email || '(nie ustawiono)';
-    } else {
-        emailEl.textContent = '(błąd ładowania)';
-    }
-}
-
-async function changeEmail() {
-    var newEmail = (document.getElementById('newEmailInput').value || '').trim();
-    var pass     = document.getElementById('emailConfirmPass').value;
-    var msg      = document.getElementById('emailChangeMsg');
-    msg.style.color = 'var(--muted)'; msg.textContent = '';
-    if (!newEmail || !pass) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij wszystkie pola.'; return; }
-    msg.textContent = 'Wysyłanie...';
-    var r = await apiFetch('/me/change-email', { method:'POST', body:JSON.stringify({ newEmail, password: pass }) });
-    if (r.ok) {
-        msg.style.color = '#22c55e';
-        msg.textContent = r.data.message || '✓ Email zapisany!';
-        document.getElementById('newEmailInput').value = '';
-        document.getElementById('emailConfirmPass').value = '';
-        if (r.data.confirmed) {
-            var banner = document.getElementById('emailBanner');
-            if (banner) banner.style.display = 'none';
-            try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
-            loadAccountInfo();
-        }
-    } else {
-        msg.style.color = '#ef4444';
-        msg.textContent = (r.data && r.data.error) || 'Błąd.';
-    }
-}
-
-async function changePassword() {
-    var cur  = document.getElementById('currentPassInput').value;
-    var np   = document.getElementById('newPassInput').value;
-    var np2  = document.getElementById('newPass2Input').value;
-    var msg  = document.getElementById('passChangeMsg');
-    msg.style.color = 'var(--muted)'; msg.textContent = '';
-    if (!cur || !np || !np2) { msg.style.color='#ef4444'; msg.textContent='Uzupełnij wszystkie pola.'; return; }
-    if (np !== np2)          { msg.style.color='#ef4444'; msg.textContent='Nowe hasła nie są identyczne.'; return; }
-    if (np.length < 6)       { msg.style.color='#ef4444'; msg.textContent='Nowe hasło min. 6 znaków.'; return; }
-    msg.textContent = 'Zmienianie...';
-    var r = await apiFetch('/me/change-password', { method:'POST', body:JSON.stringify({ currentPassword: cur, newPassword: np }) });
-    if (r.ok) {
-        msg.style.color = '#22c55e'; msg.textContent = '✓ Hasło zmienione!';
-        document.getElementById('currentPassInput').value = '';
-        document.getElementById('newPassInput').value = '';
-        document.getElementById('newPass2Input').value = '';
-    } else {
-        msg.style.color = '#ef4444'; msg.textContent = (r.data && r.data.error) || 'Błąd.';
-    }
-}
 function loadSettings() {
     var s = JSON.parse(localStorage.getItem('nkih_settings') || '{}');
     if (s.dark)      { document.body.classList.add('dark-mode', 'dark'); var dt = document.getElementById('darkModeToggle'); if(dt) dt.checked = true; }
@@ -7000,10 +6433,6 @@ function bnavClick(tab) {
         renderSidebar();
         renderCategoryGrid();
     }
-    if (tab === 'stats') {
-        hideSidebarArea();
-        renderStatsPanel();
-    }
     if (tab === 'settings') {
         hideSidebarArea();
         openSettings();
@@ -7193,13 +6622,15 @@ function goToTeamPick() {
     var password2 = document.getElementById('regPassword2').value;
     clearMsg('registerMsg');
 
+    var email = (document.getElementById('regEmail') ? document.getElementById('regEmail').value.trim() : '');
     if (username.length < 3)             { showMsg('registerMsg', 'Login min. 3 znaki.'); return; }
     if (!/^[a-z0-9_]+$/.test(username)) { showMsg('registerMsg', 'Login: tylko litery, cyfry, _'); return; }
     if (!name)                           { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
+    if (!email || email.indexOf('@') < 1) { showMsg('registerMsg', 'Podaj poprawny e-mail.'); return; }
     if (password.length < 6)            { showMsg('registerMsg', 'Haslo min. 6 znakow.'); return; }
     if (password !== password2)         { showMsg('registerMsg', 'Hasla nie sa zgodne.'); return; }
 
-    _pendingRegData = { username, name, password };
+    _pendingRegData = { username, name, password, email };
     _selectedTeamId = null;
 
     // Zaladuj druzyny
@@ -7310,20 +6741,6 @@ async function loadKadraForAsk() {
     var kadraList = document.getElementById('askKadraList');
     if (!kadraList) return;
     kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">Ładowanie...</p>';
-
-    // Sprawdź poziom gwiazdek wybranego zadania
-    var taskStarsForAsk = 0;
-    if (_askTaskId && _askItemId) {
-        var askItem = db.find(function(x){ return x.id === _askItemId; });
-        if (askItem) {
-            var parts = _askTaskId.replace(_askItemId + '-', '').split('-');
-            var gi = parseInt(parts[0],10), ti = parseInt(parts[1],10);
-            var tt = (askItem.groups[gi] && askItem.groups[gi].tasks[ti]) || '';
-            var sm = tt.match(/^✶+/);
-            taskStarsForAsk = sm ? sm[0].length : 0;
-        }
-    }
-
     apiFetch('/my-kadra').then(function(r) {
         var kadra = r.ok ? r.data : [];
         if (!kadra.length) {
@@ -7331,29 +6748,22 @@ async function loadKadraForAsk() {
             return;
         }
 
+        var inZastep = currentUser && currentUser.zastepId;
         var filtered;
 
-        // 3 lub 4 gwiazdkowe — tylko ksis może zatwierdzać
-        if (taskStarsForAsk >= 3) {
-            filtered = kadra.filter(function(k) { return k.role === 'ksis'; });
-            if (!filtered.length) {
-                kadraList.innerHTML = '<p style="color:var(--muted);font-size:.85rem">⭐ To zadanie może zatwierdzić tylko Ksis. Brak Ksis w drużynie.</p>';
-                return;
-            }
+        if (inZastep) {
+            // W zastępie: druzynowy, przyboczny + zastepowy i podzastepowy SWOJEGO zastępu
+            filtered = kadra.filter(function(k) {
+                var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny';
+                var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
+                               && k.zastepId && k.zastepId === currentUser.zastepId;
+                return isGlobal || isMyZastep;
+            });
         } else {
-            var inZastep = currentUser && currentUser.zastepId;
-            if (inZastep) {
-                filtered = kadra.filter(function(k) {
-                    var isGlobal = k.role === 'druzynowy' || k.role === 'przyboczny' || k.role === 'ksis';
-                    var isMyZastep = (k.role === 'zastepowy' || k.role === 'podzastepowy')
-                                   && k.zastepId && k.zastepId === currentUser.zastepId;
-                    return isGlobal || isMyZastep;
-                });
-            } else {
-                filtered = kadra.filter(function(k) {
-                    return k.role === 'druzynowy' || k.role === 'przyboczny' || k.role === 'ksis';
-                });
-            }
+            // Bez zastępu: tylko druzynowy i przyboczny
+            filtered = kadra.filter(function(k) {
+                return k.role === 'druzynowy' || k.role === 'przyboczny';
+            });
         }
 
         if (!filtered.length) {
@@ -7698,7 +7108,7 @@ function renderBoard() {
     var sqHtml = '<div class="msq-grid">';
     for (var gi = 0; gi < 6; gi++) {
         if (!activeSid) {
-            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.25);background:rgba(255,255,255,.04)"></div>';
+            sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2px dashed rgba(255,255,255,.12)"></div>';
         } else if (!eDisp || activeSid === 'st_1') {
             /* Adept lub brak poprzedniego — ramka koloru stopnia, bez ikon */
             sqHtml += '<div style="aspect-ratio:1;border-radius:8px;border:2.5px solid '+color+';background:var(--sq-bg)"></div>';
@@ -7734,7 +7144,7 @@ function renderBoard() {
             circHtml += '<div class="msq-circle msq-circle-empty" onclick="boardSlotClick('+i+')">'
                       + '<span class="msq-circle-plus">+</span></div>';
         } else {
-            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.25);border-radius:50%;background:rgba(255,255,255,.04)"></div>';
+            circHtml += '<div class="msq-circle" style="border:2px dashed rgba(255,255,255,.1);border-radius:50%;opacity:.15"></div>';
         }
     }
     circHtml += '</div>';
@@ -8065,14 +7475,17 @@ function setCatFilter(el, cat) {
     filterNav();
 }
 function setStarFilter(el, stars) {
-    if (stars === -1) {
+    var n = Number(stars);
+    if (n === -1) {
         _filterStars = new Set();
-        document.querySelectorAll('[data-stars]').forEach(function(b){ b.classList.toggle('flt-active', b.dataset.stars === '-1'); });
+        document.querySelectorAll('[data-stars]').forEach(function(b){
+            b.classList.toggle('flt-active', b.dataset.stars === '-1');
+        });
     } else {
-        if (_filterStars.has(stars)) _filterStars.delete(stars); else _filterStars.add(stars);
+        if (_filterStars.has(n)) _filterStars.delete(n); else _filterStars.add(n);
         var ab = document.querySelector('[data-stars="-1"]');
         if (ab) ab.classList.toggle('flt-active', _filterStars.size === 0);
-        el.classList.toggle('flt-active', _filterStars.has(stars));
+        el.classList.toggle('flt-active', _filterStars.has(n));
     }
     filterNav();
 }
@@ -8108,25 +7521,8 @@ function refreshLegendaryStats() {
     return apiFetch('/legendary-stats').then(function(r) {
         _legendaryStats = {};
         if (r.ok && Array.isArray(r.data)) {
-            r.data.forEach(function(s) {
-                // active gdy enabled=true i owners >= threshold (lub >= 1 jeśli threshold=0)
-                s.active = s.enabled && s.owners >= Math.max(1, s.threshold || 1);
-                _legendaryStats[s.itemId] = s;
-            });
+            r.data.forEach(function(s) { s.active = s.owners >= 1; _legendaryStats[s.itemId] = s; });
         }
-        // Odśwież tylko ikony w sidebarze bez przebudowywania całej listy
-        document.querySelectorAll('.nav-circle-img').forEach(function(img) {
-            var li = img.closest('li');
-            if (!li) return;
-            var id = (li.id || '').replace('nav-item-', '');
-            var isLeg = _legendaryStats[id] && _legendaryStats[id].active;
-            img.classList.toggle('legendary-glow', !!isLeg);
-            li.classList.toggle('legendary-item', !!isLeg);
-            var titleEl = li.querySelector('.nav-item-title');
-            if (titleEl) {
-                titleEl.innerHTML = titleEl.textContent.trim() + (isLeg ? ' <span style="font-size:.6rem;color:#f59e0b">✦</span>' : '');
-            }
-        });
     }).catch(function(){});
 }
 
@@ -8315,7 +7711,7 @@ function openBugReport() {
         + '<h3 style="margin:0 0 4px">&#128027; Zglos blad</h3>'
         + '<p style="color:var(--muted);font-size:.82rem;margin:0 0 14px">Opisz co sie stalo. Mozesz dodac screenshot.</p>'
         + '<textarea id="bugDesc" rows="5" placeholder="Opisz blad..." style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.88rem;resize:vertical;margin-bottom:12px"></textarea>'
-        + '<div id="bugSSArea" ondragover="event.preventDefault();this.style.borderColor=\'var(--primary)\'" ondragleave="this.style.borderColor=\'var(--border)\'" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
+        + '<div id="bugSSArea" ondragover="bugDragOver(this)" ondragleave="bugDragLeave(this)" ondrop="bugHandleDrop(event)" onclick="bugClickScreenshot()" style="border:2px dashed var(--border);border-radius:var(--rs);padding:14px;text-align:center;cursor:pointer;margin-bottom:12px">'
         + '<div id="bugSSPreview" style="color:var(--muted);font-size:.85rem">&#128247; Kliknij lub przeciagnij screenshot</div></div>'
         + '<input type="file" id="bugScreenshotInput" accept="image/*" style="display:none" onchange="bugHandleFile(this.files[0])">'
         + '<p id="bugMsg" style="font-size:.82rem;margin:0 0 10px;min-height:18px"></p>'
@@ -8386,563 +7782,76 @@ async function bugDelete(btn){
     if(r.ok) renderBugReportsPanel();
 }
 
-
 // ================================================================
-// STATYSTYKI GRUPY (drużyna/zastęp) I UŻYTKOWNIKA
+// FILTR I STATYSTYKI ZASTEPU
 // ================================================================
+function zastepStatsClose() { var m=document.getElementById('zastepStatsModal'); if(m) m.remove(); }
 
-// Pobierz postęp konkretnego użytkownika
-async function fetchUserProgress(userId) {
-    var r = await apiFetch('/progress/' + userId);
-    return r.ok ? (r.data || {}) : {};
-}
-
-// Statystyki jednego usera — ile sprawności zdobył per kategoria
-function calcUserStats(progress) {
-    var result = { total: 0, bycat: {} };
-    STATS_CATS.forEach(function(c){ result.bycat[c] = 0; });
-    db.forEach(function(item) {
-        if (item.id.startsWith('st_') || item._isPrivate) return;
-        var lv = getSprawLevel(item, progress);
-        if (lv > 0) {
-            result.total++;
-            if (result.bycat[item.category] !== undefined) result.bycat[item.category]++;
-        }
+function adminFilterByZastep(zastepId) {
+    window._adminCurrentZastep = zastepId;
+    document.querySelectorAll('[onclick*="adminFilterByZastep"]').forEach(function(b){
+        b.classList.toggle('active', (b.dataset.id||'') === zastepId);
     });
-    return result;
+    var all = window._adminAllMembers || [];
+    var filtered = zastepId
+        ? all.filter(function(u){ return String(u.zastepId||'') === String(zastepId); })
+        : all;
+    window._adminRoleFilter = '';
+    document.querySelectorAll('[data-role]').forEach(function(b){ b.classList.toggle('active', b.dataset.role === ''); });
+    adminRenderMembersList(filtered);
 }
 
-// Panel statystyk konkretnego użytkownika
-async function renderUserStatsPanel(userId, userName) {
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk...</p></div>';
-    var progress = await fetchUserProgress(userId);
-    var stats = calcUserStats(progress);
-    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
-    var pct = totalItems ? Math.round(stats.total / totalItems * 100) : 0;
-
-    var html = '<div style="padding:16px;max-width:780px;margin:0 auto">';
-    html += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
-          + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
-          + '<h2 style="margin:0;font-size:1.3rem">📊 ' + userName + '</h2>'
-          + '</div>';
-
-    // Kafelki
-    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
-    html += _statCard('✅ Zdobyte', stats.total + ' / ' + totalItems, '#22c55e');
-    html += _statCard('📈 Postęp', pct + '%', '#3b82f6');
-    var maxCat = STATS_CATS.reduce(function(a,c){ return (stats.bycat[c]||0) > (stats.bycat[a]||0) ? c : a; }, STATS_CATS[0]);
-    html += _statCard('🏆 Ulubione', maxCat.split(' ')[0], STATS_COLORS[maxCat]||'#888');
-    html += '</div>';
-
-    // Słupki per kategoria
-    var maxVal = Math.max.apply(null, STATS_CATS.map(function(c){ return stats.bycat[c]||0; })) || 1;
-    html += '<div class="home-card" style="padding:16px">';
-    html += '<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności per miano</h3>';
-    html += '<div style="display:flex;align-items:flex-end;gap:10px;height:180px;padding:0 4px">';
-    STATS_CATS.forEach(function(cat) {
-        var val = stats.bycat[cat] || 0;
-        var pct2 = Math.round(val / maxVal * 100);
-        var col = STATS_COLORS[cat];
-        var meta = (typeof CAT_META !== 'undefined' && CAT_META[cat]) || {};
-        html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">'
-              + '<div style="font-size:.75rem;font-weight:700;color:var(--text)">' + val + '</div>'
-              + '<div style="width:100%;background:' + col + ';border-radius:6px 6px 0 0;height:' + Math.max(pct2,3) + '%"></div>'
-              + '<div style="font-size:.68rem;color:var(--muted);text-align:center;line-height:1.2">' + (meta.icon||'') + '<br>' + cat.split(' ')[0] + '</div>'
-              + '</div>';
+async function adminShowZastepStats(zastepId) {
+    zastepId = zastepId || window._adminCurrentZastep || '';
+    var zastepy = window._adminZastepyData || [];
+    var zastep = zastepy.find(function(z){ return z.zastepId === zastepId; });
+    var zastepName = zastep ? zastep.name : 'Cała drużyna';
+    var members = (window._adminAllMembers || []).filter(function(u){
+        return zastepId ? String(u.zastepId||'') === String(zastepId) : true;
     });
-    html += '</div></div>';
-    html += '</div>';
-    document.getElementById('contentArea').innerHTML = html;
-}
 
-// Panel statystyk grupy (drużyna lub zastęp)
-async function renderGroupStatsPanel() {
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk grupy...</p></div>';
+    var old = document.getElementById('zastepStatsModal');
+    if (old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'zastepStatsModal';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+    overlay.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)">'
+        + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'
+        + '<h3 style="margin:0;flex:1">&#128202; ' + zastepName + '</h3>'
+        + '<button onclick="zastepStatsClose()" style="padding:4px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer">&#10005;</button>'
+        + '</div>'
+        + '<p style="color:var(--muted);font-size:.85rem;margin:0 0 14px">Czlonkow: <strong>' + members.length + '</strong></p>'
+        + '<div id="zastepStatsList"><p style="color:var(--muted);text-align:center">Ladowanie...</p></div>'
+        + '</div>';
+    document.body.appendChild(overlay);
 
-    var rMembers = await apiFetch('/team-members');
-    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status==='active'; }) : [];
-    var myRole = currentUser.role;
-    var isZastepLevel = (myRole==='zastepowy'||myRole==='podzastepowy');
-
-    // Zawsze pobierz świeże zastepId z API
-    var myZastepId = null;
-    if (isZastepLevel) {
-        var rzMe = await apiFetch('/my-zastep');
-        if (rzMe.ok && rzMe.data) {
-            myZastepId = rzMe.data.zastepId || null;
-            if (myZastepId) currentUser.zastepId = myZastepId;
-        }
-        if (!myZastepId) {
-            // Fallback: sprawdź czy jest w currentUser lub JWT
-            myZastepId = currentUser.zastepId || null;
-        }
-        if (!myZastepId) {
-            document.getElementById('contentArea').innerHTML = '<div style="padding:32px;text-align:center"><p style="color:#ef4444;font-size:1rem">Nie masz przypisanego zastępu.<br>Poproś drużynowego o przypisanie.</p><button onclick="renderAdminDashboard()" style="margin-top:16px;padding:8px 20px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer">← Wróć</button></div>';
-            return;
-        }
+    var statsHtml = '';
+    for (var i = 0; i < members.length; i++) {
+        var u = members[i];
+        var rp = await apiFetch('/progress/' + u._id);
+        var prog = (rp.ok && rp.data && rp.data.tasks) ? rp.data.tasks : {};
+        var done = Object.values(prog).filter(Boolean).length;
+        var sprawIds = new Set();
+        Object.keys(prog).forEach(function(k){ if(prog[k]) sprawIds.add(k.split('-')[0]); });
+        var rColor = ROLE_COLORS[u.role] || '#546e7a';
+        var pct = Math.min(100, Math.round(sprawIds.size / 2.13));
+        statsHtml += '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:var(--rs);border:1.5px solid var(--border);margin-bottom:6px">'
+            + '<div style="flex:1">'
+            + '<div style="font-weight:600">' + u.name + '</div>'
+            + '<div style="font-size:.73rem;color:' + rColor + '">' + (ROLE_LABELS[u.role]||u.role) + (u.zastepName ? ' · '+u.zastepName : '') + '</div>'
+            + '<div style="margin-top:5px;background:var(--border);border-radius:10px;height:5px;width:100%">'
+            + '<div style="background:var(--primary);height:5px;border-radius:10px;width:' + pct + '%"></div></div>'
+            + '</div>'
+            + '<div style="text-align:right;flex-shrink:0">'
+            + '<div style="font-size:.88rem;font-weight:700;color:var(--primary)">' + sprawIds.size + ' sprawnosci</div>'
+            + '<div style="font-size:.72rem;color:var(--muted)">' + done + ' zadan</div>'
+            + '</div>'
+            + '<button data-uid="' + u._id + '" data-uname="' + u.name.replace(/"/g,'') + '" data-urole="' + u.role + '" onclick="zastepStatsClose();switchToUser(this.dataset.uid,this.dataset.uname,this.dataset.urole)" style="padding:5px 10px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;cursor:pointer;font-size:.78rem">&#128203;</button>'
+            + '</div>';
     }
-
-    var members = isZastepLevel
-        ? allMembers.filter(function(u){ return u.zastepId && String(u.zastepId)===String(myZastepId); })
-        : allMembers;
-    var groupName = isZastepLevel ? 'Zastęp' : 'Drużyna';
-
-    // Pobierz postępy i daty wszystkich
-    var progressMap = {}, datesMap = {};
-    await Promise.all(members.map(async function(u) {
-        var rp = await apiFetch('/progress/'+u._id);
-        progressMap[u._id] = rp.ok ? (rp.data||{}) : {};
-        var rd = await apiFetch('/progress/'+u._id+'/dates');
-        datesMap[u._id] = rd.ok ? (rd.data||{}) : {};
-    }));
-
-    // Oblicz statsy per user
-    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_')&&!i._isPrivate; }).length;
-    function calcStats(prog, dates, monthFilter) {
-        var total=0, bycat={};
-        STATS_CATS.forEach(function(c){ bycat[c]=0; });
-        db.forEach(function(item){
-            if(item.id.startsWith('st_')||item._isPrivate) return;
-            var lv = getSprawLevel(item, prog);
-            if(lv===0) return;
-            if(monthFilter) {
-                var found=false;
-                item.groups.forEach(function(g,gi){ g.tasks.forEach(function(t,ti){
-                    var tid=item.id+'-'+gi+'-'+ti;
-                    if(prog[tid]&&dates[tid]){
-                        var d=new Date(dates[tid]); var ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-                        if(ym===monthFilter) found=true;
-                    }
-                }); });
-                if(!found) return;
-            }
-            total++;
-            if(bycat[item.category]!==undefined) bycat[item.category]++;
-        });
-        return {total:total, bycat:bycat};
-    }
-
-    // State
-    var _gf = { tab:'bar', cat:'all', month:null };
-    window._gf = _gf;
-
-    function getUserVal(u) {
-        var s = calcStats(progressMap[u.id]||{}, datesMap[u.id]||{}, _gf.month);
-        return _gf.cat==='all' ? s.total : (s.bycat[_gf.cat]||0);
-    }
-
-    function renderGroupContent() {
-        var sorted = members.map(function(u){
-            return { id:u._id, name:u.name, role:u.role };
-        }).map(function(u){
-            return Object.assign({}, u, { val: getUserVal(u) });
-        }).sort(function(a,b){ return b.val-a.val; });
-
-        var html = '';
-
-        // ─ Zakładki
-        html += '<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">';
-        ['bar','pie','line'].forEach(function(t){
-            var lbl = t==='bar'?'📊 Słupki':t==='pie'?'🥧 Kołowy':'📈 Czas';
-            var a = _gf.tab===t;
-            html += '<button onclick="window._gf.tab=\''+t+'\';window._rerenderGroup()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+lbl+'</button>';
-        });
-        html += '</div>';
-
-        // ─ Filtry
-        html += '<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
-        // Miano
-        ['all'].concat(STATS_CATS).forEach(function(c){
-            var a=_gf.cat===c;
-            html += '<button onclick="window._gf.cat=\''+c+'\';window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.75rem;cursor:pointer">'+(c==='all'?'Wszystkie':c.split(' ')[0])+'</button>';
-        });
-        // Miesiąc
-        html += '<input type="month" value="'+(_gf.month||'')+'" onchange="window._gf.month=this.value||null;window._rerenderGroup()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.8rem;margin-left:6px">';
-        if(_gf.month) html += '<button onclick="window._gf.month=null;window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;font-size:.75rem">✕</button>';
-        html += '</div></div>';
-
-        // ─ Wykres
-        html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
-        var maxVal = Math.max.apply(null, sorted.map(function(u){return u.val;})) || 1;
-
-        if(_gf.tab === 'bar') {
-            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking — '+(_gf.cat==='all'?'wszystkie miana':_gf.cat)+(_gf.month?' — '+_gf.month:'')+'</h3>';
-            if(!sorted.some(function(u){return u.val>0;})) {
-                html += '<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych dla wybranych filtrów.</p>';
-            } else {
-                html += '<div style="display:grid;gap:8px">';
-                sorted.forEach(function(u,i){
-                    var pct2 = Math.round(u.val/maxVal*100);
-                    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-                    var col = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b87333':'var(--f4)';
-                    var safeName = u.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                    html += '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px;border-radius:8px;transition:.15s" '
-                          + 'onmouseenter="this.style.background=\'var(--panel2)\'" onmouseleave="this.style.background=\'transparent\'" '
-                          + 'onclick="renderUserStatsPanel(\''+u.id+'\',\''+safeName+'\')">'
-                          + '<div style="width:24px;text-align:center;font-size:.85rem">'+(medal||('<span style="color:var(--muted)">#'+(i+1)+'</span>'))+'</div>'
-                          + '<div style="width:110px;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+u.name+'</div>'
-                          + '<div style="flex:1;height:22px;background:var(--panel2);border-radius:20px;overflow:hidden">'
-                          + '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.4s"></div></div>'
-                          + '<div style="width:28px;text-align:right;font-size:.82rem;font-weight:700;color:var(--text)">'+u.val+'</div>'
-                          + '</div>';
-                });
-                html += '</div>';
-            }
-
-        } else if(_gf.tab === 'pie') {
-            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności w grupie'+(_gf.month?' — '+_gf.month:'')+'</h3>';
-            // Per miano (suma dla całej grupy) lub per osobę
-            var pieData, pieColors, pieLabels;
-            if(_gf.cat === 'all') {
-                // Per miano — suma dla grupy
-                pieData = {}; STATS_CATS.forEach(function(c){ pieData[c]=0; });
-                members.forEach(function(u){
-                    var s=calcStats(progressMap[u._id]||{},datesMap[u._id]||{},_gf.month);
-                    STATS_CATS.forEach(function(c){ pieData[c]+=s.bycat[c]||0; });
-                });
-                pieLabels = STATS_CATS.filter(function(c){return pieData[c]>0;});
-                pieColors = pieLabels.map(function(c){return STATS_COLORS[c];});
-                pieData   = pieLabels.map(function(c){return pieData[c];});
-            } else {
-                // Per osoba w wybranym mianie
-                pieLabels = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.name;});
-                pieColors = pieLabels.map(function(_,i){var cols=['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444','#ec4899','#06b6d4','#84cc16'];return cols[i%cols.length];});
-                pieData   = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.val;});
-            }
-            var total2=pieData.reduce(function(a,b){return a+b;},0);
-            if(!total2){ html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych.</p>'; }
-            else {
-                var cx=100,cy=100,r=85,sa=-Math.PI/2,slices='';
-                pieData.forEach(function(v,i){
-                    var angle=(v/total2)*2*Math.PI,ea=sa+angle;
-                    var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
-                    slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+pieColors[i]+'" stroke="var(--panel)" stroke-width="2"><title>'+pieLabels[i]+': '+v+'</title></path>';
-                    sa=ea;
-                });
-                html+='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center">';
-                html+='<svg viewBox="0 0 200 200" style="width:180px;height:180px;flex-shrink:0">'+slices+'</svg>';
-                html+='<div style="display:grid;gap:6px">';
-                pieLabels.forEach(function(lb,i){html+='<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:'+pieColors[i]+';flex-shrink:0"></div><span style="font-size:.82rem;color:var(--text)">'+lb+'</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+pieData[i]+' ('+Math.round(pieData[i]/total2*100)+'%)</span></div>';});
-                html+='</div></div>';
-            }
-
-        } else {
-            // Wykres czasowy — ilość sprawności zdobytych per miesiąc (suma grupy)
-            html += '<h3 style="margin:0 0 10px;font-size:.95rem">Sprawności w czasie — 12 miesięcy'+(_gf.cat!=='all'?' — '+_gf.cat:'')+'</h3>';
-            var now=new Date(), months=[];
-            for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
-            var counts={}; months.forEach(function(m){counts[m]=0;});
-            members.forEach(function(u){
-                var prog=progressMap[u._id]||{}, dates=datesMap[u._id]||{};
-                var items2 = _gf.cat==='all' ? db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate;}) : db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate&&i.category===_gf.cat;});
-                items2.forEach(function(item){
-                    if(getSprawLevel(item,prog)===0) return;
-                    var earliest=null;
-                    item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
-                        var tid=item.id+'-'+gi+'-'+ti;
-                        if(prog[tid]&&dates[tid]&&(!earliest||dates[tid]<earliest)) earliest=dates[tid];
-                    });});
-                    if(!earliest) return;
-                    var d2=new Date(earliest); var ym=d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');
-                    if(counts[ym]!==undefined) counts[ym]++;
-                });
-            });
-            var data=months.map(function(m){return counts[m];}), maxV=Math.max.apply(null,data)||1, total3=data.reduce(function(a,b){return a+b;},0);
-            var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-            var labels=months.map(function(m){var p=m.split('-');return MN[parseInt(p[1])-1]+' '+p[0].slice(2);});
-            var W=640,H=170,PL=30,PR=8,PT=10,PB=26,cW=W-PL-PR,cH=H-PT-PB,n=labels.length;
-            var pts=data.map(function(v,i){return{x:PL+(i/(n-1||1))*cW,y:PT+(1-v/maxV)*cH};});
-            var pathD=pts.map(function(p,i){return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
-            var fillD=pathD+' L'+pts[n-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
-            var yTicks=''; for(var yi=0;yi<=3;yi++){var yv=Math.round(maxV*yi/3),yy=PT+(1-yi/3)*cH;yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/><text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';}
-            var xLabels=''; labels.forEach(function(lb,i){if(i%3!==0&&i!==n-1)return;var xx=PL+(i/(n-1||1))*cW;xLabels+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';});
-            var dots=pts.map(function(p,i){return'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';}).join('');
-            if(total3===0){html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych — daty zaczną się zapisywać od teraz.</p>';}
-            else{html+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><defs><linearGradient id="lgfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>'+yTicks+xLabels+'<path d="'+fillD+'" fill="url(#lgfg)"/><path d="'+pathD+'" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
-            html+='<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie: <strong style="color:var(--text)">'+total3+' sprawności</strong></div>';}
-        }
-
-        html += '</div>';
-        document.getElementById('groupStatsContent').innerHTML = html;
-    }
-
-    window._rerenderGroup = renderGroupContent;
-
-    var totalDone = members.reduce(function(a,u){ return a + calcStats(progressMap[u._id]||{}, datesMap[u._id]||{}, null).total; }, 0);
-    var avgDone = members.length ? Math.round(totalDone/members.length) : 0;
-    var topUser = members.map(function(u){ return { name:u.name, total:calcStats(progressMap[u._id]||{},{},null).total }; }).sort(function(a,b){return b.total-a.total;})[0] || {name:'—'};
-
-    var outerHtml = '<div style="padding:16px;max-width:780px;margin:0 auto">';
-    outerHtml += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
-               + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
-               + '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki '+groupName+'</h2>'
-               + '<span style="color:var(--muted);font-size:.82rem">('+members.length+' osób)</span></div>';
-    outerHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
-    outerHtml += _statCard('👥 Członków', members.length+'', '#3b82f6');
-    outerHtml += _statCard('📊 Średnio', avgDone+' spr.', '#22c55e');
-    outerHtml += _statCard('🏆 Lider', topUser.name.split(' ')[0], '#f59e0b');
-    outerHtml += '</div>';
-    outerHtml += '<div id="groupStatsContent"></div></div>';
-
-    document.getElementById('contentArea').innerHTML = outerHtml;
-    renderGroupContent();
+    var el = document.getElementById('zastepStatsList');
+    if (el) el.innerHTML = statsHtml || '<p style="color:var(--muted);text-align:center">Brak czlonkow.</p>';
 }
-// ================================================================
-// DATY ZALICZEŃ — MongoDB
-// ================================================================
-var _cachedProgDates = null;
-
-function getProgDates() { return _cachedProgDates || {}; }
-
-async function loadProgDates() {
-    if (!currentUser || !currentUser.id) return;
-    try {
-        var r = await apiFetch('/progress/' + currentUser.id + '/dates');
-        if (r.ok) {
-            _cachedProgDates = r.data || {};
-            try {
-                var local = JSON.parse(localStorage.getItem('hk_prog_dates') || '{}');
-                var toMig = Object.keys(local).filter(function(k){ return !_cachedProgDates[k]; });
-                if (toMig.length) {
-                    await Promise.all(toMig.map(function(k){
-                        return apiFetch('/progress/date', {method:'POST', body:JSON.stringify({taskId:k, timestamp:local[k]})});
-                    }));
-                    toMig.forEach(function(k){ _cachedProgDates[k] = local[k]; });
-                    localStorage.removeItem('hk_prog_dates');
-                }
-            } catch(e) {}
-        }
-    } catch(e) {}
-}
-
-async function statRecordTaskDate(taskId, done) {
-    if (!_cachedProgDates) _cachedProgDates = {};
-    if (done) {
-        if (_cachedProgDates[taskId]) return;
-        var ts = Date.now();
-        _cachedProgDates[taskId] = ts;
-        apiFetch('/progress/date', {method:'POST', body:JSON.stringify({taskId:taskId, timestamp:ts})}).catch(function(){});
-    } else {
-        delete _cachedProgDates[taskId];
-        apiFetch('/progress/date', {method:'POST', body:JSON.stringify({taskId:taskId, timestamp:null})}).catch(function(){});
-    }
-}
-
-window._statsPatchToggle = function() {
-    var orig = window.toggleTask;
-    if (orig && !orig._datePatched) {
-        window.toggleTask = async function(taskId, itemId) {
-            var wasDone = !!cachedProgress[taskId];
-            var result = await orig.apply(this, arguments);
-            var isDone = !!cachedProgress[taskId];
-            if (isDone !== wasDone) statRecordTaskDate(taskId, isDone);
-            return result;
-        };
-        window.toggleTask._datePatched = true;
-    }
-};
-setTimeout(window._statsPatchToggle, 500);
-
-// ================================================================
-// PANEL STATYSTYK WŁASNYCH
-// ================================================================
-var STATS_CATS   = ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'];
-var STATS_COLORS = {'Bielik':'#3b82f6','Lilijka':'#8b5cf6','Róża Wiatrów':'#f59e0b','Robinson':'#10b981','Las':'#16a34a','Plaster':'#ef4444'};
-var STAR_COLORS  = {1:'#6b7280',2:'#3b82f6',3:'#8b5cf6',4:'#f59e0b'};
-var _sf = {starFilter:'all',catFilter:'all',month:null,timeScale:'year',timeMonth:null,timeGroupBy:'week',activeTab:'bar'};
-
-function statsFilteredItems(starF,catF) {
-    return db.filter(function(item) {
-        if (item.id.startsWith('st_')||item._isPrivate) return false;
-        if (catF!=='all'&&item.category!==catF) return false;
-        if (starF!=='all') {
-            var mx=0; item.groups.forEach(function(g){g.tasks.forEach(function(t){var m=t.match(/^✶+/);if(m&&m[0].length>mx)mx=m[0].length;});});
-            if (mx!==parseInt(starF)) return false;
-        }
-        return true;
-    });
-}
-
-function _statCard(label,val,color) {
-    return '<div style="background:var(--panel);border-radius:12px;padding:12px 14px;border:1.5px solid var(--border);text-align:center"><div style="font-size:1.35rem;font-weight:800;color:'+color+'">'+val+'</div><div style="font-size:.72rem;color:var(--muted);margin-top:2px">'+label+'</div></div>';
-}
-function _sfTab(tab,label) {
-    var a=_sf.activeTab===tab;
-    return '<button onclick="_sf.activeTab=\''+tab+'\';renderStatsPanel()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+label+'</button>';
-}
-function _sfBtn(prop,val,label,fn) {
-    var a=_sf[prop]==val;
-    return '<button onclick="_sf.'+prop+'='+JSON.stringify(val)+';'+fn+'" style="padding:4px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">'+label+'</button>';
-}
-function statsApplyFilter() { renderStatsPanel(); }
-
-function statsSummary() {
-    var items=db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate;});
-    var byStars={1:0,2:0,3:0,4:0},done=0;
-    items.forEach(function(item){var lv=getSprawLevel(item,cachedProgress);if(lv>0)done++;if(lv>=1&&lv<=4)byStars[lv]++;});
-    return {total:items.length,done:done,pct:items.length?Math.round(done/items.length*100):0,byStars:byStars};
-}
-
-function statsBarData(starF,catF,month) {
-    var items=statsFilteredItems(starF,catF),dates=getProgDates(),result={};
-    STATS_CATS.forEach(function(c){result[c]=0;});
-    items.forEach(function(item){
-        if(getSprawLevel(item,cachedProgress)===0)return;
-        if(month){
-            var found=false;
-            item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
-                var tid=item.id+'-'+gi+'-'+ti;
-                if(cachedProgress[tid]&&dates[tid]){var d=new Date(dates[tid]),ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(ym===month)found=true;}
-            });});
-            if(!found)return;
-        }
-        if(result[item.category]!==undefined)result[item.category]++;
-    });
-    return result;
-}
-
-function statsTimeData(timeScale,timeGroupBy,catF,starF) {
-    var dates=getProgDates(),items=statsFilteredItems(starF,catF),now=new Date();
-    function earliest(item){var e=null;item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){var tid=item.id+'-'+gi+'-'+ti;if(cachedProgress[tid]&&dates[tid]&&(!e||dates[tid]<e))e=dates[tid];});});return e;}
-    if(timeScale==='year'){
-        var months=[];for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
-        var counts={};months.forEach(function(m){counts[m]=0;});
-        items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var d2=new Date(e),ym=d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');if(counts[ym]!==undefined)counts[ym]++;});
-        var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-        return {labels:months.map(function(m){var p=m.split('-');return MN[parseInt(p[1])-1]+' '+p[0].slice(2);}),data:months.map(function(m){return counts[m];})};
-    }
-    var bm=_sf.timeMonth||(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')),parts2=bm.split('-'),yr=parseInt(parts2[0]),mo=parseInt(parts2[1]),dIM=new Date(yr,mo,0).getDate();
-    if(timeGroupBy==='day'){
-        var days=[];for(var di=1;di<=dIM;di++)days.push(di);
-        var dc={};days.forEach(function(d){dc[d]=0;});
-        items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var dd=new Date(e);if(dd.getFullYear()===yr&&dd.getMonth()+1===mo)dc[dd.getDate()]++;});
-        return {labels:days.map(String),data:days.map(function(d){return dc[d];})};
-    }
-    var wc={1:0,2:0,3:0,4:0,5:0};
-    items.forEach(function(item){if(getSprawLevel(item,cachedProgress)===0)return;var e=earliest(item);if(!e)return;var dd=new Date(e);if(dd.getFullYear()===yr&&dd.getMonth()+1===mo)wc[Math.min(5,Math.ceil(dd.getDate()/7))]++;});
-    return {labels:['Tyg 1','Tyg 2','Tyg 3','Tyg 4','Tyg 5'],data:[wc[1],wc[2],wc[3],wc[4],wc[5]]};
-}
-
-function renderStatsPanel() {
-    document.getElementById('navList').innerHTML='';
-    var sum=statsSummary(),now=new Date();
-    if(!_sf.timeMonth)_sf.timeMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    var html='<div style="padding:16px;max-width:780px;margin:0 auto">';
-    html+='<div style="padding:16px 0 14px"><h2 style="margin:0 0 4px;font-size:1.4rem">📊 Twoje Statystyki</h2><p style="color:var(--muted);font-size:.85rem">Dane z MongoDB</p></div>';
-    html+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">';
-    html+=_statCard('✅ Zdobyte',sum.done+' / '+sum.total,'#22c55e');
-    html+=_statCard('📈 Postęp',sum.pct+'%','#3b82f6');
-    html+=_statCard('⭐ Poziom',(sum.byStars[4]>0?'4★':sum.byStars[3]>0?'3★':sum.byStars[2]>0?'2★':sum.byStars[1]>0?'1★':'—'),'#f59e0b');
-    html+='</div>';
-    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
-    [1,2,3,4].forEach(function(s){html+=_statCard('★'.repeat(s),sum.byStars[s]+' spr.',STAR_COLORS[s]);});
-    html+='</div>';
-    html+='<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">'+_sfTab('bar','📊 Słupki')+_sfTab('pie','🥧 Kołowy')+_sfTab('line','📈 Czas')+'</div>';
-    html+='<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
-    html+='<div style="display:flex;gap:4px;flex-wrap:wrap">'+_sfBtn('starFilter','all','Wszystkie ★','statsApplyFilter()');
-    [1,2,3,4].forEach(function(s){html+=_sfBtn('starFilter',s,'★'.repeat(s),'statsApplyFilter()');});
-    html+='</div>';
-    if(_sf.activeTab!=='line'){
-        html+='<select onchange="_sf.catFilter=this.value;statsApplyFilter()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem;cursor:pointer"><option value="all"'+(_sf.catFilter==='all'?' selected':'')+'>Wszystkie miana</option>';
-        STATS_CATS.forEach(function(c){html+='<option value="'+c+'"'+(_sf.catFilter===c?' selected':'')+'>'+c+'</option>';});
-        html+='</select>';
-        html+='<input type="month" value="'+(_sf.month||'')+'" onchange="_sf.month=this.value||null;statsApplyFilter()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem">';
-        if(_sf.month)html+='<button onclick="_sf.month=null;statsApplyFilter()" style="padding:4px 8px;border-radius:8px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;font-size:.78rem">✕</button>';
-    }
-    html+='</div></div>';
-    html+='<div class="home-card" style="padding:16px">';
-    if(_sf.activeTab==='bar')html+=_renderBarChart();
-    else if(_sf.activeTab==='pie')html+=_renderPieChart();
-    else html+=_renderLineControls()+_renderLineChart();
-    html+='</div></div>';
-    document.getElementById('contentArea').innerHTML=html;
-}
-
-function _renderBarChart() {
-    var data=statsBarData(_sf.starFilter,_sf.catFilter,_sf.month);
-    var maxVal=Math.max.apply(null,Object.values(data))||1,totalDone=Object.values(data).reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności per miano'+(_sf.month?' — '+_sf.month:'')+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+'</h3>';
-    if(!totalDone)return html+'<p style="color:var(--muted);text-align:center;padding:30px 0">Brak danych.</p>';
-    html+='<div style="display:flex;align-items:flex-end;gap:10px;height:200px">';
-    STATS_CATS.forEach(function(cat){
-        var val=data[cat]||0,pct=Math.round(val/maxVal*100),col=STATS_COLORS[cat],meta=(typeof CAT_META!=='undefined'&&CAT_META[cat])||{};
-        html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end"><div style="font-size:.75rem;font-weight:700;color:var(--text)">'+val+'</div><div style="width:100%;background:'+col+';border-radius:6px 6px 0 0;height:'+Math.max(pct,3)+'%"></div><div style="font-size:.68rem;color:var(--muted);text-align:center;line-height:1.2">'+(meta.icon||'')+'<br>'+cat.split(' ')[0]+'</div></div>';
-    });
-    html+='</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:center">';
-    STATS_CATS.forEach(function(cat){html+='<div style="display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--muted)"><div style="width:10px;height:10px;border-radius:2px;background:'+STATS_COLORS[cat]+'"></div>'+cat+'</div>';});
-    return html+'</div>';
-}
-
-function _renderPieChart() {
-    var data=statsBarData(_sf.starFilter,_sf.catFilter,_sf.month),total=Object.values(data).reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności'+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+(_sf.month?' — '+_sf.month:'')+'</h3>';
-    if(!total)return html+'<p style="color:var(--muted);text-align:center;padding:30px 0">Brak danych.</p>';
-    var cx=100,cy=100,r=85,sa=-Math.PI/2,slices='';
-    var entries=STATS_CATS.map(function(c){return {cat:c,val:data[c]||0,col:STATS_COLORS[c]};}).filter(function(e){return e.val>0;});
-    entries.forEach(function(e){var angle=(e.val/total)*2*Math.PI,ea=sa+angle,x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+e.col+'" stroke="var(--panel)" stroke-width="2"><title>'+e.cat+': '+e.val+'</title></path>';sa=ea;});
-    html+='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center"><svg viewBox="0 0 200 200" style="width:180px;height:180px;flex-shrink:0">'+slices+'</svg><div style="display:grid;gap:6px">';
-    entries.forEach(function(e){html+='<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:'+e.col+'"></div><span style="font-size:.82rem;color:var(--text)">'+e.cat+'</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+e.val+' ('+Math.round(e.val/total*100)+'%)</span></div>';});
-    return html+'</div></div>';
-}
-
-function _renderLineControls() {
-    var now=new Date(),cur=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-    var html='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center">';
-    html+='<div style="display:flex;gap:4px">';
-    html+='<button onclick="_sf.timeScale=\'year\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeScale==='year'?'var(--primary)':'var(--panel)')+';color:'+(_sf.timeScale==='year'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">12 miesięcy</button>';
-    html+='<button onclick="_sf.timeScale=\'month\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeScale==='month'?'var(--primary)':'var(--panel)')+';color:'+(_sf.timeScale==='month'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Miesiąc</button>';
-    html+='</div>';
-    if(_sf.timeScale==='month'){
-        html+='<input type="month" value="'+(_sf.timeMonth||cur)+'" onchange="_sf.timeMonth=this.value;renderStatsPanel()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem">';
-        html+='<div style="display:flex;gap:4px">';
-        html+='<button onclick="_sf.timeGroupBy=\'day\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeGroupBy==='day'?'var(--f5)':'var(--panel)')+';color:'+(_sf.timeGroupBy==='day'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Dni</button>';
-        html+='<button onclick="_sf.timeGroupBy=\'week\';renderStatsPanel()" style="padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:'+(_sf.timeGroupBy==='week'?'var(--f5)':'var(--panel)')+';color:'+(_sf.timeGroupBy==='week'?'#fff':'var(--muted)')+';font-size:.78rem;font-weight:600;cursor:pointer">Tygodnie</button>';
-        html+='</div>';
-    }
-    html+='<select onchange="_sf.catFilter=this.value;renderStatsPanel()" style="padding:5px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.82rem;cursor:pointer"><option value="all"'+(_sf.catFilter==='all'?' selected':'')+'>Wszystkie miana</option>';
-    STATS_CATS.forEach(function(c){html+='<option value="'+c+'"'+(_sf.catFilter===c?' selected':'')+'>'+(typeof CAT_META!=='undefined'&&CAT_META[c]?CAT_META[c].icon+' ':'')+c+'</option>';});
-    return html+'</select></div>';
-}
-
-function _renderLineChart() {
-    var d=statsTimeData(_sf.timeScale,_sf.timeGroupBy,_sf.catFilter,_sf.starFilter);
-    var labels=d.labels,data=d.data,maxVal=Math.max.apply(null,data)||1,total=data.reduce(function(a,b){return a+b;},0);
-    var html='<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności w czasie'+(_sf.timeScale==='year'?' — 12 miesięcy':' — '+(_sf.timeMonth||''))+(_sf.catFilter!=='all'?' — '+_sf.catFilter:'')+(_sf.starFilter!=='all'?' — '+'★'.repeat(_sf.starFilter):'')+'</h3>';
-    if(!total)return html+'<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych — daty zapisywane są od teraz.</p>';
-    var W=640,H=170,PL=30,PR=8,PT=10,PB=26,cW=W-PL-PR,cH=H-PT-PB,n=labels.length;
-    var pts=data.map(function(v,i){return{x:PL+(i/(n-1||1))*cW,y:PT+(1-v/maxVal)*cH};});
-    var pathD=pts.map(function(p,i){return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
-    var fillD=pathD+' L'+pts[n-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
-    var yTicks='';for(var yi=0;yi<=3;yi++){var yv=Math.round(maxVal*yi/3),yy=PT+(1-yi/3)*cH;yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/><text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';}
-    var xL='';labels.forEach(function(lb,i){if(i%3!==0&&i!==n-1)return;var xx=PL+(i/(n-1||1))*cW;xL+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';});
-    var dots=pts.map(function(p,i){return'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';}).join('');
-    html+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><defs><linearGradient id="lgst" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>'+yTicks+xL+'<path d="'+fillD+'" fill="url(#lgst)"/><path d="'+pathD+'" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
-    return html+'<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie: <strong style="color:var(--text)">'+total+'</strong></div>';
-}
-
-// ================================================================
-// BANER EMAIL
-// ================================================================
-function checkEmailBanner() {
-    try { if (localStorage.getItem('hk_email_banner_dismissed')==='1') return; } catch(e) {}
-    apiFetch('/me').then(function(r) {
-        var banner = document.getElementById('emailBanner');
-        if (!banner) return;
-        banner.style.display = (r.ok && r.data && r.data.email) ? 'none' : 'flex';
-    }).catch(function(){});
-}
-function emailBannerDismiss() {
-    var b = document.getElementById('emailBanner');
-    if (b) b.style.display = 'none';
-    try { localStorage.setItem('hk_email_banner_dismissed','1'); } catch(e) {}
-}
-function emailBannerSetEmail() {
-    toggleSettingsModal(true);
-    setTimeout(function(){ settingsTab('account'); }, 50);
-    var b = document.getElementById('emailBanner');
-    if (b) b.style.display = 'none';
-}
-
 </script>
 </body>
 </html>
