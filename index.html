@@ -5706,8 +5706,11 @@ async function renderAdminDashboard() {
         + (['druzynowy','przyboczny','superadmin'].includes(role)
             ? '<button onclick="renderZastepyPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:var(--f5);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">&#128101; Zarzadzaj zastepami</button>'
             : '')
-        + (['druzynowy','przyboczny','zastepowy','podzastepowy','superadmin','ksis'].includes(role)
-            ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki ' + (role==='zastepowy'||role==='podzastepowy'?'zastępu':'drużyny') + '</button>'
+        + (['druzynowy','przyboczny','superadmin','ksis','instruktor'].includes(role)
+            ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki drużyny</button>'
+            : '')
+        + (['zastepowy','podzastepowy'].includes(role)
+            ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki zastępu</button>'
             : '')
         + '</div>';
 
@@ -8443,8 +8446,8 @@ var _sf = { tab:'bar', cat:'all', stars:'all', month:null, timeScale:'12m', time
 
 async function renderStatsPanel() {
     if (!currentUser) return;
-    var adminRoles = ['superadmin','ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy'];
-    if (adminRoles.includes(currentUser.role)) return renderGroupStatsPanel();
+    // Pasek nawigacji → zawsze własne statystyki użytkownika
+    // Statystyki drużyny/zastępu dostępne z dashboardu admina
 
     document.getElementById('contentArea').innerHTML =
         '<div style="padding:16px;max-width:820px;margin:0 auto"><p style="color:var(--muted)">Ładowanie statystyk…</p></div>';
@@ -8956,27 +8959,42 @@ async function renderUserStatsPanel(userId, userName) {
 async function renderGroupStatsPanel() {
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk grupy...</p></div>';
 
-    var rMembers = await apiFetch('/team-members');
-    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status==='active'; }) : [];
     var myRole = currentUser.role;
-    var isZastepLevel = (myRole==='zastepowy'||myRole==='podzastepowy');
 
-    // Pobierz zawsze świeże zastepId z API (nie polegaj na localStorage)
-    var myZastepId = currentUser.zastepId || null;
-    if (isZastepLevel && !myZastepId) {
-        var rzMe = await apiFetch('/my-zastep');
-        if (rzMe.ok && rzMe.data && rzMe.data.zastepId) {
-            myZastepId = rzMe.data.zastepId;
-            currentUser.zastepId = myZastepId;
-        }
-    }
-    // Jeśli nadal brak zastepId — zastępowy bez przypisanego zastępu
-    if (isZastepLevel && !myZastepId) {
-        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Nie masz przypisanego zastępu. Poproś drużynowego o przypisanie.</p></div>';
+    // Tylko druzynowy i wyżej może zobaczyć statystyki drużyny
+    var druzynaRoles = ['superadmin','ksis','instruktor','druzynowy','przyboczny'];
+    var zastepRoles  = ['zastepowy','podzastepowy'];
+    var isZastepLevel = zastepRoles.includes(myRole);
+    var isDruzynaLevel = druzynaRoles.includes(myRole);
+
+    if (!isDruzynaLevel && !isZastepLevel) {
+        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Brak uprawnień do statystyk grupy.</p></div>';
         return;
     }
 
-    var members = isZastepLevel ? allMembers.filter(function(u){ return String(u.zastepId) === String(myZastepId); }) : allMembers;
+    var rMembers = await apiFetch('/team-members');
+    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status==='active'; }) : [];
+
+    var myZastepId = null;
+    if (isZastepLevel) {
+        // Znajdź siebie w liście członków — tam jest świeże zastepId z bazy
+        var me = allMembers.find(function(u){ return u._id === currentUser.id || u._id === String(currentUser.id); });
+        if (me && me.zastepId) {
+            myZastepId = me.zastepId;
+            currentUser.zastepId = myZastepId;
+        } else {
+            // Fallback: sprawdź w currentUser
+            myZastepId = currentUser.zastepId || null;
+        }
+        if (!myZastepId) {
+            document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Nie masz przypisanego zastępu. Poproś drużynowego o przypisanie.</p></div>';
+            return;
+        }
+    }
+
+    var members = isZastepLevel
+        ? allMembers.filter(function(u){ return String(u.zastepId) === String(myZastepId); })
+        : allMembers;
     var groupName = isZastepLevel ? 'Zastęp' : 'Drużyna';
 
     // Pobierz postępy i daty wszystkich
