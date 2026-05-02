@@ -1004,7 +1004,7 @@ body.neon-mode .btn-main {
       </div>
       <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
       <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
-      <button class="settings-btn-action btn-reset" onclick="resetProgress()">&#9888; Zresetuj progres</button>
+      <button class="settings-btn-action btn-reset" onclick="openDeleteAccountDialog()" style="background:linear-gradient(135deg,#b91c1c,#ef4444);border-color:#b91c1c">🗑️ Usuń konto</button>
       <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
     </div>
 
@@ -6789,7 +6789,43 @@ function toggleNeonMode() {
 
 function toggleDarkMode() { document.body.classList.toggle('dark-mode'); document.body.classList.toggle('dark'); saveSettings(); }
 function toggleTextSize() { document.body.classList.toggle('large-text'); saveSettings(); }
-function resetProgress()  { alert('Skontaktuj sie z administratorem.'); }
+function openDeleteAccountDialog() {
+    toggleSettingsModal(false);
+    var modal = document.createElement('div');
+    modal.id = 'deleteAccountModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px';
+    modal.innerHTML =
+        '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;max-width:340px;width:100%;box-shadow:var(--shadow-lg)">'
+      + '<h3 style="margin:0 0 6px;color:#ef4444">🗑️ Usuń konto</h3>'
+      + '<p style="margin:0 0 18px;font-size:.85rem;color:var(--muted)">Ta operacja jest <strong>nieodwracalna</strong>. Usunięte zostaną wszystkie Twoje dane, postęp i konto.</p>'
+      + '<p style="margin:0 0 10px;font-size:.83rem;color:var(--text)">Potwierdź swoje hasło:</p>'
+      + '<input id="deleteAccPass" type="password" placeholder="Twoje hasło" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid #ef4444;background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:8px;font-family:Barlow,sans-serif">'
+      + '<p id="deleteAccMsg" style="font-size:.8rem;color:#ef4444;min-height:16px;margin:0 0 14px"></p>'
+      + '<div style="display:flex;gap:8px">'
+      + '<button onclick="document.getElementById(\'deleteAccountModal\').remove()" style="flex:1;padding:10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-weight:600;font-family:Barlow,sans-serif">Anuluj</button>'
+      + '<button onclick="confirmDeleteAccount()" style="flex:1;padding:10px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;cursor:pointer;font-weight:700;font-family:Barlow,sans-serif">Usuń konto</button>'
+      + '</div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+    setTimeout(function(){ var el=document.getElementById('deleteAccPass'); if(el) el.focus(); }, 50);
+}
+
+async function confirmDeleteAccount() {
+    var passEl = document.getElementById('deleteAccPass');
+    var msgEl  = document.getElementById('deleteAccMsg');
+    var pass   = passEl ? passEl.value : '';
+    if (!pass) { if(msgEl) msgEl.textContent='Podaj hasło.'; return; }
+    if (msgEl) msgEl.textContent = 'Usuwanie…';
+    var r = await apiFetch('/delete-account', 'POST', { password: pass });
+    if (r.ok) {
+        var modal = document.getElementById('deleteAccountModal');
+        if (modal) modal.remove();
+        localStorage.clear();
+        window.location.reload();
+    } else {
+        if (msgEl) msgEl.textContent = (r.data && r.data.error) || 'Błąd — sprawdź hasło.';
+    }
+}
 
 
 async function renderZastepyPanel() {
@@ -8388,8 +8424,469 @@ async function bugDelete(btn){
 
 
 // ================================================================
-// STATYSTYKI GRUPY (drużyna/zastęp) I UŻYTKOWNIKA
+// STATYSTYKI — GLOBALNE STAŁE I HELPERS
 // ================================================================
+var STATS_CATS   = ['Bielik','Lilijka','Róża Wiatrów','Robinson','Las','Plaster'];
+var STATS_COLORS = { 'Bielik':'#3b82f6','Lilijka':'#8b5cf6','Róża Wiatrów':'#f59e0b','Robinson':'#10b981','Las':'#16a34a','Plaster':'#ef4444' };
+
+function _statCard(label, value, color) {
+    return '<div style="background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 10px;text-align:center">'
+         + '<div style="font-size:1.2rem;font-weight:800;color:'+color+';margin-bottom:4px">'+value+'</div>'
+         + '<div style="font-size:.73rem;color:var(--muted);font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px">'+label+'</div>'
+         + '</div>';
+}
+
+// ================================================================
+// STATYSTYKI UŻYTKOWNIKA — panel własny (zakładka 📊)
+// ================================================================
+var _sf = { tab:'bar', cat:'all', stars:'all', month:null, timeScale:'12m', timeCat:'all', timeStars:'all' };
+
+async function renderStatsPanel() {
+    if (!currentUser) return;
+    var adminRoles = ['superadmin','ksis','instruktor','druzynowy','przyboczny','zastepowy','podzastepowy'];
+    if (adminRoles.includes(currentUser.role)) return renderGroupStatsPanel();
+
+    document.getElementById('contentArea').innerHTML =
+        '<div style="padding:16px;max-width:820px;margin:0 auto"><p style="color:var(--muted)">Ładowanie statystyk…</p></div>';
+
+    var rp = await apiFetch('/progress/' + currentUser.id);
+    var progress = rp.ok ? (rp.data || {}) : {};
+    var rd = await apiFetch('/progress/' + currentUser.id + '/dates');
+    var dates    = rd.ok ? (rd.data  || {}) : {};
+
+    // ── pomocnicze ─────────────────────────────────────────────
+    function itemStars(item) {
+        // Zwróć max gwiazdki tego itemu — szukamy w tytule lub grupach
+        var t = item.title || '';
+        var m = t.match(/✶+/g); // sprawności mają ✶ w nazwie grup
+        if (!m) {
+            // sprawdź grupy
+            var gs = (item.groups || []);
+            var mx = 0;
+            gs.forEach(function(g){ var mm = (g.name||'').match(/✶+/g); if(mm) mx = Math.max(mx, mm[0].length); });
+            return mx || 0;
+        }
+        return m[0].length;
+    }
+
+    function getItemStars(item) {
+        // Zwróć tablicę gwiazdek per grupa (dla filtrowania)
+        var gs = (item.groups || []);
+        if (!gs.length) return [0];
+        return gs.map(function(g){
+            var m = (g.name||'').match(/✶+/); return m ? m[0].length : 0;
+        });
+    }
+
+    // Czy zadanie jest zaliczone
+    function taskDone(itemId, gi, ti) {
+        var key = itemId+'-'+gi+'-'+ti;
+        return !!progress[key];
+    }
+
+    // Data zaliczenia zadania
+    function taskDate(itemId, gi, ti) {
+        var key = itemId+'-'+gi+'-'+ti;
+        return dates[key] ? new Date(dates[key]) : null;
+    }
+
+    // Filtruj sprawności wg aktualnych filtrów (gwiazdki + miano) — dla słupków/kołowego
+    function filteredItems(catFilter, starsFilter) {
+        return db.filter(function(item) {
+            if (item.id.startsWith('st_') || item._isPrivate) return false;
+            if (catFilter !== 'all' && item.category !== catFilter) return false;
+            if (starsFilter !== 'all') {
+                var gs = getItemStars(item);
+                if (!gs.some(function(s){ return s === +starsFilter; })) return false;
+            }
+            return true;
+        });
+    }
+
+    // Sprawdź czy item jest zdobyty (przynajmniej jeden komplet zadań)
+    function itemDone(item) {
+        return getSprawLevel(item, progress) > 0;
+    }
+
+    // Sprawdź czy konkretna gwiazdka w tym itemie jest zdobyta
+    function itemDoneForStars(item, starsFilter) {
+        if (starsFilter === 'all') return itemDone(item);
+        var gs = item.groups || [];
+        for (var gi = 0; gi < gs.length; gi++) {
+            var g = gs[gi];
+            var m = (g.name||'').match(/✶+/);
+            var s = m ? m[0].length : 0;
+            if (s !== +starsFilter) continue;
+            var tasks = g.tasks || [];
+            var allOk = tasks.every(function(_, ti){ return taskDone(item.id, gi, ti); });
+            if (allOk && tasks.length) return true;
+        }
+        return false;
+    }
+
+    // Policz zdobyte per kategoria
+    function countBycat(catFilter, starsFilter) {
+        var bycat = {};
+        STATS_CATS.forEach(function(c){ bycat[c] = { done:0, total:0 }; });
+        filteredItems(catFilter, starsFilter).forEach(function(item) {
+            var c = item.category;
+            if (!bycat[c]) bycat[c] = { done:0, total:0 };
+            bycat[c].total++;
+            if (itemDoneForStars(item, starsFilter)) bycat[c].done++;
+        });
+        return bycat;
+    }
+
+    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
+    var totalDone  = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate && itemDone(i); }).length;
+    var pct = totalItems ? Math.round(totalDone/totalItems*100) : 0;
+
+    // Ile gwiazdek 1–4 zdobytych
+    function countStars(s) {
+        return db.filter(function(item){
+            if (item.id.startsWith('st_') || item._isPrivate) return false;
+            return itemDoneForStars(item, s);
+        }).length;
+    }
+
+    // ── renderer ───────────────────────────────────────────────
+    function renderContent() {
+        var sf = window._sf;
+        var bycat = countBycat(sf.cat, sf.stars);
+        var catsToShow = sf.cat === 'all' ? STATS_CATS : [sf.cat];
+
+        var html = '';
+
+        // ── Zakładki ──────────────────────────────────────────
+        html += '<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">';
+        [['bar','📊 Słupki'],['pie','🥧 Kołowy'],['line','📈 Czas']].forEach(function(pair){
+            var t=pair[0],lbl=pair[1],a=sf.tab===t;
+            html += '<button onclick="window._sf.tab=\''+t+'\';window._reRenderStats()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+lbl+'</button>';
+        });
+        html += '</div>';
+
+        // ── Filtry wspólne (słupki i kołowy) ─────────────────
+        if (sf.tab !== 'line') {
+            html += '<div class="home-card" style="padding:10px 14px;margin-bottom:12px">';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">';
+            // Gwiazdki
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Gwiazdki:</span>';
+            [['all','Wszystkie ★'],['1','★'],['2','★★'],['3','★★★'],['4','★★★★']].forEach(function(p){
+                var a=String(sf.stars)===p[0];
+                html += '<button onclick="window._sf.stars=\''+p[0]+'\';window._reRenderStats()" style="padding:3px 11px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--f5)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;cursor:pointer;white-space:nowrap">'+p[1]+'</button>';
+            });
+            html += '</div>';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+            // Miana
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Miano:</span>';
+            [['all','Wszystkie']].concat(STATS_CATS.map(function(c){ return [c, (CAT_META[c]||{}).icon+' '+c.split(' ')[0]]; })).forEach(function(p){
+                var a=sf.cat===p[0];
+                html += '<button onclick="window._sf.cat=\''+p[0]+'\';window._reRenderStats()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;cursor:pointer;white-space:nowrap">'+p[1]+'</button>';
+            });
+            html += '</div>';
+            html += '<div style="display:flex;align-items:center;gap:8px;margin-top:8px">';
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Miesiąc:</span>';
+            html += '<input type="month" value="'+(sf.month||'')+'" onchange="window._sf.month=this.value||null;window._reRenderStats()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.8rem">';
+            if (sf.month) html += '<button onclick="window._sf.month=null;window._reRenderStats()" style="padding:3px 9px;border-radius:20px;border:none;background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.78rem">✕ Wyczyść</button>';
+            html += '</div>';
+            html += '</div>';
+        }
+
+        // ── SŁUPKI ────────────────────────────────────────────
+        if (sf.tab === 'bar') {
+            // Filtruj po miesiącu jeśli wybrany
+            var bycatFiltered = bycat;
+            if (sf.month) {
+                // Policz tylko sprawności zdobyte w danym miesiącu
+                bycatFiltered = {};
+                STATS_CATS.forEach(function(c){ bycatFiltered[c] = { done:0, total: bycat[c] ? bycat[c].total : 0 }; });
+                filteredItems(sf.cat, sf.stars).forEach(function(item){
+                    var c = item.category;
+                    if (!bycatFiltered[c]) bycatFiltered[c] = { done:0, total:0 };
+                    // Sprawdź czy zdobyto w tym miesiącu
+                    var gs = item.groups || [];
+                    for (var gi=0;gi<gs.length;gi++){
+                        var tasks = gs[gi].tasks || [];
+                        for (var ti=0;ti<tasks.length;ti++){
+                            var d = taskDate(item.id,gi,ti);
+                            if (d && d.toISOString().slice(0,7) === sf.month) {
+                                bycatFiltered[c].done++;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                });
+            }
+            var maxV = Math.max.apply(null, catsToShow.map(function(c){ return bycatFiltered[c] ? bycatFiltered[c].done : 0; })) || 1;
+
+            html += '<div class="home-card" style="padding:16px">';
+            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Sprawności per miano'+(sf.month?' — '+sf.month:'')+'</h3>';
+            html += '<div style="display:flex;align-items:flex-end;gap:10px;height:200px;padding:0 4px">';
+            catsToShow.forEach(function(cat){
+                var meta = CAT_META[cat] || { icon:'📋', color:'#888' };
+                var val  = bycatFiltered[c] ? bycatFiltered[cat].done : 0;
+                if (bycatFiltered[cat]) val = bycatFiltered[cat].done;
+                var tot  = bycatFiltered[cat] ? bycatFiltered[cat].total : 0;
+                var h2   = maxV ? Math.round(val/maxV*100) : 2;
+                html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">'
+                      + '<div style="font-size:.78rem;font-weight:700;color:var(--text)">'+val+'</div>'
+                      + '<div style="width:100%;background:'+meta.color+';border-radius:6px 6px 0 0;min-height:6px;height:'+Math.max(h2,3)+'%;transition:.4s;position:relative" title="'+cat+': '+val+' / '+tot+'"></div>'
+                      + '<div style="font-size:.68rem;color:var(--muted);text-align:center;line-height:1.3">'+meta.icon+'<br>'+cat.split(' ')[0]+'</div>'
+                      + '</div>';
+            });
+            html += '</div>';
+            // Legenda
+            html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center">';
+            catsToShow.forEach(function(cat){
+                var meta = CAT_META[cat] || { icon:'📋', color:'#888' };
+                html += '<div style="display:flex;align-items:center;gap:5px"><div style="width:10px;height:10px;border-radius:3px;background:'+meta.color+'"></div><span style="font-size:.75rem;color:var(--text)">'+cat+'</span></div>';
+            });
+            html += '</div></div>';
+
+        // ── KOŁOWY ────────────────────────────────────────────
+        } else if (sf.tab === 'pie') {
+            var pieData = [], pieLabels = [], pieColors = [];
+            catsToShow.forEach(function(cat){
+                var bc = bycat[cat];
+                // Filtruj po miesiącu
+                var val = 0;
+                if (sf.month) {
+                    filteredItems(cat === 'all' ? 'all' : cat, sf.stars).forEach(function(item){
+                        if (item.category !== cat && sf.cat === 'all') return;
+                        var gs = item.groups || [];
+                        for (var gi=0;gi<gs.length;gi++){
+                            var tasks=gs[gi].tasks||[];
+                            for (var ti=0;ti<tasks.length;ti++){
+                                var d=taskDate(item.id,gi,ti);
+                                if(d&&d.toISOString().slice(0,7)===sf.month){ val++; break; }
+                            }
+                            break;
+                        }
+                    });
+                } else {
+                    val = bc ? bc.done : 0;
+                }
+                if (val > 0) {
+                    pieData.push(val);
+                    pieLabels.push(cat);
+                    pieColors.push((CAT_META[cat]||{}).color||'#888');
+                }
+            });
+            var total2 = pieData.reduce(function(a,b){ return a+b; },0);
+            html += '<div class="home-card" style="padding:16px">';
+            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności'+(sf.month?' — '+sf.month:'')+'</h3>';
+            if (!total2) {
+                html += '<p style="color:var(--muted);text-align:center;padding:20px">Brak danych.</p>';
+            } else {
+                var cx=100,cy=100,r=85,sa=-Math.PI/2,slices='';
+                pieData.forEach(function(v,i){
+                    var angle=(v/total2)*2*Math.PI,ea=sa+angle;
+                    var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa);
+                    var x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
+                    slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+pieColors[i]+'" stroke="var(--panel)" stroke-width="2"><title>'+pieLabels[i]+': '+v+' ('+Math.round(v/total2*100)+'%)</title></path>';
+                    sa=ea;
+                });
+                html += '<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center">';
+                html += '<svg viewBox="0 0 200 200" style="width:190px;height:190px;flex-shrink:0">'+slices+'</svg>';
+                html += '<div style="display:grid;gap:6px">';
+                pieLabels.forEach(function(lb,i){
+                    html += '<div style="display:flex;align-items:center;gap:8px">'
+                          + '<div style="width:12px;height:12px;border-radius:3px;background:'+pieColors[i]+';flex-shrink:0"></div>'
+                          + '<span style="font-size:.82rem;color:var(--text)">'+lb+'</span>'
+                          + '<span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+pieData[i]+' ('+Math.round(pieData[i]/total2*100)+'%)</span>'
+                          + '</div>';
+                });
+                html += '</div></div>';
+            }
+            html += '</div>';
+
+        // ── CZAS ──────────────────────────────────────────────
+        } else {
+            // Filtry dla wykresu czasowego
+            html += '<div class="home-card" style="padding:10px 14px;margin-bottom:12px">';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">';
+            // Skala
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Skala:</span>';
+            [['12m','12 miesięcy'],['month-days','Bieżący miesiąc — dni'],['month-weeks','Bieżący miesiąc — tygodnie']].forEach(function(p){
+                var a=sf.timeScale===p[0];
+                html += '<button onclick="window._sf.timeScale=\''+p[0]+'\';window._reRenderStats()" style="padding:3px 11px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;cursor:pointer;white-space:nowrap">'+p[1]+'</button>';
+            });
+            html += '</div>';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">';
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Miano:</span>';
+            [['all','Wszystkie']].concat(STATS_CATS.map(function(c){ return [c,(CAT_META[c]||{}).icon+' '+c.split(' ')[0]]; })).forEach(function(p){
+                var a=sf.timeCat===p[0];
+                html += '<button onclick="window._sf.timeCat=\''+p[0]+'\';window._reRenderStats()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;cursor:pointer;white-space:nowrap">'+p[1]+'</button>';
+            });
+            html += '</div>';
+            html += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
+            html += '<span style="font-size:.75rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Gwiazdki:</span>';
+            [['all','Wszystkie ★'],['1','★'],['2','★★'],['3','★★★'],['4','★★★★']].forEach(function(p){
+                var a=String(sf.timeStars)===p[0];
+                html += '<button onclick="window._sf.timeStars=\''+p[0]+'\';window._reRenderStats()" style="padding:3px 11px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--f5)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.78rem;cursor:pointer;white-space:nowrap">'+p[1]+'</button>';
+            });
+            html += '</div></div>';
+
+            // Buduj oś czasu
+            var now = new Date();
+            var buckets = [], labels = [];
+            if (sf.timeScale === '12m') {
+                for (var mi=11;mi>=0;mi--){
+                    var d=new Date(now.getFullYear(),now.getMonth()-mi,1);
+                    buckets.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+                }
+                var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+                labels = buckets.map(function(b){ var p=b.split('-'); return MN[parseInt(p[1])-1]+' '+p[0].slice(2); });
+            } else if (sf.timeScale === 'month-days') {
+                var daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+                for (var di=1;di<=daysInMonth;di++){
+                    buckets.push(now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(di).padStart(2,'0'));
+                }
+                labels = buckets.map(function(b){ return b.slice(8); });
+            } else {
+                // month-weeks — 4–5 tygodni bieżącego miesiąca
+                var firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                var lastDay  = new Date(now.getFullYear(), now.getMonth()+1, 0);
+                var wStart = new Date(firstDay);
+                var wIdx = 1;
+                while (wStart <= lastDay) {
+                    var wEnd = new Date(wStart); wEnd.setDate(wEnd.getDate()+6);
+                    if (wEnd > lastDay) wEnd = new Date(lastDay);
+                    var key = wStart.getFullYear()+'-'+String(wStart.getMonth()+1).padStart(2,'0')+'-'+String(wStart.getDate()).padStart(2,'0');
+                    buckets.push({ from:new Date(wStart), to:new Date(wEnd), key:key });
+                    labels.push('Tyg.'+wIdx+' ('+wStart.getDate()+'.–'+wEnd.getDate()+'.)');
+                    wStart.setDate(wStart.getDate()+7); wIdx++;
+                }
+            }
+
+            // Policz sprawności per bucket — z filtrem miano+gwiazdki
+            var itemsForLine = db.filter(function(item){
+                if (item.id.startsWith('st_') || item._isPrivate) return false;
+                if (sf.timeCat !== 'all' && item.category !== sf.timeCat) return false;
+                if (sf.timeStars !== 'all') {
+                    var gs = getItemStars(item);
+                    if (!gs.some(function(s){ return s === +sf.timeStars; })) return false;
+                }
+                return true;
+            });
+
+            var counts = {};
+            buckets.forEach(function(b){ counts[typeof b==='object'?b.key:b] = 0; });
+
+            itemsForLine.forEach(function(item){
+                var gs = item.groups || [];
+                for (var gi=0;gi<gs.length;gi++){
+                    var gStarsM = (gs[gi].name||'').match(/✶+/);
+                    var gStars = gStarsM ? gStarsM[0].length : 0;
+                    if (sf.timeStars !== 'all' && gStars !== +sf.timeStars) continue;
+                    var tasks = gs[gi].tasks || [];
+                    var allOk = tasks.every(function(_,ti){ return taskDone(item.id,gi,ti); });
+                    if (!allOk) continue;
+                    // Użyj najwcześniejszej daty z tej grupy
+                    var earliest = null;
+                    tasks.forEach(function(_,ti){
+                        var d = taskDate(item.id,gi,ti);
+                        if (d && (!earliest || d < earliest)) earliest = d;
+                    });
+                    if (!earliest) continue;
+                    var ds = earliest.toISOString().slice(0,10);
+                    var ym = earliest.toISOString().slice(0,7);
+                    if (sf.timeScale === '12m') {
+                        if (counts[ym] !== undefined) counts[ym]++;
+                    } else if (sf.timeScale === 'month-days') {
+                        if (counts[ds] !== undefined) counts[ds]++;
+                    } else {
+                        for (var bi=0;bi<buckets.length;bi++){
+                            var bk=buckets[bi];
+                            if (earliest>=bk.from && earliest<=bk.to){ counts[bk.key]++; break; }
+                        }
+                    }
+                }
+            });
+
+            var bkeys = buckets.map(function(b){ return typeof b==='object'?b.key:b; });
+            var data = bkeys.map(function(k){ return counts[k]||0; });
+            var maxV2 = Math.max.apply(null,data)||1;
+            var total3 = data.reduce(function(a,b){return a+b;},0);
+            var n = labels.length;
+
+            // SVG wykres liniowy
+            var W=640,H=180,PL=34,PR=8,PT=12,PB=32;
+            var cW=W-PL-PR, cH=H-PT-PB;
+            var pts = data.map(function(v,i){ return { x:PL+(n>1?i/(n-1):0.5)*cW, y:PT+(1-v/maxV2)*cH }; });
+            var pathD = pts.map(function(p,i){ return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1); }).join(' ');
+            var fillD = pathD+' L'+pts[n-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
+            var yTicks='';
+            for (var yi=0;yi<=4;yi++){
+                var yv=Math.round(maxV2*yi/4), yy=PT+(1-yi/4)*cH;
+                yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/>'
+                       +'<text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';
+            }
+            var xStep = n > 20 ? 7 : n > 12 ? 4 : n > 7 ? 2 : 1;
+            var xLabels='';
+            labels.forEach(function(lb,i){
+                if (i % xStep !== 0 && i !== n-1) return;
+                var xx=PL+(n>1?i/(n-1):0.5)*cW;
+                xLabels+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';
+            });
+            var dots = pts.map(function(p,i){
+                return '<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3.5" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';
+            }).join('');
+            var lineColor = sf.timeCat !== 'all' ? ((CAT_META[sf.timeCat]||{}).color||'var(--primary)') : 'var(--primary)';
+
+            html += '<div class="home-card" style="padding:16px">';
+            html += '<h3 style="margin:0 0 10px;font-size:.95rem">Sprawności w czasie</h3>';
+            if (!total3) {
+                html += '<p style="color:var(--muted);text-align:center;padding:20px">Brak danych — zdobądź pierwsze sprawności!</p>';
+            } else {
+                html += '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible">'
+                      + '<defs><linearGradient id="lsfg" x1="0" y1="0" x2="0" y2="1">'
+                      + '<stop offset="0%" stop-color="'+lineColor+'" stop-opacity="0.25"/>'
+                      + '<stop offset="100%" stop-color="'+lineColor+'" stop-opacity="0"/>'
+                      + '</linearGradient></defs>'
+                      + yTicks + xLabels
+                      + '<path d="'+fillD+'" fill="url(#lsfg)"/>'
+                      + '<path d="'+pathD+'" fill="none" stroke="'+lineColor+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+                      + dots + '</svg>';
+                html += '<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie w wybranym okresie: <strong style="color:var(--text)">'+total3+'</strong></div>';
+            }
+            html += '</div>';
+        }
+
+        document.getElementById('statsContent').innerHTML = html;
+    }
+
+    // ── Górny panel (statyczny) ────────────────────────────────
+    var outerHtml = '<div style="padding:16px;max-width:820px;margin:0 auto">';
+    outerHtml += '<div style="padding:8px 0 14px">'
+              + '<h2 style="margin:0 0 2px;font-size:1.3rem">📊 Twoje Statystyki</h2>'
+              + '<p style="margin:0;font-size:.8rem;color:var(--muted)">Zdobyte sprawności — dane z MongoDB</p>'
+              + '</div>';
+
+    // Kafelki górne
+    outerHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">';
+    outerHtml += _statCard('✅ Zdobyte', totalDone+' / '+totalItems, '#22c55e');
+    outerHtml += _statCard('📈 Postęp',  pct+'%', '#3b82f6');
+    var lvls = [1,2,3,4].filter(function(s){ return countStars(s)>0; }).length;
+    outerHtml += _statCard('⭐ Poziom',  lvls+'★', '#f59e0b');
+    outerHtml += '</div>';
+
+    // Kafelki per gwiazdka
+    outerHtml += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
+    [1,2,3,4].forEach(function(s){
+        var cnt = countStars(s);
+        outerHtml += _statCard('★'.repeat(s), cnt+' spr.', s===1?'#6b7280':s===2?'#3b82f6':s===3?'#8b5cf6':'#f59e0b');
+    });
+    outerHtml += '</div>';
+
+    outerHtml += '<div id="statsContent"></div></div>';
+    document.getElementById('contentArea').innerHTML = outerHtml;
+
+    window._sf = _sf;
+    window._reRenderStats = renderContent;
+    renderContent();
+}
 
 // Pobierz postęp konkretnego użytkownika
 async function fetchUserProgress(userId) {
