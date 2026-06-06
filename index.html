@@ -914,6 +914,7 @@ body.neon-mode .btn-main {
     <h2>Dolacz!</h2>
     <input type="text"     id="regUsername"  placeholder="Login (min. 3 znaki)">
     <input type="text"     id="regName"      placeholder="Pseudonim / Imie">
+    <input type="email"    id="regEmail"     placeholder="Adres email (wymagany)">
     <input type="password" id="regPassword"  placeholder="Haslo (min. 6 znakow)">
     <input type="password" id="regPassword2" placeholder="Powtorz haslo">
     <select id="regTeam" style="display:none"><option value="">-- Wybierz druzyne --</option></select>
@@ -7228,6 +7229,8 @@ var _selectedTeamId = null;
 function goToTeamPick() {
     var username  = document.getElementById('regUsername').value.trim().toLowerCase();
     var name      = document.getElementById('regName').value.trim();
+    var email     = (document.getElementById('regEmail') || {}).value || '';
+    email = email.trim();
     var password  = document.getElementById('regPassword').value;
     var password2 = document.getElementById('regPassword2').value;
     clearMsg('registerMsg');
@@ -7235,10 +7238,11 @@ function goToTeamPick() {
     if (username.length < 3)             { showMsg('registerMsg', 'Login min. 3 znaki.'); return; }
     if (!/^[a-z0-9_]+$/.test(username)) { showMsg('registerMsg', 'Login: tylko litery, cyfry, _'); return; }
     if (!name)                           { showMsg('registerMsg', 'Wpisz pseudonim.'); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMsg('registerMsg', 'Podaj prawidłowy adres email.'); return; }
     if (password.length < 6)            { showMsg('registerMsg', 'Haslo min. 6 znakow.'); return; }
     if (password !== password2)         { showMsg('registerMsg', 'Hasla nie sa zgodne.'); return; }
 
-    _pendingRegData = { username, name, password };
+    _pendingRegData = { username, name, password, email };
     _selectedTeamId = null;
 
     // Zaladuj druzyny
@@ -7288,9 +7292,16 @@ async function submitRegisterWithTeam() {
 
     if (result.ok) {
         document.getElementById('teamPickOverlay').classList.remove('active');
-        ['regUsername','regName','regPassword','regPassword2'].forEach(function(id){ document.getElementById(id).value=''; });
+        ['regUsername','regName','regEmail','regPassword','regPassword2'].forEach(function(id){
+            var el = document.getElementById(id); if(el) el.value = '';
+        });
+        // Pokaż ekran "Sprawdź email"
+        var email = _pendingRegData.email || '';
         showPanel('login');
-        showMsg('loginMsg', (result.data && result.data.message) || 'Konto utworzone! Poczekaj na akceptacje druzynowego.', 'success');
+        showMsg('loginMsg',
+            '📧 Sprawdź skrzynkę <strong>' + email + '</strong> i kliknij link aktywacyjny. '
+            + 'Potem poczekaj na akceptację drużynowego.',
+            'success');
     } else {
         document.getElementById('teamPickOverlay').classList.remove('active');
         showMsg('registerMsg', (result.data && result.data.message) || 'Blad rejestracji.');
