@@ -8639,8 +8639,7 @@ async function renderStatsPanel() {
             html += '<div style="display:flex;align-items:flex-end;gap:10px;height:200px;padding:0 4px">';
             catsToShow.forEach(function(cat){
                 var meta = CAT_META[cat] || { icon:'📋', color:'#888' };
-                var val  = bycatFiltered[c] ? bycatFiltered[cat].done : 0;
-                if (bycatFiltered[cat]) val = bycatFiltered[cat].done;
+                var val  = bycatFiltered[cat] ? bycatFiltered[cat].done : 0;
                 var tot  = bycatFiltered[cat] ? bycatFiltered[cat].total : 0;
                 var h2   = maxV ? Math.round(val/maxV*100) : 2;
                 html += '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end">'
