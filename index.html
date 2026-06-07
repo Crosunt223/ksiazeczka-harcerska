@@ -790,7 +790,7 @@ input:checked+.slider:before{transform:translateX(21px);}
   border:2px dashed rgba(255,255,255,.15);
 }
 .msq-sq-open{
-  /* kolor ustawiony inline */
+  opacity:1;
 }
 .msq-sq-done{
   background:#111;
@@ -893,7 +893,7 @@ body.neon-mode .btn-main {
 .legendary-card img{animation:leg-img-glow 2s ease-in-out infinite!important;position:relative;z-index:2}
 .nav-circle-img.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
 .nav-item.legendary-item{position:relative;}
-.nav-item.legendary-item::after{content:'✦';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:.55rem;color:#f59e0b;animation:leg-badge-shine 2s linear infinite;background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-item.legendary-item::after{content:'✦';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:.55rem;color:#f59e0b;animation:leg-badge-shine 2s linear infinite;background:linear-gradient(90deg,#92400e,#f59e0b,#fbbf24,#f59e0b,#92400e);background-size:200% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .sprawnosc-circle-icon.legendary-glow{animation:leg-img-glow 2s ease-in-out infinite;border-radius:50%;}
 </style>
 </head>
@@ -8453,7 +8453,7 @@ function _statCard(label, value, color) {
 // ================================================================
 // STATYSTYKI UŻYTKOWNIKA — panel własny (zakładka 📊)
 // ================================================================
-var _sf = { tab:'bar', cat:'all', stars:'all', month:null, timeScale:'12m', timeCat:'all', timeStars:'all' };
+var _sf = { tab:'bar', cat:'all', stars:'all', month:null, timeScale:'month-days', timeCat:'all', timeStars:'all' };
 
 async function renderStatsPanel() {
     if (!currentUser) return;
@@ -8923,16 +8923,23 @@ function calcUserStats(progress) {
 }
 
 // Panel statystyk konkretnego użytkownika
-async function renderUserStatsPanel(userId, userName) {
+async function renderUserStatsPanel(userId, userName, backZastepId) {
     document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk...</p></div>';
     var progress = await fetchUserProgress(userId);
     var stats = calcUserStats(progress);
     var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
     var pct = totalItems ? Math.round(stats.total / totalItems * 100) : 0;
 
+    var backBtn;
+    if (backZastepId) {
+        backBtn = '<button onclick="showZastepDetail && showZastepDetail(\''+backZastepId+'\')||renderGroupStatsPanel()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Zastęp</button>';
+    } else {
+        backBtn = '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>';
+    }
+
     var html = '<div style="padding:16px;max-width:780px;margin:0 auto">';
     html += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
-          + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
+          + backBtn
           + '<h2 style="margin:0;font-size:1.3rem">📊 ' + userName + '</h2>'
           + '</div>';
 
@@ -8965,247 +8972,173 @@ async function renderUserStatsPanel(userId, userName) {
     document.getElementById('contentArea').innerHTML = html;
 }
 
-// Panel statystyk grupy (drużyna lub zastęp)
+// ================================================================
+// STATYSTYKI GRUPOWE — zastepy → druhowie → profil
+// ================================================================
 async function renderGroupStatsPanel() {
-    document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:var(--muted)">Ładowanie statystyk grupy...</p></div>';
+    var ca = document.getElementById('contentArea');
+    if (!ca) return;
+    ca.innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted)">Ładowanie...</div>';
 
     var myRole = currentUser.role;
+    var isDruzynowy = ['superadmin','ksis','instruktor','druzynowy','przyboczny'].includes(myRole);
+    var isZastepowy = ['zastepowy','podzastepowy'].includes(myRole);
 
-    // Tylko druzynowy i wyżej może zobaczyć statystyki drużyny
-    var druzynaRoles = ['superadmin','ksis','instruktor','druzynowy','przyboczny'];
-    var zastepRoles  = ['zastepowy','podzastepowy'];
-    var isZastepLevel = zastepRoles.includes(myRole);
-    var isDruzynaLevel = druzynaRoles.includes(myRole);
-
-    if (!isDruzynaLevel && !isZastepLevel) {
-        document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Brak uprawnień do statystyk grupy.</p></div>';
+    if (!isDruzynowy && !isZastepowy) {
+        ca.innerHTML = '<div style="padding:32px;text-align:center;color:#ef4444">Brak uprawnień.</div>';
         return;
     }
 
     var rMembers = await apiFetch('/team-members');
-    var allMembers = rMembers.ok ? rMembers.data.filter(function(u){ return u.status==='active'; }) : [];
+    var allMembers = (rMembers.ok ? rMembers.data : []).filter(function(u){ return u.status==='active'; });
 
-    var myZastepId = null;
-    if (isZastepLevel) {
-        // Znajdź siebie w liście członków — tam jest świeże zastepId z bazy
-        var me = allMembers.find(function(u){ return u._id === currentUser.id || u._id === String(currentUser.id); });
-        if (me && me.zastepId) {
-            myZastepId = me.zastepId;
-            currentUser.zastepId = myZastepId;
-        } else {
-            // Fallback: sprawdź w currentUser
-            myZastepId = currentUser.zastepId || null;
-        }
-        if (!myZastepId) {
-            document.getElementById('contentArea').innerHTML = '<div class="welcome-header"><p style="color:#ef4444">Nie masz przypisanego zastępu. Poproś drużynowego o przypisanie.</p></div>';
-            return;
-        }
+    var zastepyMap = {};
+    allMembers.forEach(function(u){
+        if (!u.zastepId) return;
+        var zid = String(u.zastepId);
+        if (!zastepyMap[zid]) zastepyMap[zid] = { id:zid, name:'Zastęp '+zid, members:[] };
+        zastepyMap[zid].members.push(u);
+    });
+
+    // Pobierz nazwy zastepow
+    var rZastepy = await apiFetch('/zastepy');
+    if (rZastepy.ok && rZastepy.data) {
+        rZastepy.data.forEach(function(z){
+            var zid = String(z._id || z.id || z.zastepId);
+            if (zastepyMap[zid]) zastepyMap[zid].name = z.name || z.nazwa || ('Zastęp '+zid);
+            // Try by name key
+            Object.keys(zastepyMap).forEach(function(k){
+                if (k === zid || k === (z.zastepId||'')) zastepyMap[k].name = z.name || z.nazwa || ('Zastęp '+k);
+            });
+        });
     }
 
-    var members = isZastepLevel
-        ? allMembers.filter(function(u){ return String(u.zastepId) === String(myZastepId); })
-        : allMembers;
-    var groupName = isZastepLevel ? 'Zastęp' : 'Drużyna';
-
-    // Pobierz postępy i daty wszystkich
+    // Pobierz progress wszystkich
     var progressMap = {}, datesMap = {};
-    await Promise.all(members.map(async function(u) {
+    await Promise.all(allMembers.map(async function(u){
         var rp = await apiFetch('/progress/'+u._id);
         progressMap[u._id] = rp.ok ? (rp.data||{}) : {};
         var rd = await apiFetch('/progress/'+u._id+'/dates');
         datesMap[u._id] = rd.ok ? (rd.data||{}) : {};
     }));
 
-    // Oblicz statsy per user
-    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_')&&!i._isPrivate; }).length;
-    function calcStats(prog, dates, monthFilter) {
-        var total=0, bycat={};
-        STATS_CATS.forEach(function(c){ bycat[c]=0; });
+    var totalItems = db.filter(function(i){ return !i.id.startsWith('st_') && !i._isPrivate; }).length;
+
+    function calcMemberTotal(userId) {
+        var prog = progressMap[userId] || {};
+        var count = 0;
         db.forEach(function(item){
-            if(item.id.startsWith('st_')||item._isPrivate) return;
-            var lv = getSprawLevel(item, prog);
-            if(lv===0) return;
-            if(monthFilter) {
-                var found=false;
-                item.groups.forEach(function(g,gi){ g.tasks.forEach(function(t,ti){
-                    var tid=item.id+'-'+gi+'-'+ti;
-                    if(prog[tid]&&dates[tid]){
-                        var d=new Date(dates[tid]); var ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-                        if(ym===monthFilter) found=true;
-                    }
-                }); });
-                if(!found) return;
-            }
-            total++;
-            if(bycat[item.category]!==undefined) bycat[item.category]++;
+            if (item.id.startsWith('st_') || item._isPrivate) return;
+            if (getSprawLevel(item, prog) > 0) count++;
         });
-        return {total:total, bycat:bycat};
+        return count;
     }
 
-    // State
-    var _gf = { tab:'bar', cat:'all', month:null };
-    window._gf = _gf;
-
-    function getUserVal(u) {
-        var s = calcStats(progressMap[u.id]||{}, datesMap[u.id]||{}, _gf.month);
-        return _gf.cat==='all' ? s.total : (s.bycat[_gf.cat]||0);
-    }
-
-    function renderGroupContent() {
-        var sorted = members.map(function(u){
-            return { id:u._id, name:u.name, role:u.role };
-        }).map(function(u){
-            return Object.assign({}, u, { val: getUserVal(u) });
-        }).sort(function(a,b){ return b.val-a.val; });
-
-        var html = '';
-
-        // ─ Zakładki
-        html += '<div style="display:flex;gap:4px;background:var(--panel2);border-radius:12px;padding:4px;margin-bottom:14px">';
-        ['bar','pie','line'].forEach(function(t){
-            var lbl = t==='bar'?'📊 Słupki':t==='pie'?'🥧 Kołowy':'📈 Czas';
-            var a = _gf.tab===t;
-            html += '<button onclick="window._gf.tab=\''+t+'\';window._rerenderGroup()" style="flex:1;padding:7px;border-radius:8px;border:none;background:'+(a?'var(--primary)':'transparent')+';color:'+(a?'#fff':'var(--muted)')+';font-weight:700;font-size:.82rem;cursor:pointer;font-family:Barlow,sans-serif">'+lbl+'</button>';
-        });
+    // ── WIDOK ZASTĘPÓW (druzynowy) ────────────────────────────────────
+    function showZastepyView() {
+        var html = '<div style="padding:16px;max-width:780px;margin:0 auto">';
+        html += '<div style="padding:8px 0 16px;display:flex;align-items:center;gap:12px">';
+        html += '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>';
+        html += '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki Drużyny</h2>';
         html += '</div>';
 
-        // ─ Filtry
-        html += '<div class="home-card" style="padding:12px 16px;margin-bottom:14px"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">';
-        // Miano
-        ['all'].concat(STATS_CATS).forEach(function(c){
-            var a=_gf.cat===c;
-            html += '<button onclick="window._gf.cat=\''+c+'\';window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:1.5px solid var(--border);background:'+(a?'var(--primary)':'var(--panel)')+';color:'+(a?'#fff':'var(--muted)')+';font-size:.75rem;cursor:pointer">'+(c==='all'?'Wszystkie':c.split(' ')[0])+'</button>';
+        // Karta "bez zastępu"
+        var bezZastepu = allMembers.filter(function(u){ return !u.zastepId; });
+
+        // Siatka zastepów
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px">';
+        Object.values(zastepyMap).forEach(function(z){
+            var total = z.members.reduce(function(sum,u){ return sum + calcMemberTotal(u._id); }, 0);
+            var avg   = z.members.length ? Math.round(total/z.members.length) : 0;
+            var best  = z.members.map(function(u){ return {name:u.name, val:calcMemberTotal(u._id)}; }).sort(function(a,b){return b.val-a.val;})[0];
+            html += '<div onclick="showZastepDetail(\'' + z.id + '\')" style="background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 16px;cursor:pointer;transition:.15s" onmouseenter="this.style.borderColor=\'var(--primary)\'" onmouseleave="this.style.borderColor=\'var(--border)\'">';
+            html += '<div style="font-weight:700;font-size:1rem;margin-bottom:10px">🏕 '+z.name+'</div>';
+            html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">';
+            html += '<div style="font-size:.78rem;color:var(--muted)">Druhów<br><strong style="color:var(--text);font-size:1rem">'+z.members.length+'</strong></div>';
+            html += '<div style="font-size:.78rem;color:var(--muted)">Śr. sprawności<br><strong style="color:#22c55e;font-size:1rem">'+avg+'</strong></div>';
+            html += '</div>';
+            if (best) html += '<div style="font-size:.78rem;color:var(--muted)">🏆 Lider: <strong style="color:var(--text)">'+best.name.split(' ')[0]+'</strong> ('+best.val+')</div>';
+            html += '<div style="margin-top:10px;font-size:.75rem;color:var(--primary);font-weight:600">Zobacz szczegóły →</div>';
+            html += '</div>';
         });
-        // Miesiąc
-        html += '<input type="month" value="'+(_gf.month||'')+'" onchange="window._gf.month=this.value||null;window._rerenderGroup()" style="padding:4px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.8rem;margin-left:6px">';
-        if(_gf.month) html += '<button onclick="window._gf.month=null;window._rerenderGroup()" style="padding:3px 10px;border-radius:20px;border:none;background:var(--panel);color:var(--muted);cursor:pointer;font-size:.75rem">✕</button>';
+
+        if (bezZastepu.length) {
+            html += '<div onclick="showZastepDetail(\'__none__\')" style="background:var(--panel);border:1.5px solid var(--border);border-radius:var(--r);padding:18px 16px;cursor:pointer;opacity:.7;transition:.15s" onmouseenter="this.style.opacity=\'1\'" onmouseleave="this.style.opacity=\'.7\'">';
+            html += '<div style="font-weight:700;font-size:1rem;margin-bottom:6px">❓ Bez zastępu</div>';
+            html += '<div style="font-size:.85rem;color:var(--muted)">'+bezZastepu.length+' druhów</div>';
+            html += '</div>';
+        }
         html += '</div></div>';
+        ca.innerHTML = html;
+    }
 
-        // ─ Wykres
-        html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
-        var maxVal = Math.max.apply(null, sorted.map(function(u){return u.val;})) || 1;
-
-        if(_gf.tab === 'bar') {
-            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking — '+(_gf.cat==='all'?'wszystkie miana':_gf.cat)+(_gf.month?' — '+_gf.month:'')+'</h3>';
-            if(!sorted.some(function(u){return u.val>0;})) {
-                html += '<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych dla wybranych filtrów.</p>';
-            } else {
-                html += '<div style="display:grid;gap:8px">';
-                sorted.forEach(function(u,i){
-                    var pct2 = Math.round(u.val/maxVal*100);
-                    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-                    var col = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b87333':'var(--f4)';
-                    var safeName = u.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-                    html += '<div style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:4px;border-radius:8px;transition:.15s" '
-                          + 'onmouseenter="this.style.background=\'var(--panel2)\'" onmouseleave="this.style.background=\'transparent\'" '
-                          + 'onclick="renderUserStatsPanel(\''+u.id+'\',\''+safeName+'\')">'
-                          + '<div style="width:24px;text-align:center;font-size:.85rem">'+(medal||('<span style="color:var(--muted)">#'+(i+1)+'</span>'))+'</div>'
-                          + '<div style="width:110px;font-size:.85rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+u.name+'</div>'
-                          + '<div style="flex:1;height:22px;background:var(--panel2);border-radius:20px;overflow:hidden">'
-                          + '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.4s"></div></div>'
-                          + '<div style="width:28px;text-align:right;font-size:.82rem;font-weight:700;color:var(--text)">'+u.val+'</div>'
-                          + '</div>';
-                });
-                html += '</div>';
-            }
-
-        } else if(_gf.tab === 'pie') {
-            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Rozkład sprawności w grupie'+(_gf.month?' — '+_gf.month:'')+'</h3>';
-            // Per miano (suma dla całej grupy) lub per osobę
-            var pieData, pieColors, pieLabels;
-            if(_gf.cat === 'all') {
-                // Per miano — suma dla grupy
-                pieData = {}; STATS_CATS.forEach(function(c){ pieData[c]=0; });
-                members.forEach(function(u){
-                    var s=calcStats(progressMap[u._id]||{},datesMap[u._id]||{},_gf.month);
-                    STATS_CATS.forEach(function(c){ pieData[c]+=s.bycat[c]||0; });
-                });
-                pieLabels = STATS_CATS.filter(function(c){return pieData[c]>0;});
-                pieColors = pieLabels.map(function(c){return STATS_COLORS[c];});
-                pieData   = pieLabels.map(function(c){return pieData[c];});
-            } else {
-                // Per osoba w wybranym mianie
-                pieLabels = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.name;});
-                pieColors = pieLabels.map(function(_,i){var cols=['#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444','#ec4899','#06b6d4','#84cc16'];return cols[i%cols.length];});
-                pieData   = sorted.filter(function(u){return u.val>0;}).map(function(u){return u.val;});
-            }
-            var total2=pieData.reduce(function(a,b){return a+b;},0);
-            if(!total2){ html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych.</p>'; }
-            else {
-                var cx=100,cy=100,r=85,sa=-Math.PI/2,slices='';
-                pieData.forEach(function(v,i){
-                    var angle=(v/total2)*2*Math.PI,ea=sa+angle;
-                    var x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);
-                    slices+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+(angle>Math.PI?1:0)+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+pieColors[i]+'" stroke="var(--panel)" stroke-width="2"><title>'+pieLabels[i]+': '+v+'</title></path>';
-                    sa=ea;
-                });
-                html+='<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center">';
-                html+='<svg viewBox="0 0 200 200" style="width:180px;height:180px;flex-shrink:0">'+slices+'</svg>';
-                html+='<div style="display:grid;gap:6px">';
-                pieLabels.forEach(function(lb,i){html+='<div style="display:flex;align-items:center;gap:8px"><div style="width:12px;height:12px;border-radius:3px;background:'+pieColors[i]+';flex-shrink:0"></div><span style="font-size:.82rem;color:var(--text)">'+lb+'</span><span style="font-size:.78rem;color:var(--muted);margin-left:auto;padding-left:12px">'+pieData[i]+' ('+Math.round(pieData[i]/total2*100)+'%)</span></div>';});
-                html+='</div></div>';
-            }
-
+    // ── WIDOK JEDNEGO ZASTĘPU (lista druhów) ─────────────────────────
+    window.showZastepDetail = function(zastepId) {
+        var members, title;
+        if (zastepId === '__none__') {
+            members = allMembers.filter(function(u){ return !u.zastepId; });
+            title = 'Bez zastępu';
         } else {
-            // Wykres czasowy — ilość sprawności zdobytych per miesiąc (suma grupy)
-            html += '<h3 style="margin:0 0 10px;font-size:.95rem">Sprawności w czasie — 12 miesięcy'+(_gf.cat!=='all'?' — '+_gf.cat:'')+'</h3>';
-            var now=new Date(), months=[];
-            for(var mi=11;mi>=0;mi--){var d=new Date(now.getFullYear(),now.getMonth()-mi,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));}
-            var counts={}; months.forEach(function(m){counts[m]=0;});
-            members.forEach(function(u){
-                var prog=progressMap[u._id]||{}, dates=datesMap[u._id]||{};
-                var items2 = _gf.cat==='all' ? db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate;}) : db.filter(function(i){return !i.id.startsWith('st_')&&!i._isPrivate&&i.category===_gf.cat;});
-                items2.forEach(function(item){
-                    if(getSprawLevel(item,prog)===0) return;
-                    var earliest=null;
-                    item.groups.forEach(function(g,gi){g.tasks.forEach(function(t,ti){
-                        var tid=item.id+'-'+gi+'-'+ti;
-                        if(prog[tid]&&dates[tid]&&(!earliest||dates[tid]<earliest)) earliest=dates[tid];
-                    });});
-                    if(!earliest) return;
-                    var d2=new Date(earliest); var ym=d2.getFullYear()+'-'+String(d2.getMonth()+1).padStart(2,'0');
-                    if(counts[ym]!==undefined) counts[ym]++;
-                });
-            });
-            var data=months.map(function(m){return counts[m];}), maxV=Math.max.apply(null,data)||1, total3=data.reduce(function(a,b){return a+b;},0);
-            var MN=['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
-            var labels=months.map(function(m){var p=m.split('-');return MN[parseInt(p[1])-1]+' '+p[0].slice(2);});
-            var W=640,H=170,PL=30,PR=8,PT=10,PB=26,cW=W-PL-PR,cH=H-PT-PB,n=labels.length;
-            var pts=data.map(function(v,i){return{x:PL+(i/(n-1||1))*cW,y:PT+(1-v/maxV)*cH};});
-            var pathD=pts.map(function(p,i){return(i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
-            var fillD=pathD+' L'+pts[n-1].x.toFixed(1)+','+(PT+cH)+' L'+pts[0].x.toFixed(1)+','+(PT+cH)+' Z';
-            var yTicks=''; for(var yi=0;yi<=3;yi++){var yv=Math.round(maxV*yi/3),yy=PT+(1-yi/3)*cH;yTicks+='<line x1="'+PL+'" y1="'+yy.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+yy.toFixed(1)+'" stroke="var(--border)" stroke-width="1" stroke-dasharray="3,3"/><text x="'+(PL-3)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end" font-size="9" fill="var(--muted)">'+yv+'</text>';}
-            var xLabels=''; labels.forEach(function(lb,i){if(i%3!==0&&i!==n-1)return;var xx=PL+(i/(n-1||1))*cW;xLabels+='<text x="'+xx.toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle" font-size="9" fill="var(--muted)">'+lb+'</text>';});
-            var dots=pts.map(function(p,i){return'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--primary)" stroke="var(--panel)" stroke-width="1.5"><title>'+labels[i]+': '+data[i]+'</title></circle>';}).join('');
-            if(total3===0){html+='<p style="color:var(--muted);text-align:center;padding:20px 0">Brak danych — daty zaczną się zapisywać od teraz.</p>';}
-            else{html+='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;overflow:visible"><defs><linearGradient id="lgfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>'+yTicks+xLabels+'<path d="'+fillD+'" fill="url(#lgfg)"/><path d="'+pathD+'" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
-            html+='<div style="margin-top:8px;font-size:.8rem;color:var(--muted);text-align:right">Łącznie: <strong style="color:var(--text)">'+total3+' sprawności</strong></div>';}
+            members = (zastepyMap[zastepId] || {members:[]}).members;
+            title = (zastepyMap[zastepId] || {name:'Zastęp'}).name;
         }
 
+        var sorted = members.map(function(u){
+            return { _id:u._id, name:u.name, role:u.role, val:calcMemberTotal(u._id) };
+        }).sort(function(a,b){ return b.val-a.val; });
+
+        var html = '<div style="padding:16px;max-width:780px;margin:0 auto">';
+        html += '<div style="padding:8px 0 16px;display:flex;align-items:center;gap:10px">';
+
+        if (isDruzynowy) {
+            html += '<button onclick="renderGroupStatsPanel()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Zastępy</button>';
+        } else {
+            html += '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>';
+        }
+        html += '<h2 style="margin:0;font-size:1.3rem">🏕 '+title+'</h2>';
+        html += '<span style="color:var(--muted);font-size:.82rem">('+members.length+' druhów)</span>';
         html += '</div>';
-        document.getElementById('groupStatsContent').innerHTML = html;
+
+        if (!sorted.length) {
+            html += '<p style="color:var(--muted);text-align:center;padding:32px">Brak druhów w tym zastępie.</p>';
+        } else {
+            var maxVal = Math.max.apply(null, sorted.map(function(u){return u.val;})) || 1;
+            html += '<div class="home-card" style="padding:16px">';
+            html += '<div style="display:grid;gap:8px">';
+            sorted.forEach(function(u, i){
+                var pct2  = Math.round(u.val/maxVal*100);
+                var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+                var col   = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#cd7f32':'var(--f4)';
+                var safeName = (u.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                html += '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;cursor:pointer;transition:.15s" '
+                      + 'onmouseenter="this.style.background=\'var(--panel2)\'" onmouseleave="this.style.background=\'transparent\'" '
+                      + 'onclick="renderUserStatsPanel(\'' + u._id + '\',\'' + safeName + '\',\'' + zastepId + '\')">';
+                html += '<div style="width:26px;text-align:center;font-size:.9rem">'+(medal||('<span style="color:var(--muted);font-size:.8rem">#'+(i+1)+'</span>'))+'</div>';
+                html += '<div style="width:120px;font-size:.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+u.name+'</div>';
+                html += '<div style="flex:1;height:24px;background:var(--panel2);border-radius:20px;overflow:hidden">';
+                html += '<div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.5s"></div></div>';
+                html += '<div style="width:36px;text-align:right;font-size:.85rem;font-weight:700;color:var(--text)">'+u.val+'</div>';
+                html += '</div>';
+            });
+            html += '</div></div>';
+        }
+        html += '</div>';
+        ca.innerHTML = html;
+    };
+
+    // ── WEJŚCIE ──────────────────────────────────────────────────────
+    if (isZastepowy) {
+        // Zastępowy — od razu jego zastęp
+        var me = allMembers.find(function(u){ return u._id === currentUser.id || u._id === String(currentUser.id); });
+        var myZastepId = (me && me.zastepId) ? String(me.zastepId) : (currentUser.zastepId ? String(currentUser.zastepId) : null);
+        if (!myZastepId) {
+            ca.innerHTML = '<div style="padding:32px;text-align:center;color:#ef4444">Nie masz przypisanego zastępu.</div>';
+            return;
+        }
+        window.showZastepDetail(myZastepId);
+    } else {
+        showZastepyView();
     }
-
-    window._rerenderGroup = renderGroupContent;
-
-    var totalDone = members.reduce(function(a,u){ return a + calcStats(progressMap[u._id]||{}, datesMap[u._id]||{}, null).total; }, 0);
-    var avgDone = members.length ? Math.round(totalDone/members.length) : 0;
-    var topUser = members.map(function(u){ return { name:u.name, total:calcStats(progressMap[u._id]||{},{},null).total }; }).sort(function(a,b){return b.total-a.total;})[0] || {name:'—'};
-
-    var outerHtml = '<div style="padding:16px;max-width:780px;margin:0 auto">';
-    outerHtml += '<div style="padding:16px 0 14px;display:flex;align-items:center;gap:12px">'
-               + '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>'
-               + '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki '+groupName+'</h2>'
-               + '<span style="color:var(--muted);font-size:.82rem">('+members.length+' osób)</span></div>';
-    outerHtml += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">';
-    outerHtml += _statCard('👥 Członków', members.length+'', '#3b82f6');
-    outerHtml += _statCard('📊 Średnio', avgDone+' spr.', '#22c55e');
-    outerHtml += _statCard('🏆 Lider', topUser.name.split(' ')[0], '#f59e0b');
-    outerHtml += '</div>';
-    outerHtml += '<div id="groupStatsContent"></div></div>';
-
-    document.getElementById('contentArea').innerHTML = outerHtml;
-    renderGroupContent();
 }
 </script>
 </body>
