@@ -1005,7 +1005,7 @@ body.neon-mode .btn-main {
       </div>
       <hr style="border:0;border-top:1px solid var(--border);margin:16px 0;">
       <button onclick="openBugReport()" style="width:100%;padding:10px;margin-bottom:8px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-weight:700;cursor:pointer;font-size:.9rem;">&#128027; Zglos blad</button>
-      <button class="settings-btn-action btn-reset" onclick="openDeleteAccountDialog()" style="background:linear-gradient(135deg,#b91c1c,#ef4444);border-color:#b91c1c">🗑️ Usuń konto</button>
+      <button class="settings-btn-action" onclick="openDeleteAccountDialog()" style="background:linear-gradient(135deg,#b91c1c,#ef4444);color:#fff;border:none;margin-bottom:2px">🗑️ Usuń konto</button>
       <button class="settings-btn-action btn-logout" onclick="handleLogout()">Wyloguj sie</button>
     </div>
 
@@ -9000,10 +9000,9 @@ async function renderGroupStatsPanel() {
     var rZ = await apiFetch('/zastepy');
     if (rZ.ok && rZ.data) {
         rZ.data.forEach(function(z){
-            var key = String(z._id||z.zastepId||z.id||'');
-            Object.keys(zastepyMap).forEach(function(k){
-                if (k===key) zastepyMap[k].name = z.name||z.nazwa||zastepyMap[k].name;
-            });
+            // zastepId to string 'z_druzyna_1_...' — to klucz w zastepyMap
+            var key = z.zastepId || String(z._id||z.id||'');
+            if (zastepyMap[key]) zastepyMap[key].name = z.name || zastepyMap[key].name;
         });
     }
     if (zastepyMap['__none__']) zastepyMap['__none__'].name = 'Bez zastępu';
@@ -9034,12 +9033,18 @@ async function renderGroupStatsPanel() {
     var druzTotal = allMembers.reduce(function(acc,u){return acc+memberTotal(u._id);},0);
     var druzAvg   = allMembers.length ? Math.round(druzTotal/allMembers.length) : 0;
 
+    var _groupView = window._groupView || 'zastepy'; // 'zastepy' | 'druhowie'
+
     function showDruzynaView() {
         var html = '<div style="padding:16px;max-width:820px;margin:0 auto">';
-        html += '<div style="padding:8px 0 14px;display:flex;align-items:center;gap:12px">';
+        html += '<div style="padding:8px 0 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">';
         html += '<button onclick="renderAdminDashboard()" style="padding:6px 14px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-size:.85rem">← Wróć</button>';
         html += '<h2 style="margin:0;font-size:1.3rem">📊 Statystyki Drużyny</h2>';
-        html += '</div>';
+        html += '<div style="margin-left:auto;display:flex;gap:4px;background:var(--panel2);border-radius:10px;padding:3px">';
+        var v1a = _groupView==='zastepy';
+        html += '<button onclick="window._groupView=\'zastepy\';renderGroupStatsPanel()" style="padding:5px 14px;border-radius:8px;border:none;background:'+(v1a?'var(--primary)':'transparent')+';color:'+(v1a?'#fff':'var(--muted)')+';font-weight:700;font-size:.8rem;cursor:pointer">🏕 Zastępy</button>';
+        html += '<button onclick="window._groupView=\'druhowie\';renderGroupStatsPanel()" style="padding:5px 14px;border-radius:8px;border:none;background:'+(!v1a?'var(--primary)':'transparent')+';color:'+(!v1a?'#fff':'var(--muted)')+';font-weight:700;font-size:.8rem;cursor:pointer">👤 Druhowie</button>';
+        html += '</div></div>';
         html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">';
         html += _statCard('👥 Druhów', allMembers.length+'', '#3b82f6');
         html += _statCard('📊 Średnio', druzAvg+' spr.', '#22c55e');
@@ -9068,7 +9073,36 @@ async function renderGroupStatsPanel() {
             if(z.best) html += '<div style="font-size:.73rem;color:var(--muted);margin-top:5px">🏆 '+z.best.name+' ('+z.best.val+' spr.)</div>';
             html += '</div>';
         });
-        html += '</div></div></div>';
+        html += '</div></div>';
+
+        // Widok druhów (wszyscy)
+        if (_groupView === 'druhowie') {
+            var allSorted = allMembers.map(function(u){
+                return { _id:u._id, name:u.name, zastepId:u.zastepId, val:memberTotal(u._id) };
+            }).sort(function(a,b){ return b.val-a.val; });
+            var maxA = Math.max.apply(null, allSorted.map(function(u){return u.val;})) || 1;
+            html += '<div class="home-card" style="padding:16px;margin-bottom:14px">';
+            html += '<h3 style="margin:0 0 14px;font-size:.95rem">Ranking druhów — wszystkie zastępy</h3>';
+            html += '<div style="display:grid;gap:8px">';
+            allSorted.forEach(function(u, i){
+                var pct2  = Math.round(u.val/maxA*100);
+                var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+                var col   = i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#cd7f32':'var(--f4)';
+                var safeName = (u.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+                var zName = u.zastepId && zastepyMap[String(u.zastepId)] ? zastepyMap[String(u.zastepId)].name : '';
+                html += '<div style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:10px;cursor:pointer;transition:.15s" '
+                      + 'onmouseenter="this.style.background=\'var(--panel2)\'" onmouseleave="this.style.background=\'transparent\'" '
+                      + 'onclick="renderUserStatsPanel(\'' + u._id + '\',\'' + safeName + '\',\'__druzyna__\')">';
+                html += '<div style="width:26px;text-align:center;font-size:.9rem">'+(medal||('<span style="color:var(--muted);font-size:.8rem">#'+(i+1)+'</span>'))+'</div>';
+                html += '<div style="flex:1"><div style="font-size:.88rem;font-weight:600;color:var(--text)">'+u.name+'</div>'+(zName?'<div style="font-size:.72rem;color:var(--muted)">'+zName+'</div>':'')+'</div>';
+                html += '<div style="width:160px;height:20px;background:var(--panel2);border-radius:20px;overflow:hidden"><div style="height:100%;width:'+Math.max(pct2,2)+'%;background:'+col+';border-radius:20px;transition:.5s"></div></div>';
+                html += '<div style="width:36px;text-align:right;font-size:.85rem;font-weight:700;color:var(--text)">'+u.val+'</div>';
+                html += '</div>';
+            });
+            html += '</div></div>';
+        }
+
+        html += '</div>';
         ca.innerHTML = html;
     }
 
