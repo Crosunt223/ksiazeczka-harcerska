@@ -5151,7 +5151,7 @@ function showPanel(name) {
 function showMsg(id, text, type) {
     var el = document.getElementById(id);
     if (!el) return;
-    el.textContent = text;
+    el.innerHTML = text;
     el.className = 'login-msg ' + (type || 'error');
 }
 function clearMsg(id) {
@@ -5331,6 +5331,35 @@ async function confirmEmailChange(token) {
     }
 }
 
+function confirmFactoryReset() {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px';
+    el.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:28px 24px;max-width:360px;width:100%">'
+        + '<h3 style="margin:0 0 8px;color:#ef4444">☢️ Reset całej bazy</h3>'
+        + '<p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Usuwa <strong>wszystkich użytkowników</strong> (oprócz admina), cały postęp i resetuje hasło admina na <code>admin</code>. NIEODWRACALNE.</p>'
+        + '<p style="font-size:.85rem;margin-bottom:8px">Wpisz <strong>RESET</strong> żeby potwierdzić:</p>'
+        + '<input id="factoryResetConfirm" type="text" placeholder="RESET" style="width:100%;box-sizing:border-box;padding:10px;border-radius:var(--rs);border:1.5px solid #ef4444;background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:14px;font-family:Barlow,sans-serif">'
+        + '<div style="display:flex;gap:8px">'
+        + '<button onclick="this.closest(\'div\').parentElement.parentElement.remove()" style="flex:1;padding:10px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--muted);cursor:pointer;font-family:Barlow,sans-serif">Anuluj</button>'
+        + '<button onclick="doFactoryReset()" style="flex:1;padding:10px;border-radius:var(--rs);border:none;background:#ef4444;color:#fff;font-weight:700;cursor:pointer;font-family:Barlow,sans-serif">Resetuj</button>'
+        + '</div></div>';
+    document.body.appendChild(el);
+    window._factoryResetEl = el;
+}
+
+async function doFactoryReset() {
+    var val = (document.getElementById('factoryResetConfirm').value || '').trim();
+    if (val !== 'RESET') { alert('Wpisz dokładnie: RESET'); return; }
+    var r = await apiFetch('/admin/factory-reset', { method: 'POST', body: JSON.stringify({}) });
+    if (window._factoryResetEl) window._factoryResetEl.remove();
+    if (r.ok) {
+        alert('Baza zresetowana. Hasło admina: admin\nPrzy następnym logowaniu będziesz musiał zmienić hasło.');
+        handleLogout();
+    } else {
+        alert((r.data && r.data.error) || 'Błąd resetu.');
+    }
+}
+
 async function handleLogin() {
     var username = document.getElementById('loginUsername').value.trim();
     var password = document.getElementById('loginPassword').value;
@@ -5345,8 +5374,46 @@ async function handleLogin() {
     currentUser = result.data.user;
     localStorage.setItem('hk_token', authToken);
     localStorage.setItem('hk_user', JSON.stringify(currentUser));
+
+    if (result.data.mustChangePassword) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        showForceChangePassword();
+        return;
+    }
     document.getElementById('loginOverlay').style.display = 'none';
     initAppAfterLogin();
+}
+
+function showForceChangePassword() {
+    var el = document.createElement('div');
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px';
+    el.innerHTML = '<div style="background:var(--panel);border-radius:var(--r);padding:32px 28px;max-width:360px;width:100%;box-shadow:var(--shadow-lg)">'
+        + '<h2 style="margin:0 0 8px;color:#f59e0b">⚠️ Zmień hasło</h2>'
+        + '<p style="font-size:.85rem;color:var(--muted);margin-bottom:20px">Ze względów bezpieczeństwa musisz ustawić nowe hasło przed kontynuowaniem.</p>'
+        + '<input id="forcePass1" type="password" placeholder="Nowe hasło (min. 6 znaków)" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:8px;font-family:Barlow,sans-serif">'
+        + '<input id="forcePass2" type="password" placeholder="Powtórz nowe hasło" style="width:100%;box-sizing:border-box;padding:10px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--panel2);color:var(--text);font-size:.9rem;margin-bottom:8px;font-family:Barlow,sans-serif">'
+        + '<p id="forcePassMsg" style="font-size:.8rem;color:#ef4444;min-height:16px;margin:0 0 12px"></p>'
+        + '<button onclick="doForceChangePassword()" style="width:100%;padding:12px;border-radius:var(--rs);border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;font-size:.95rem;font-family:Barlow,sans-serif">Ustaw nowe hasło</button>'
+        + '</div>';
+    document.body.appendChild(el);
+    window._forcePassEl = el;
+}
+
+async function doForceChangePassword() {
+    var p1 = document.getElementById('forcePass1').value;
+    var p2 = document.getElementById('forcePass2').value;
+    var msg = document.getElementById('forcePassMsg');
+    if (p1.length < 6) { msg.textContent = 'Min. 6 znaków.'; return; }
+    if (p1 !== p2)     { msg.textContent = 'Hasła nie są identyczne.'; return; }
+    msg.textContent = 'Zapisywanie...'; msg.style.color = 'var(--muted)';
+    var r = await apiFetch('/me/change-password', { method:'POST', body:JSON.stringify({ currentPassword:'admin', newPassword:p1 }) });
+    if (r.ok) {
+        if (window._forcePassEl) window._forcePassEl.remove();
+        initAppAfterLogin();
+    } else {
+        msg.style.color = '#ef4444';
+        msg.textContent = (r.data && r.data.error) || 'Błąd.';
+    }
 }
 
 // ================================================================
@@ -5714,6 +5781,9 @@ async function renderAdminDashboard() {
             : '')
         + (['zastepowy','podzastepowy'].includes(role)
             ? '<button onclick="renderGroupStatsPanel()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">📊 Statystyki zastępu</button>'
+            : '')
+        + (role === 'superadmin'
+            ? '<button onclick="confirmFactoryReset()" style="margin-top:8px;margin-left:8px;padding:10px 20px;background:linear-gradient(135deg,#7f1d1d,#ef4444);border:none;border-radius:var(--rs);color:#fff;font-weight:600;cursor:pointer;">☢️ Reset bazy</button>'
             : '')
         + '</div>';
 
@@ -6732,12 +6802,8 @@ async function changeEmail() {
         msg.textContent = r.data.message || '✓ Email zapisany!';
         document.getElementById('newEmailInput').value = '';
         document.getElementById('emailConfirmPass').value = '';
-        if (r.data.confirmed) {
-            var banner = document.getElementById('emailBanner');
-            if (banner) banner.style.display = 'none';
-            try { localStorage.setItem('hk_email_banner_dismissed', '1'); } catch(e) {}
-            loadAccountInfo();
-        }
+        if (currentUser) currentUser.email = newEmail;
+        loadAccountInfo();
     } else {
         msg.style.color = '#ef4444';
         msg.textContent = (r.data && r.data.error) || 'Błąd.';
